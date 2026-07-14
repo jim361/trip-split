@@ -4,6 +4,8 @@
 
 현재 기반 단계는 Firebase 없이도 고정 ID 강릉 fixture와 mock repository로 세 개의 주요 화면을 열 수 있으며, 같은 repository 계약을 Firestore 구현으로 교체할 수 있습니다.
 
+팀 검토용 반응형 목업은 [GitHub Pages](https://jim361.github.io/trip-split/)에서 설치 없이 확인할 수 있습니다. 공개 목업은 항상 mock repository를 사용하며 실제 Firebase 프로젝트에는 연결하지 않습니다.
+
 ## 빠른 시작
 
 권장 로컬 런타임은 Firebase Functions와 같은 Node.js 22입니다.
@@ -30,6 +32,8 @@ npm run typecheck
 npm run lint
 npm test
 npm run build
+npm run build:pages
+npm run preview:pages
 npm run test:emulator
 ```
 
@@ -55,7 +59,7 @@ npx firebase emulators:start --project demo-trip-split --only auth,firestore,fun
 npm run dev
 ```
 
-실제 프로젝트를 연결할 때는 Firebase Console에서 Web App, Anonymous Auth, 선택적 Google Provider, Firestore, Functions와 Hosting을 별도로 활성화해야 합니다. 이 저장소 작업에서는 프로젝트 생성·배포·secret 등록을 수행하지 않았습니다.
+실제 프로젝트를 연결할 때는 Firebase Console에서 Web App, Anonymous Auth, 선택적 Google Provider, Firestore, Functions와 Hosting을 별도로 활성화해야 합니다. GitHub Pages 목업과 별개로 Firebase 프로젝트 생성·배포·secret 등록은 수행하지 않았습니다.
 
 Functions 일반 환경변수와 secret 구조는 `functions/.env.example`에 있습니다. CLOVA secret은 향후 OCR 담당자가 다음 방식으로만 등록합니다.
 
