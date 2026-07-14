@@ -1,0 +1,8 @@
+node_modules
+dist
+coverage
+functions/lib
+.firebase
+firebase-debug.log
+firestore-debug.log
+MarkDown
