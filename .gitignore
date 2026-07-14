@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+*.local
+.env
+.env.*
+!.env.example
+!functions/.env.example
+functions/lib/
+functions/.secret.local
+functions/.env.local
+.DS_Store
+Thumbs.db

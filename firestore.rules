@@ -1,0 +1,290 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isTripMember(tripId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/trips/$(tripId)/members/$(request.auth.uid));
+    }
+
+    function optionalString(data, field) {
+      return !(field in data) || data[field] is string;
+    }
+
+    function optionalNumber(data, field) {
+      return !(field in data) || data[field] is number;
+    }
+
+    function validDate(value) {
+      return value is string && value.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function currentAuthProvider() {
+      return request.auth.token.firebase.sign_in_provider == 'google.com'
+        ? 'google'
+        : 'anonymous';
+    }
+
+    function validUser(data) {
+      return data.keys().hasAll(['displayName', 'authProvider', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'displayName', 'email', 'photoURL', 'authProvider', 'createdAt', 'updatedAt'
+        ])
+        && data.displayName is string
+        && data.displayName.size() > 0
+        && data.displayName.size() <= 80
+        && optionalString(data, 'email')
+        && optionalString(data, 'photoURL')
+        && data.authProvider == currentAuthProvider()
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && validUser(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && validUser(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['displayName', 'email', 'photoURL', 'authProvider', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    match /shareCodes/{code} {
+      allow read, write: if false;
+    }
+
+    match /trips/{tripId} {
+      function validTrip(data) {
+        return data.keys().hasAll([
+          'title', 'regionType', 'currency', 'startDate', 'endDate', 'ownerUid',
+          'shareCode', 'createdAt', 'updatedAt'
+        ])
+          && data.keys().hasOnly([
+            'title', 'regionType', 'currency', 'startDate', 'endDate', 'ownerUid',
+            'shareCode', 'createdAt', 'updatedAt'
+          ])
+          && data.title is string
+          && data.title.size() > 0
+          && data.title.size() <= 80
+          && data.regionType in ['domestic', 'international']
+          && data.currency == 'KRW'
+          && validDate(data.startDate)
+          && validDate(data.endDate)
+          && data.ownerUid is string
+          && data.shareCode is string
+          && data.createdAt is timestamp
+          && data.updatedAt is timestamp;
+      }
+
+      allow read: if isTripMember(tripId);
+      allow create, delete: if false;
+      allow update: if isTripMember(tripId)
+        && validTrip(request.resource.data)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.currency == resource.data.currency
+        && request.resource.data.regionType == resource.data.regionType
+        && request.resource.data.shareCode == resource.data.shareCode
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['title', 'startDate', 'endDate', 'updatedAt']);
+
+      match /members/{memberId} {
+        function validMember(data) {
+          return data.keys().hasAll(['displayName', 'role', 'joinedAt', 'lastActiveAt'])
+            && data.keys().hasOnly([
+              'displayName', 'photoURL', 'role', 'joinedAt', 'lastActiveAt'
+            ])
+            && data.displayName is string
+            && data.displayName.size() > 0
+            && data.displayName.size() <= 80
+            && optionalString(data, 'photoURL')
+            && data.role == 'editor'
+            && data.joinedAt is timestamp
+            && data.lastActiveAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create, delete: if false;
+        allow update: if isTripMember(tripId)
+          && request.auth.uid == memberId
+          && validMember(request.resource.data)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.joinedAt == resource.data.joinedAt
+          && request.resource.data.lastActiveAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['displayName', 'photoURL', 'lastActiveAt']);
+      }
+
+      match /participants/{participantId} {
+        function validParticipant(data) {
+          return data.keys().hasAll(['name', 'isActive', 'createdAt', 'updatedAt'])
+            && data.keys().hasOnly([
+              'name', 'color', 'linkedUid', 'isActive', 'createdAt', 'updatedAt'
+            ])
+            && data.name is string
+            && data.name.size() > 0
+            && data.name.size() <= 80
+            && optionalString(data, 'color')
+            && optionalString(data, 'linkedUid')
+            && data.isActive is bool
+            && data.createdAt is timestamp
+            && data.updatedAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create: if isTripMember(tripId)
+          && validParticipant(request.resource.data)
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if isTripMember(tripId)
+          && validParticipant(request.resource.data)
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'color', 'linkedUid', 'isActive', 'updatedAt']);
+        allow delete: if isTripMember(tripId);
+      }
+
+      match /places/{placeId} {
+        function validPlace(data) {
+          return data.keys().hasAll([
+            'name', 'provider', 'source', 'addedBy', 'createdAt', 'updatedAt'
+          ])
+            && data.keys().hasOnly([
+              'name', 'address', 'lat', 'lng', 'provider', 'source', 'providerPlaceId',
+              'sourceUrl', 'addedBy', 'memo', 'createdAt', 'updatedAt'
+            ])
+            && data.name is string
+            && data.name.size() > 0
+            && data.name.size() <= 160
+            && optionalString(data, 'address')
+            && optionalNumber(data, 'lat')
+            && optionalNumber(data, 'lng')
+            && data.provider in ['naver', 'manual']
+            && data.source in ['naverSearch', 'naverLink', 'manual']
+            && optionalString(data, 'providerPlaceId')
+            && optionalString(data, 'sourceUrl')
+            && data.addedBy is string
+            && optionalString(data, 'memo')
+            && data.createdAt is timestamp
+            && data.updatedAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create: if isTripMember(tripId)
+          && validPlace(request.resource.data)
+          && request.resource.data.addedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if isTripMember(tripId)
+          && validPlace(request.resource.data)
+          && request.resource.data.addedBy == resource.data.addedBy
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'address', 'lat', 'lng', 'provider', 'source', 'providerPlaceId',
+            'sourceUrl', 'memo', 'updatedAt'
+          ]);
+        allow delete: if isTripMember(tripId);
+      }
+
+      match /itinerary/{itemId} {
+        function validItinerary(data) {
+          return data.keys().hasAll(['date', 'title', 'order', 'updatedBy', 'updatedAt'])
+            && data.keys().hasOnly([
+              'date', 'startTime', 'endTime', 'placeId', 'title', 'memo', 'order',
+              'updatedBy', 'updatedAt'
+            ])
+            && validDate(data.date)
+            && optionalString(data, 'startTime')
+            && optionalString(data, 'endTime')
+            && optionalString(data, 'placeId')
+            && data.title is string
+            && data.title.size() > 0
+            && optionalString(data, 'memo')
+            && data.order is int
+            && data.order >= 0
+            && data.updatedBy is string
+            && data.updatedAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create, update: if isTripMember(tripId)
+          && validItinerary(request.resource.data)
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if isTripMember(tripId);
+      }
+
+      match /expenses/{expenseId} {
+        function validExpense(data) {
+          return data.keys().hasAll([
+            'title', 'category', 'expenseDate', 'totalAmount', 'currency', 'payer',
+            'consumers', 'allocationMethod', 'allocatedAmounts', 'receiptItems', 'source',
+            'createdBy', 'updatedBy', 'createdAt', 'updatedAt'
+          ])
+            && data.keys().hasOnly([
+              'title', 'category', 'expenseDate', 'totalAmount', 'currency', 'payer',
+              'consumers', 'allocationMethod', 'allocatedAmounts', 'receiptItems', 'source',
+              'placeId', 'itineraryItemId', 'memo', 'createdBy', 'updatedBy',
+              'createdAt', 'updatedAt'
+            ])
+            && data.title is string
+            && data.title.size() > 0
+            && data.category is string
+            && validDate(data.expenseDate)
+            && data.totalAmount is int
+            && data.totalAmount >= 0
+            && data.currency == 'KRW'
+            && data.payer is map
+            && data.payer.keys().hasAll(['participantId', 'amount'])
+            && data.payer.keys().hasOnly(['participantId', 'amount'])
+            && data.payer.participantId is string
+            && data.payer.amount is int
+            && data.payer.amount == data.totalAmount
+            && data.consumers is list
+            && data.consumers.size() > 0
+            && data.allocationMethod in ['equal', 'itemized', 'custom']
+            && data.allocatedAmounts is list
+            && data.receiptItems is list
+            && data.source in ['manual', 'ocr']
+            && optionalString(data, 'placeId')
+            && optionalString(data, 'itineraryItemId')
+            && optionalString(data, 'memo')
+            && data.createdBy is string
+            && data.updatedBy is string
+            && data.createdAt is timestamp
+            && data.updatedAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create: if isTripMember(tripId)
+          && validExpense(request.resource.data)
+          && request.resource.data.createdBy == request.auth.uid
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if isTripMember(tripId)
+          && validExpense(request.resource.data)
+          && request.resource.data.createdBy == resource.data.createdBy
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if isTripMember(tripId);
+      }
+    }
+  }
+}

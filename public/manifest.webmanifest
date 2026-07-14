@@ -1,0 +1,26 @@
+{
+  "name": "Trip Split",
+  "short_name": "Trip Split",
+  "description": "일정과 지출을 함께 관리하는 공동 여행 플래너",
+  "lang": "ko-KR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff385c",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/trip-split-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/trip-split-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

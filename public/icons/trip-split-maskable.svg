@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Trip Split 마스커블 임시 아이콘</title>
+  <rect width="512" height="512" fill="#ff385c"/>
+  <path d="M128 160h256v56H128zm0 136h112v56H128zm168 0h88v56h-88z" fill="#fff"/>
+  <circle cx="268" cy="324" r="22" fill="#fff"/>
+</svg>
