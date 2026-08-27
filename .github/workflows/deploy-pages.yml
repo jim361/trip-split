@@ -3,7 +3,7 @@ name: Deploy mockup to GitHub Pages
 on:
   push:
     branches:
-      - feature/platform-foundation
+      - dev
   workflow_dispatch:
 
 permissions:

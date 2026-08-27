@@ -6,6 +6,27 @@
 
 팀 검토용 반응형 목업은 [GitHub Pages](https://jim361.github.io/trip-split/)에서 설치 없이 확인할 수 있습니다. 공개 목업은 항상 mock repository를 사용하며 실제 Firebase 프로젝트에는 연결하지 않습니다.
 
+## 저장소 구성
+
+| 경로                             | 역할                                                |
+| -------------------------------- | --------------------------------------------------- |
+| `src/app`, `src/shared`          | 공통 라우팅, Provider, 타입과 repository 계약       |
+| `src/features`, `src/pages/trip` | 일정·지도, 준비, 비용·정산, 영수증 화면             |
+| `src/services`                   | mock과 Firebase service/repository 구현체           |
+| `functions`                      | 공유 코드와 여행 세션용 Firebase Callable Functions |
+| `tests`                          | Firestore 규칙과 다중 사용자 Emulator 테스트        |
+| `MarkDown`                       | 제품·요구사항·기술 계약과 의사결정 기록             |
+| `docs`                           | 구현 인계 문서와 팀 검토용 목업 이미지              |
+
+## Git 운영
+
+- `main`: 배포·발표 가능한 안정 버전만 유지합니다.
+- `dev`: 기능을 모아 통합 검증하고 GitHub Pages로 팀에 공유합니다.
+- `feature/*`: `dev`에서 분기하고 Pull Request로 다시 `dev`에 합칩니다.
+- 출시 시점에는 `dev`에서 `main`으로 Pull Request를 만듭니다.
+
+기능 브랜치는 `feature/itinerary-map`, `feature/settlement`, `feature/receipt-ocr`, `feature/platform`처럼 담당 영역을 이름에 드러냅니다. `dev`와 `main` 대상 Pull Request는 CI의 format, lint, test, build, Firebase Emulator 검증을 통과해야 합니다.
+
 ## 빠른 시작
 
 권장 로컬 런타임은 Firebase Functions와 같은 Node.js 22입니다.
