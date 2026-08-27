@@ -9,9 +9,10 @@ ui-debug.log
 .env
 .env.*
 !.env.example
-!functions/.env.example
-functions/lib/
-functions/.secret.local
-functions/.env.local
+!frontend/.env.example
+!backend/.env.example
+backend/lib/
+backend/.secret.local
+backend/.env.local
 .DS_Store
 Thumbs.db

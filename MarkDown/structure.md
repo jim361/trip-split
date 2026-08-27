@@ -6,6 +6,8 @@ Trip Split은 Vite + React + TypeScript 기반의 모바일 우선 웹/PWA로 �
 
 핵심 원칙은 다음과 같다.
 
+- 저장소는 `frontend`와 `backend`가 각각 독립 `package.json`을 가지는 npm workspace 모노레포로 관리한다.
+- 두 프로젝트는 같은 `dev`와 `main` 트리에 유지하고 영역별 작업 브랜치에서 `dev`로 통합한다.
 - 화면은 사용 흐름 중심으로 구성한다.
 - 지도, 정산, OCR, Firebase 호출은 UI와 분리한다.
 - 정산 로직은 순수 함수로 작성해 테스트하기 쉽게 만든다.
@@ -59,13 +61,13 @@ Trip Split은 Vite + React + TypeScript 기반의 모바일 우선 웹/PWA로 �
 
 | 범위 | 주 담당 | 변경 규칙 |
 | --- | --- | --- |
-| `package.json`, lockfile, `src/app/routes.tsx`, Firebase 진입점·설정·보안 규칙 | 플랫폼·통합 | 다른 담당자는 변경안을 제안하고 플랫폼·통합 담당자가 병합한다. |
-| `features/settlement`, `features/receipts`, `expensesRepository` | 정산·영수증 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
-| `features/places`, `features/itinerary`, `features/map`, 관련 repository | 장소·일정·지도 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
+| 루트 `package.json`·lockfile, `frontend/src/app/routes.tsx`, Firebase 진입점·설정·보안 규칙 | 플랫폼·통합 | 다른 담당자는 변경안을 제안하고 플랫폼·통합 담당자가 병합한다. |
+| `frontend/src/features/settlement`, `frontend/src/features/receipts`, `expensesRepository` | 정산·영수증 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
+| `frontend/src/features/places`, `frontend/src/features/itinerary`, `frontend/src/features/map`, 관련 repository | 장소·일정·지도 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
 | 여행 생성, 공유 코드 검증·참여 Function | 플랫폼·통합 | 인증·보안 규칙과 함께 통합한다. |
 | `parseReceipt` Function | 정산·영수증 | OCR 비밀 키, 검증·오류 형식은 공통 계약을 따른다. |
 | 장소 검색, 장소 링크 파싱 Function | 장소·일정·지도 | 네이버 비밀 키, 검증·오류 형식은 공통 계약을 따른다. |
-| `functions/src/index.ts`, 공통 HTTP·환경변수 유틸리티 | 플랫폼·통합 | 각 담당의 handler를 export만 하며 도메인 로직을 두지 않는다. |
+| `backend/src/index.ts`, 공통 HTTP·환경변수 유틸리티 | 플랫폼·통합 | 각 담당의 handler를 export만 하며 도메인 로직을 두지 않는다. |
 
 담당 영역은 코드 소유권과 1차 리뷰 책임을 뜻한다. 다른 영역을 수정할 수 없는 경계가 아니며, 계약 변경은 PR 설명에 영향 범위와 migration 여부를 기록한 뒤 플랫폼·통합 담당자가 최종 승인한다.
 
@@ -73,99 +75,52 @@ Trip Split은 Vite + React + TypeScript 기반의 모바일 우선 웹/PWA로 �
 
 ```text
 trip-split/
-  public/
-    manifest.webmanifest
-    icons/
-  src/
-    app/
-      App.tsx
-      routes.tsx
-      providers/
-    pages/
-      HomePage.tsx
-      ImportPage.tsx
-      trip/
-        TripShell.tsx
-        ItineraryPage.tsx
-        MapPage.tsx
-        SettlementPage.tsx
-        ReceiptsPage.tsx
-    features/
-      trips/
+  frontend/
+    package.json
+    .env.example
+    public/
+      manifest.webmanifest
+      icons/
+    src/
+      app/
+        routes.tsx
+        providers/
+      pages/
+      features/
+        places/
+        itinerary/
+        map/
+        settlement/
+        receipts/
+      services/
+        firebase/
+        functions/
+        mock/
+        repositories/
+      shared/
         components/
-        hooks/
-        trip.types.ts
-      auth/
-        components/
-        hooks/
-        auth.types.ts
-      members/
-        components/
-        hooks/
-        member.types.ts
-      places/
-        components/
-        hooks/
-        place.types.ts
-        placeLinkParser.ts
-      itinerary/
-        components/
-        hooks/
-        itinerary.types.ts
-      map/
-        components/
-        map.types.ts
-        mapAdapter.ts
-        naverMapAdapter.ts
-      settlement/
-        components/
-        settlement.types.ts
-        settlementEngine.ts
-        settlementText.ts
-      receipts/
-        components/
-        receipt.types.ts
-        receiptOcr.ts
-    shared/
-      components/
-      contracts/
-        error.ts
-        id.ts
-        repository.ts
-        timestamp.ts
-      hooks/
-      lib/
-      styles/
-      types/
-    services/
-      firebase/
-        client.ts
-        authRepository.ts
-        membersRepository.ts
-        tripsRepository.ts
-        placesRepository.ts
-        itineraryRepository.ts
-        expensesRepository.ts
-      functions/
-        callable.ts
-    test/
-      fixtures/
-        gangneungTrip.ts
-  functions/
+        contracts/
+        styles/
+        types/
+      test/
+        fixtures/
+  backend/
+    package.json
+    .env.example
+    firestore.rules
+    firestore.indexes.json
     src/
       index.ts
-      naver/
-        places.ts
-        placeLinks.ts
       share/
-        shareCodes.ts
-        trips.ts
-      ocr/
-        clova.ts
       shared/
-        http.ts
-        env.ts
+    tests/
+      emulator/
   docs/
+  MarkDown/
+  .github/workflows/
+  firebase.json
+  package.json
+  package-lock.json
 ```
 
 ## 4. 앱 셸과 라우트 계약
@@ -208,7 +163,7 @@ trip-split/
 
 Firestore 읽기/쓰기와 실시간 구독을 담당한다. 화면 컴포넌트와 순수 도메인 함수에서 Firebase SDK를 직접 호출하지 않으며, repository가 Firestore Timestamp와 오류를 공통 앱 계약으로 변환한다.
 
-### `functions`
+### `backend/src`
 
 클라이언트에 노출하면 안 되는 API 호출을 담당한다. 네이버 장소 검색, 장소 링크 파싱, CLOVA OCR과 공유 코드 검증은 이곳에서 처리한다. 각 handler는 동일한 인증 확인, 입력 검증과 `AppError` 응답 형식을 사용한다.
 

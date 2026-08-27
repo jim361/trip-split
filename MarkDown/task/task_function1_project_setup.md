@@ -22,7 +22,7 @@ Vite + React + TypeScript 기반 웹/PWA 프로젝트를 만들고, Firebase와 
 - [ ] 선택적 계정 연결용 Google Provider 활성화
 - [ ] Firestore 설정
 - [ ] Cloud Functions 초기화
-- [ ] `.env.example` 작성
+- [ ] `frontend/.env.example`과 `backend/.env.example` 작성
 - [ ] API 키와 환경변수 관리 방식 정리
 - [ ] PWA manifest 기본 파일 추가
 - [ ] `/trips/:tripId/itinerary`, `/trips/:tripId/settlement`, `/trips/:tripId/receipts` 공통 라우팅과 `/trips/:tripId/map` 호환 redirect 구성
