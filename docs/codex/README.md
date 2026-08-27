@@ -1,6 +1,6 @@
 # Codex 협업 문서 안내
 
-`docs/codex/`는 Trip Split 작업을 넘겨받거나 중단할 때 필요한 짧은 작업 기록과 반복 방지 규칙을 모아 두는 곳이다. 제품 요구사항이나 구현 계약을 새로 정의하는 곳은 아니다. 현재 제품·데이터 계약은 저장소의 기존 문서를 따른다.
+`docs/codex/`는 Trip Split 작업을 넘겨받거나 중단할 때 필요한 짧은 작업 기록과 반복 방지 규칙을 모아 두는 곳이다. 제품 요구사항이나 구현 계약을 새로 정의하는 곳은 아니다. 기존 `MarkDown/` 문서가 제품·기술 계약의 source of truth이며, 이 디렉터리는 그 계약을 대신하지 않는다.
 
 ## 문서 지도
 
@@ -11,8 +11,13 @@
 | [`STOP_CONTRACT_TEMPLATE.md`](STOP_CONTRACT_TEMPLATE.md) | 한 번의 자율 작업이 멈출 조건             | 반복 작업을 시작하기 전          |
 | [`RATCHET.md`](RATCHET.md)                               | 실패를 재발 방지 규칙으로 올리는 기록     | 같은 실패가 반복될 때            |
 | [`CHANGELOG.md`](CHANGELOG.md)                           | 협업 문서 또는 계약에 영향을 준 변경 요약 | 의미 있는 변경을 마칠 때         |
-| [`SYNC_LOG.md`](SYNC_LOG.md)                             | 작업 단위별 진행·검증·인계 로그           | 작업 단위가 끝날 때              |
-| [`handoffs/`](handoffs/)                                 | 날짜·작업별로 채운 실제 인계 문서         | 다른 세션이나 담당자에게 넘길 때 |
+| [`SYNC_LOG.md`](SYNC_LOG.md)                             | 공유 로그를 쓰지 않는 동기화 기록 정책    | 기록 정책이 바뀔 때              |
+| [`handoffs/`](handoffs/)                                 | 작업별로 채운 실제 인계 문서              | 다른 세션이나 담당자에게 넘길 때 |
+
+실제 인계는 `handoffs/` 아래에 작업별 파일로 저장한다. 파일명은
+`YYYY-MM-DD-task-owner.md`를 기본으로 하고, 같은 날짜·작업·담당자가 다시 생기면
+`YYYY-MM-DD-HHmm-task-owner.md`처럼 시각을 덧붙여 충돌을 피한다. `SYNC_LOG.md`에
+작업 진행 내용을 이어 쓰지 않는다.
 
 ## 규칙의 다섯 자리
 
@@ -26,27 +31,26 @@
 
 같은 지시를 여러 자리에 복사하지 않는다. 지침 파일은 지도와 불변식만 유지하고, 상세 설명은 문서, 반복 순서는 스킬, 결정적 실패는 검증기나 훅에 둔다.
 
-## 단일 검증 진입점
+## 저장소 루트 검증
 
-저장소 루트에서 다음 두 명령만 사용한다.
+저장소 루트에서 다음 한 줄을 사용한다. 검증기는 필요한 루트 `npm` scripts를 순서대로 실행하고 어느 단계가 실패했는지 출력한다.
 
 ```powershell
+# 작업 중: format, lint, typecheck, unit/UI 테스트
 pwsh -File scripts/verify.ps1 -Mode Fast
+
+# PR 전: Fast 범위 + production build + Firebase Emulator/rules 테스트
 pwsh -File scripts/verify.ps1 -Mode Full
 ```
 
-- `Fast`: 정적 문법·설정 검사, 포맷, lint, typecheck, unit/UI/Functions 테스트
-- `Full`: Fast 전체와 production build, Firebase Auth·Firestore·Functions Emulator 테스트
-- 종료 코드 `0`: 통과, `1`: 검증 실패, `2`: Node·의존성·Java 같은 전제조건 실패
-- 공통 전제조건: Node.js 22와 `npm ci`
-- Full 전제조건: PATH에서 실행 가능한 Java
+공통 전제조건은 Node.js 22와 `npm ci`이며, Full 모드는 Java 21과 Firebase Emulator를 사용한다. 검증기는 전환 전 `src/`·`functions/` 구조와 합칠 대상인 `frontend/`·`backend/` 구조를 명시적으로 판별한다. 두 구조가 섞여 있거나 필수 script가 빠지면 건너뛰지 않고 실패한다. GitHub Actions도 Full 검증기만 호출한다.
 
 `.gitattributes`가 Prettier의 `endOfLine=lf` 계약을 Windows에서도 유지한다. 이 파일이 생기기 전에 받은 기존 checkout에서 전체 파일이 CRLF라면 검증 조건을 완화하지 말고, 변경을 보존한 뒤 LF checkout에서 다시 확인한다.
 
 ## 저장소 스킬과 훅
 
 - 자연스러운 인계 요청에는 `.agents/skills/trip-split-handoff/SKILL.md`가 여섯 칸 인계 형식과 실행 증거를 적용한다.
-- `.codex/hooks.json`의 `PreToolUse` 훅은 강제 push, `reset --hard`, 강제 디렉터리 clean을 실행 전에 차단한다.
+- `.codex/hooks.json`의 `PreToolUse` 훅은 강제 push, `reset --hard`, 강제 clean을 실행 전에 차단한다.
 - 프로젝트 훅은 저장소를 신뢰한 뒤 Codex의 `/hooks` 화면에서 정의를 검토하고 신뢰해야 실제 세션에 적용된다.
 - 훅은 일부 로컬 도구 경로에만 적용되는 guardrail이다. Firebase 배포나 secret 같은 외부 작업의 사람 확인을 대신하지 않는다.
 
@@ -57,24 +61,24 @@ pwsh -File scripts/verify.ps1 -Mode Full
 | [`README.md`](../../README.md)                                       | 저장소 사용법, 검증 명령, 현재 공개 mockup의 진입 경로               |
 | [`docs/platform-handoff.md`](../platform-handoff.md)                 | 현재 구현 경계, provider/repository 주입, Callable, 보안·온라인 경계 |
 | [`docs/mockup-review.md`](../mockup-review.md)                       | 2026-08-27 해외여행 중심 mockup 흐름과 현재 화면 검토 경계           |
-| [`MarkDown/tech.md`](../../MarkDown/tech.md)                         | 데이터·repository·오류·외부 연동의 기술 계약 초안                    |
-| [`MarkDown/structure.md`](../../MarkDown/structure.md)               | 라우트, 모듈 경계, 도메인 불변식, 협업 규칙 초안                     |
-| [`MarkDown/requirements.md`](../../MarkDown/requirements.md)         | MVP 요구사항 초안                                                    |
+| [`MarkDown/tech.md`](../../MarkDown/tech.md)                         | 데이터·repository·오류·외부 연동의 기술 계약 기준                    |
+| [`MarkDown/structure.md`](../../MarkDown/structure.md)               | 라우트, 모듈 경계, 도메인 불변식, 협업 규칙 기준                     |
+| [`MarkDown/requirements.md`](../../MarkDown/requirements.md)         | MVP 요구사항 기준                                                    |
 | [`MarkDown/task/`](../../MarkDown/task/)                             | 기능별 완료 조건과 테스트 항목                                       |
 | [`MarkDown/decision_history.md`](../../MarkDown/decision_history.md) | 날짜가 있는 제품·구조 결정의 이력                                    |
-| `src/`, `functions/`, `tests/`                                       | 실제 구현과 검증 코드                                                |
+| `frontend/`, `backend/`, `backend/tests/`                            | 실제 구현과 검증 코드                                                |
 
 ## 문서가 충돌할 때
 
 다음 순서로 판단하고, 판단 결과를 인계나 변경 로그에 남긴다.
 
-1. 현재 `src/`, `functions/`, `tests/`의 구현과 통과하는 검증 결과를 확인한다.
+1. 관련된 기존 `MarkDown/` 문서를 먼저 확인한다. 이 문서가 제품·기술 계약의 source of truth다.
 2. `MarkDown/decision_history.md`에서 가장 최신 날짜의 결정을 확인한다. 이 저장소의 결정 로그 파일명은 `decision_history.md`이다.
-3. `README.md`와 `docs/`의 현재 인계·mockup 문서를 확인한다.
-4. 오래된 요구사항·작업 초안보다 최신 결정과 실제 구현을 우선한다.
+3. `README.md`와 `docs/`의 현재 인계·mockup 문서를 확인하되, 계약을 대신 정의하는 근거로 삼지 않는다.
+4. `frontend/`, `backend/`, `backend/tests/`는 구현·검증 상태를 확인하는 증거로 사용한다. 계약과 어긋나면 코드·테스트를 조용히 우선하지 말고 충돌과 필요한 결정을 기록한다.
 5. 어느 쪽도 결정하지 못하면 임의로 계약을 바꾸지 말고 충돌과 필요한 결정을 기록한다.
 
-특히 초기 문서의 국내/KRW/네이버 전용 흐름과 4개 메뉴 설명은 최신 도쿄·JPY mockup 계약과 다를 수 있다. 날짜가 명시된 최신 결정과 현재 구현을 확인하지 않고 과거 문장을 규칙으로 복사하지 않는다.
+특히 초기 문서의 국내/KRW/네이버 전용 흐름과 4개 메뉴 설명은 최신 도쿄·JPY mockup 계약과 다를 수 있다. `MarkDown/decision_history.md` 안의 최신 합의를 확인하고, 어느 계약이 유효한지 불명확하면 구현으로 추정하지 말고 결정을 요청한다.
 
 ## 기록 원칙
 

@@ -1,18 +1,32 @@
 # Trip Split 작업 규칙
 
-- Node.js 22에서 `npm ci`로 의존성을 설치하고 `npm run dev`로 로컬 앱을 실행한다.
-- 기능 브랜치는 `dev`에서 만들고 PR 대상은 `dev`로 지정하며 `main` 또는 `dev`에 직접 커밋하거나 push하지 않는다.
-- 제품·데이터 계약은 `MarkDown/tech.md`, `MarkDown/structure.md`, `MarkDown/task/tasks.md`, 최신 결정은 `MarkDown/decision_history.md`, 현재 구현 경계는 `docs/platform-handoff.md`를 따른다.
-- 문서가 충돌하면 날짜가 더 최신인 결정과 현재 코드·테스트를 우선하고 충돌을 보고한다.
-- Codex 협업 문서와 검증 방법은 `docs/codex/README.md`에서 찾는다.
-- 화면 컴포넌트에서 Firebase SDK를 직접 호출하지 말고 repository 또는 service 경계를 사용한다.
-- `TripMember.uid`와 `Participant.id`를 같은 값으로 가정하지 말고 `Participant.linkedUid`로만 연결한다.
-- 금액은 해당 통화의 최소 단위 정수로 저장하고 균등 분할 나머지는 표시된 소비자 순서대로 1단위씩 배분한다.
-- 지도 모듈에는 provider 원문이 아니라 정규화된 `Place[]`와 정렬된 `ItineraryItem[]`만 전달한다.
-- OCR 결과는 사용자가 검토·확정하기 전 원장에 반영하지 않고 영수증 이미지는 Firebase Storage에 영구 저장하지 않는다.
-- 외부 API 원문, 비밀 키, 토큰 또는 이미지 본문을 UI 오류·로그·커밋에 넣지 않는다.
-- `package.json`, lockfile, 공통 타입, Firestore 경로·규칙, 앱·Functions 진입점 변경은 PR에 영향 범위와 migration 여부를 적고 나머지 두 담당자의 리뷰를 받는다.
-- 공개 GitHub Pages 목업은 `VITE_DATA_SOURCE=mock`을 유지하고 실제 Firebase 프로젝트에 연결하지 않는다.
-- 빠른 확인은 `pwsh -File scripts/verify.ps1 -Mode Fast`, 커밋 또는 PR 전 확인은 `pwsh -File scripts/verify.ps1 -Mode Full`을 종료 코드 0으로 통과시킨다.
-- 테스트·fixture·검증 조건을 약화해야 통과할 것 같으면 수정하지 말고 근거와 함께 사용자에게 묻는다.
-- 실제 Firebase 배포, secret 등록 또는 유료 외부 API 호출은 사용자 승인 후에만 수행한다.
+## 프로젝트 경계
+
+- `frontend/`: React/Vite/PWA, 화면, mock·Firestore Web repository와 지도 adapter
+- `backend/`: Firebase Functions, Firestore 규칙과 Emulator 통합 테스트
+- `docs/`: 회의용 기능 범위와 구현 인계
+- `MarkDown/`: 합의된 제품·기술 계약과 기능별 task의 source of truth
+
+공통 타입, Firestore 경로, Callable 요청·응답을 바꾸면 frontend와 backend 영향을 함께 확인합니다. 기존 파일이나 다른 작업자의 변경을 삭제하거나 되돌리지 않습니다.
+구현·테스트가 `MarkDown/` 계약과 다르면 구현을 조용히 우선하지 말고 충돌을 보고해 결정을 요청합니다.
+
+## Git 흐름
+
+1. 최신 `dev`에서 짧은 기능 브랜치를 만듭니다.
+2. 브랜치 이름으로 영역을 드러냅니다: `frontend/itinerary-map`, `backend/receipt-ocr`, `docs/feature-scope`, `platform/firebase`.
+3. Pull Request 대상은 `dev`입니다.
+4. `dev`에서 전체 검증과 목업 공유를 마친 뒤 `dev`에서 `main`으로 릴리스 Pull Request를 만듭니다.
+5. `main`과 `dev`에 직접 커밋하거나 서로 다른 폴더 구조를 따로 만들지 않습니다.
+
+## 검증
+
+- 작업 중 빠른 검증: `pwsh -File scripts/verify.ps1 -Mode Fast`
+- PR 전 전체 검증: `pwsh -File scripts/verify.ps1 -Mode Full`
+
+## 안전 규칙
+
+- 도메인 기능은 mock repository로 먼저 완성하고 외부 Firebase·지도·OCR 연결은 service/repository 경계에서 추가합니다.
+- 외부 API 원문, 비밀 키, 토큰 또는 이미지 본문을 UI 오류·로그·커밋에 넣지 않습니다.
+- OCR은 사용자가 검토·확정하기 전 원장에 반영하지 않고 이미지를 Firebase Storage에 영구 저장하지 않으며, 실제 Firebase 배포·secret 등록·유료 API 호출은 사용자 승인 후에만 합니다.
+- 공개 GitHub Pages 목업은 `VITE_DATA_SOURCE=mock`을 유지하고 실제 Firebase 프로젝트에 연결하지 않습니다.
+- 테스트·fixture·검증 조건을 약화하거나 삭제해 통과시키지 않으며, force push·`reset --hard`·강제 clean을 사용하지 않습니다.
