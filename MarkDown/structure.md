@@ -219,25 +219,25 @@ type EntityId = string;
 type ParticipantId = EntityId;
 type EpochMillis = number;
 type LocalDate = string; // YYYY-MM-DD
-type KrwAmount = number; // 원 단위 정수
+type CurrencyAmount = number; // KRW·JPY 최소 통화 단위 정수
 
 type AllocationMethod = "equal" | "itemized" | "custom";
 
 type MoneyAllocation = {
   participantId: ParticipantId;
-  amount: KrwAmount;
+  amount: CurrencyAmount;
 };
 
 type ExpensePayer = {
   participantId: ParticipantId;
-  amount: KrwAmount;
+  amount: CurrencyAmount;
 };
 
 type Trip = {
   id: EntityId;
   title: string;
   regionType: "domestic" | "international";
-  currency: "KRW";
+  currency: "KRW" | "JPY";
   startDate: LocalDate;
   endDate: LocalDate;
   ownerUid: string;
@@ -284,8 +284,8 @@ type Place = {
   address?: string;
   lat?: number;
   lng?: number;
-  provider: "naver" | "manual";
-  source: "naverSearch" | "naverLink" | "manual";
+  provider: "google" | "naver" | "manual";
+  source: "googleSearch" | "googleMapsUrl" | "naverSearch" | "naverLink" | "manual";
   providerPlaceId?: string;
   sourceUrl?: string;
   addedBy?: string;
@@ -312,7 +312,7 @@ type ReceiptItem = {
   id: EntityId;
   kind: "item" | "discount" | "serviceFee" | "adjustment";
   name: string;
-  amount: KrwAmount;
+  amount: CurrencyAmount;
   consumers: ParticipantId[];
   allocationMethod: "equal" | "custom";
   allocatedAmounts: MoneyAllocation[];
@@ -326,8 +326,8 @@ type Expense = {
   title: string;
   category: string;
   expenseDate: LocalDate;
-  totalAmount: KrwAmount;
-  currency: "KRW";
+  totalAmount: CurrencyAmount;
+  currency: "KRW" | "JPY";
   payer: ExpensePayer;
   consumers: ParticipantId[];
   allocationMethod: AllocationMethod;

@@ -2,15 +2,16 @@ import { useAuth, useTripContext } from "../../app/providers";
 import { TripShell } from "./TripShell";
 
 export function ConnectedTripShell() {
-  const { trip, members, isLoading, error, dataSource } = useTripContext();
+  const { trip, participants, isLoading, error, dataSource } = useTripContext();
   const { user, status, linkGoogleAccount } = useAuth();
+  const activeParticipantCount = participants.filter((participant) => participant.isActive).length;
   const syncLabel = error
     ? error.message
     : isLoading
       ? "여행 데이터를 불러오는 중…"
       : dataSource === "mock"
-        ? `Mock repository · 멤버 ${members.length}명`
-        : "모든 변경사항이 저장됐어요";
+        ? `Mock · 정산 ${activeParticipantCount}명`
+        : `저장됨 · 정산 ${activeParticipantCount}명`;
   const sessionLabel = user
     ? `${user.isAnonymous ? "익명" : "Google"} · ${user.uid.slice(0, 8)}`
     : "세션 준비 중";

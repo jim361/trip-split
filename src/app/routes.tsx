@@ -4,6 +4,7 @@ import { HomePage } from "../pages/HomePage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { ItineraryPage } from "../pages/trip/ItineraryPage";
 import { MapPage } from "../pages/trip/MapPage";
+import { PreparationPage } from "../pages/trip/PreparationPage";
 import { ReceiptsPage } from "../pages/trip/ReceiptsPage";
 import { SettlementPage } from "../pages/trip/SettlementPage";
 import { ConnectedTripShell } from "../pages/trip/ConnectedTripShell";
@@ -33,6 +34,7 @@ export function AppRoutes() {
         <Route index element={<Navigate to="itinerary" replace />} />
         <Route path="itinerary" element={<ItineraryPage />} />
         <Route path="map" element={<MapPage />} />
+        <Route path="preparation" element={<PreparationPage />} />
         <Route path="settlement" element={<SettlementPage />} />
         <Route path="receipts" element={<ReceiptsPage />} />
       </Route>

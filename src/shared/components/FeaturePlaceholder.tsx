@@ -5,6 +5,7 @@ export interface FeaturePlaceholderProps {
   description: string;
   children?: ReactNode;
   statusLabel?: string;
+  eyebrow?: string;
 }
 
 /**
@@ -16,12 +17,13 @@ export function FeaturePlaceholder({
   description,
   children,
   statusLabel = "Mock repository 연결 준비됨",
+  eyebrow = "여행 워크스페이스",
 }: FeaturePlaceholderProps) {
   return (
     <article className="feature-page" aria-labelledby="feature-page-title">
       <header className="feature-page__header">
         <div>
-          <p className="eyebrow">강릉 데모 여행</p>
+          <p className="eyebrow">{eyebrow}</p>
           <h1 id="feature-page-title">{title}</h1>
           <p className="feature-page__description">{description}</p>
         </div>

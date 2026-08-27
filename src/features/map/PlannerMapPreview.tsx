@@ -8,6 +8,8 @@ export interface PlannerMapPreviewProps {
   itinerary: ItineraryItem[];
   places: Place[];
   isLoading?: boolean;
+  tripTitle?: string;
+  dayNumber?: number;
 }
 
 type PositionedPin = ReturnType<typeof createMapRenderModel>["pins"][number] & {
@@ -16,7 +18,14 @@ type PositionedPin = ReturnType<typeof createMapRenderModel>["pins"][number] & {
   y: number;
 };
 
-function positionPins(pins: ReturnType<typeof createMapRenderModel>["pins"]): PositionedPin[] {
+function clamp(value: number, min: number, max: number) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function positionPins(
+  pins: ReturnType<typeof createMapRenderModel>["pins"],
+  dayNumber: number,
+): PositionedPin[] {
   if (!pins.length) return [];
 
   const latitudes = pins.map((pin) => pin.lat);
@@ -27,28 +36,85 @@ function positionPins(pins: ReturnType<typeof createMapRenderModel>["pins"]): Po
   const maxLng = Math.max(...longitudes);
   const latRange = Math.max(maxLat - minLat, 0.01);
   const lngRange = Math.max(maxLng - minLng, 0.01);
-  const dayByDate = new Map<string, number>();
+  const positioned: PositionedPin[] = [];
 
-  return pins.map((pin) => {
-    if (!dayByDate.has(pin.date)) dayByDate.set(pin.date, dayByDate.size + 1);
+  for (const pin of pins) {
+    let x = 18 + ((pin.lng - minLng) / lngRange) * 54;
+    let y = 20 + ((maxLat - pin.lat) / latRange) * 50;
+    let attempts = 0;
+    while (
+      positioned.some((placed) => Math.hypot(placed.x - x, placed.y - y) < 12) &&
+      attempts < 5
+    ) {
+      y -= 13;
+      if (y < 18) {
+        y = 24 + attempts * 9;
+        x += 13;
+      }
+      x = clamp(x, 16, 74);
+      y = clamp(y, 18, 72);
+      attempts += 1;
+    }
 
-    return {
+    positioned.push({
       ...pin,
-      day: dayByDate.get(pin.date) ?? 1,
-      x: 12 + ((pin.lng - minLng) / lngRange) * 76,
-      y: 14 + ((maxLat - pin.lat) / latRange) * 68,
-    };
+      day: dayNumber,
+      x,
+      y,
+    });
+  }
+
+  return positioned;
+}
+
+function buildGoogleMapsUrl(
+  pins: ReturnType<typeof createMapRenderModel>["pins"],
+  places: Place[],
+) {
+  const placeById = new Map(places.map((place) => [place.id, place]));
+  const orderedPlaces = pins.flatMap((pin) => {
+    const place = placeById.get(pin.placeId);
+    return place ? [place] : [];
   });
+  const first = orderedPlaces[0];
+  const last = orderedPlaces.at(-1);
+  if (!first) return "https://www.google.com/maps";
+  if (!last || first.id === last.id) {
+    const params = new URLSearchParams({ api: "1", query: first.name });
+    return `https://www.google.com/maps/search/?${params.toString()}`;
+  }
+
+  const params = new URLSearchParams({
+    api: "1",
+    origin: first.name,
+    destination: last.name,
+    travelmode: "transit",
+  });
+  const waypoints = orderedPlaces
+    .slice(1, -1)
+    .slice(0, 3)
+    .map((place) => place.name)
+    .join("|");
+  if (waypoints) params.set("waypoints", waypoints);
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
 function MapCanvas({
   pins,
   itinerary,
   expanded,
+  tripTitle,
+  mapUrl,
+  usesGoogle,
+  dayNumber,
 }: {
   pins: PositionedPin[];
   itinerary: ItineraryItem[];
   expanded: boolean;
+  tripTitle?: string;
+  mapUrl: string;
+  usesGoogle: boolean;
+  dayNumber: number;
 }) {
   const itemById = new Map(itinerary.map((item) => [item.id, item]));
   const dates = [...new Set(pins.map((pin) => pin.date))];
@@ -57,24 +123,21 @@ function MapCanvas({
     <div
       id="planner-map-canvas"
       className={`planner-map__canvas${expanded ? " is-expanded" : ""}`}
-      aria-label={`강릉 여행 동선 지도, 일정 장소 ${pins.length}개`}
+      aria-label={`${tripTitle ?? "여행"} 동선 지도, 일정 장소 ${pins.length}개`}
     >
       <div className="planner-map__water" aria-hidden="true" />
-      <span className="planner-map__place-label planner-map__place-label--city" aria-hidden="true">
-        강릉시
-      </span>
-      <span className="planner-map__place-label planner-map__place-label--coast" aria-hidden="true">
-        동해
+      <span className="planner-map__city-label" aria-hidden="true">
+        {tripTitle?.includes("도쿄") ? "TOKYO · 東京" : "TRIP MAP"}
       </span>
 
-      {dates.map((date, index) => {
+      {dates.map((date) => {
         const routePins = pins.filter((pin) => pin.date === date);
         if (routePins.length < 2) return null;
 
         return (
           <svg
             key={date}
-            className={`planner-map__route planner-map__route--day-${index + 1}`}
+            className={`planner-map__route planner-map__route--day-${dayNumber}`}
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
             aria-hidden="true"
@@ -107,9 +170,16 @@ function MapCanvas({
       ) : null}
 
       <div className="planner-map__sdk-note">
-        <strong>Mock 지도</strong>
-        <span>실제 지도 SDK 연결 전</span>
+        <strong>{usesGoogle ? "Google Maps Mock" : "Mock 지도"}</strong>
+        <span>실제 지도 API 연결 전</span>
       </div>
+      <div className="planner-map__zoom" aria-hidden="true">
+        <span>＋</span>
+        <span>−</span>
+      </div>
+      <a className="planner-map__open-link" href={mapUrl} target="_blank" rel="noreferrer">
+        Google Maps에서 열기 ↗
+      </a>
     </div>
   );
 }
@@ -118,12 +188,20 @@ function MapCanvas({
  * 일정 화면에서 사용하는 provider-neutral 지도 미리보기다. `map=expanded`
  * query를 사용해 확대 상태 자체도 팀원에게 링크로 공유할 수 있다.
  */
-export function PlannerMapPreview({ itinerary, places, isLoading }: PlannerMapPreviewProps) {
+export function PlannerMapPreview({
+  itinerary,
+  places,
+  isLoading,
+  tripTitle,
+  dayNumber = 1,
+}: PlannerMapPreviewProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const expanded = searchParams.get("map") === "expanded";
   const model = useMemo(() => createMapRenderModel(places, itinerary), [itinerary, places]);
-  const pins = useMemo(() => positionPins(model.pins), [model.pins]);
+  const pins = useMemo(() => positionPins(model.pins, dayNumber), [dayNumber, model.pins]);
   const dates = [...new Set(pins.map((pin) => pin.date))];
+  const mapUrl = useMemo(() => buildGoogleMapsUrl(model.pins, places), [model.pins, places]);
+  const usesGoogle = places.some((place) => place.provider === "google");
 
   const toggleExpanded = () => {
     const next = new URLSearchParams(searchParams);
@@ -136,9 +214,9 @@ export function PlannerMapPreview({ itinerary, places, isLoading }: PlannerMapPr
     <section className="planner-map" aria-labelledby="planner-map-title">
       <div className="planner-map__heading">
         <div>
-          <p className="planner-map__kicker">일정과 함께 보는 지도</p>
-          <h2 id="planner-map-title">여행 동선</h2>
-          <p>번호 핀과 직선 동선으로 날짜별 이동 순서를 빠르게 확인해요.</p>
+          <p className="planner-map__kicker">Google Maps 연결 미리보기</p>
+          <h2 id="planner-map-title">오늘의 이동 동선</h2>
+          <p>번호 핀으로 순서를 보고, 실제 길찾기는 Google Maps에서 바로 열어요.</p>
         </div>
 
         <button
@@ -161,14 +239,22 @@ export function PlannerMapPreview({ itinerary, places, isLoading }: PlannerMapPr
 
       <div className="planner-map__meta" aria-live="polite">
         <span>{isLoading ? "지도 데이터 불러오는 중…" : `핀 ${pins.length}개`}</span>
-        {dates.map((date, index) => (
-          <span key={date} className={`planner-map__legend planner-map__legend--day-${index + 1}`}>
-            {index + 1}일차
+        {dates.map((date) => (
+          <span key={date} className={`planner-map__legend planner-map__legend--day-${dayNumber}`}>
+            {dayNumber}일차
           </span>
         ))}
       </div>
 
-      <MapCanvas pins={pins} itinerary={itinerary} expanded={expanded} />
+      <MapCanvas
+        pins={pins}
+        itinerary={itinerary}
+        expanded={expanded}
+        tripTitle={tripTitle}
+        mapUrl={mapUrl}
+        usesGoogle={usesGoogle}
+        dayNumber={dayNumber}
+      />
     </section>
   );
 }

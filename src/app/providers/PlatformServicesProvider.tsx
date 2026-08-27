@@ -12,7 +12,7 @@ import {
 import { createInMemoryTripRepositories } from "../../services/mock";
 import { MockAuthService } from "../../services/mock/mockAuthService";
 import type { TripRepositories } from "../../services/repositories";
-import { gangneungTripRepositorySeed } from "../../test/fixtures/gangneungTrip";
+import { mockTripRepositorySeed } from "../../test/fixtures/mockTripSeed";
 
 export type DataSource = "mock" | "firebase";
 
@@ -40,13 +40,15 @@ function createDefaultServices(): PlatformServices {
     };
   }
 
+  const repositories = createInMemoryTripRepositories(mockTripRepositorySeed, {
+    getActorUid: () => "user-owner",
+  });
+
   return {
     dataSource,
     auth: new MockAuthService(),
-    repositories: createInMemoryTripRepositories(gangneungTripRepositorySeed, {
-      getActorUid: () => "user-owner",
-    }),
-    tripSessions: new MockTripSessionService(),
+    repositories,
+    tripSessions: new MockTripSessionService(repositories),
   };
 }
 

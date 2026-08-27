@@ -1,6 +1,7 @@
 import { FeaturePlaceholder } from "../../shared/components/FeaturePlaceholder";
 import { PlaceholderPanel } from "../../shared/components/PlaceholderPanel";
 import { useTripContext } from "../../app/providers";
+import type { CurrencyCode } from "../../shared/types";
 
 const receiptSteps = [
   "이미지 선택",
@@ -10,9 +11,23 @@ const receiptSteps = [
   "지출 저장",
 ] as const;
 
+function formatMoney(amount: number, currency: CurrencyCode) {
+  return new Intl.NumberFormat(currency === "JPY" ? "ja-JP" : "ko-KR", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function ReceiptsPage() {
   const { expenses, isLoading, error, dataSource } = useTripContext();
-  const receiptItems = expenses.flatMap((expense) => expense.receiptItems);
+  const receiptItems = expenses.flatMap((expense) =>
+    expense.receiptItems.map((item) => ({
+      item,
+      currency: expense.currency,
+      key: `${expense.id}:${item.id}`,
+    })),
+  );
 
   return (
     <FeaturePlaceholder
@@ -51,9 +66,9 @@ export function ReceiptsPage() {
           description="이름·금액·소비자와 배분 방식을 수정하는 영역"
         >
           <ul className="placeholder-list" aria-label="Mock 영수증 항목">
-            {receiptItems.map((item) => (
-              <li key={item.id}>
-                {item.name} · {item.amount.toLocaleString("ko-KR")}원
+            {receiptItems.map(({ item, currency, key }) => (
+              <li key={key}>
+                {item.name} · {formatMoney(item.amount, currency)}
               </li>
             ))}
           </ul>

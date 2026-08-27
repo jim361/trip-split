@@ -2,6 +2,7 @@ import type { EntityId, EpochMillis, ParticipantId } from "../contracts";
 
 export type LocalDate = string;
 export type KrwAmount = number;
+export type CurrencyCode = "KRW" | "JPY";
 export type AllocationMethod = "equal" | "itemized" | "custom";
 
 export type MoneyAllocation = {
@@ -18,7 +19,7 @@ export type Trip = {
   id: EntityId;
   title: string;
   regionType: "domestic" | "international";
-  currency: "KRW";
+  currency: CurrencyCode;
   startDate: LocalDate;
   endDate: LocalDate;
   ownerUid: string;
@@ -65,8 +66,8 @@ export type Place = {
   address?: string;
   lat?: number;
   lng?: number;
-  provider: "naver" | "manual";
-  source: "naverSearch" | "naverLink" | "manual";
+  provider: "google" | "naver" | "manual";
+  source: "googleSearch" | "googleMapsUrl" | "naverSearch" | "naverLink" | "manual";
   providerPlaceId?: string;
   sourceUrl?: string;
   addedBy?: string;
@@ -108,7 +109,7 @@ export type Expense = {
   category: string;
   expenseDate: LocalDate;
   totalAmount: KrwAmount;
-  currency: "KRW";
+  currency: CurrencyCode;
   payer: ExpensePayer;
   consumers: ParticipantId[];
   allocationMethod: AllocationMethod;

@@ -50,6 +50,32 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
   const startDate = requireLocalDate(input, "startDate");
   const endDate = requireLocalDate(input, "endDate");
   const requestedDisplayName = optionalString(input, "displayName", 40);
+  const regionType = input.regionType ?? "domestic";
+  const currency = input.currency ?? (regionType === "international" ? "JPY" : "KRW");
+  const participantCount = input.participantCount ?? 1;
+
+  if (regionType !== "domestic" && regionType !== "international") {
+    throw new HttpsError("invalid-argument", "지원하지 않는 여행 지역 유형입니다.", {
+      field: "regionType",
+    });
+  }
+
+  if (currency !== "KRW" && currency !== "JPY") {
+    throw new HttpsError("invalid-argument", "지원하지 않는 통화입니다.", {
+      field: "currency",
+    });
+  }
+
+  if (
+    typeof participantCount !== "number" ||
+    !Number.isInteger(participantCount) ||
+    participantCount < 1 ||
+    participantCount > 20
+  ) {
+    throw new HttpsError("invalid-argument", "정산 인원은 1명부터 20명까지 설정할 수 있습니다.", {
+      field: "participantCount",
+    });
+  }
 
   if (startDate > endDate) {
     throw new HttpsError("invalid-argument", "종료일은 시작일보다 빠를 수 없습니다.", {
@@ -62,6 +88,9 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
   const memberRef = tripRef.collection("members").doc(auth.uid);
   const userRef = db.collection("users").doc(auth.uid);
   const displayName = getDisplayName(auth.token, auth.uid, requestedDisplayName);
+  const participantRefs = Array.from({ length: participantCount }, () =>
+    tripRef.collection("participants").doc(),
+  );
 
   for (let attempt = 0; attempt < MAX_CODE_GENERATION_ATTEMPTS; attempt += 1) {
     const code = generateShareCode();
@@ -81,8 +110,8 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
         const timestamp = FieldValue.serverTimestamp();
         transaction.create(tripRef, {
           title,
-          regionType: "domestic",
-          currency: "KRW",
+          regionType,
+          currency,
           startDate,
           endDate,
           ownerUid: auth.uid,
@@ -103,6 +132,16 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
           createdAt: timestamp,
           isActive: true,
           useCount: 0,
+        });
+
+        participantRefs.forEach((participantRef, index) => {
+          transaction.create(participantRef, {
+            name: index === 0 ? displayName : `동행 ${index + 1}`,
+            ...(index === 0 ? { linkedUid: auth.uid } : {}),
+            isActive: true,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          });
         });
 
         if (userSnapshot.exists) {

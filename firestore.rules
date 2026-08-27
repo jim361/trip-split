@@ -79,7 +79,7 @@ service cloud.firestore {
           && data.title.size() > 0
           && data.title.size() <= 80
           && data.regionType in ['domestic', 'international']
-          && data.currency == 'KRW'
+          && data.currency in ['KRW', 'JPY']
           && validDate(data.startDate)
           && validDate(data.endDate)
           && data.ownerUid is string
@@ -173,8 +173,10 @@ service cloud.firestore {
             && optionalString(data, 'address')
             && optionalNumber(data, 'lat')
             && optionalNumber(data, 'lng')
-            && data.provider in ['naver', 'manual']
-            && data.source in ['naverSearch', 'naverLink', 'manual']
+            && data.provider in ['google', 'naver', 'manual']
+            && data.source in [
+              'googleSearch', 'googleMapsUrl', 'naverSearch', 'naverLink', 'manual'
+            ]
             && optionalString(data, 'providerPlaceId')
             && optionalString(data, 'sourceUrl')
             && data.addedBy is string
@@ -248,7 +250,7 @@ service cloud.firestore {
             && validDate(data.expenseDate)
             && data.totalAmount is int
             && data.totalAmount >= 0
-            && data.currency == 'KRW'
+            && data.currency in ['KRW', 'JPY']
             && data.payer is map
             && data.payer.keys().hasAll(['participantId', 'amount'])
             && data.payer.keys().hasOnly(['participantId', 'amount'])

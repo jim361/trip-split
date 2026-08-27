@@ -228,6 +228,24 @@ a {
   gap: 10px;
 }
 
+.trip-template-note {
+  width: fit-content;
+  margin: -4px 0 2px;
+  border-radius: 999px;
+  padding: 6px 9px;
+  color: #185abc;
+  background: #e8f0fe;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.field-hint {
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
 .form-error {
   margin: 16px 0 0;
   border-radius: 8px;
@@ -942,6 +960,11 @@ a {
   text-align: right;
 }
 
+.amount-placeholder__currency-totals {
+  display: grid;
+  gap: 2px;
+}
+
 .receipt-steps {
   display: grid;
   grid-template-columns: repeat(5, minmax(max-content, 1fr));
@@ -977,6 +1000,366 @@ a {
   background: var(--color-primary-soft);
   font-size: 0.7rem;
   font-weight: 850;
+}
+
+.day-switcher {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0 0 12px;
+  padding: 0 0 5px;
+  scrollbar-width: none;
+}
+
+.day-switcher::-webkit-scrollbar {
+  display: none;
+}
+
+.day-switcher__button {
+  display: grid;
+  min-width: 82px;
+  min-height: 54px;
+  flex: 0 0 auto;
+  gap: 2px;
+  border: 1px solid var(--color-line);
+  border-radius: 11px;
+  padding: 8px 11px;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+}
+
+.day-switcher__button strong {
+  color: var(--color-text);
+  font-size: 0.78rem;
+}
+
+.day-switcher__button span {
+  font-size: 0.68rem;
+}
+
+.day-switcher__button.is-selected {
+  border-color: #1a73e8;
+  color: #185abc;
+  background: #e8f0fe;
+  box-shadow: inset 0 0 0 1px #1a73e8;
+}
+
+.day-switcher__button.is-selected strong {
+  color: #185abc;
+}
+
+.planner-map__canvas {
+  border-color: #d4d9df;
+  background-color: #e8eaed;
+  background-image:
+    linear-gradient(121deg, transparent 41%, rgb(255 255 255 / 92%) 42% 46%, transparent 47%),
+    linear-gradient(28deg, transparent 49%, rgb(255 255 255 / 82%) 50% 53%, transparent 54%),
+    repeating-linear-gradient(88deg, rgb(95 99 104 / 7%) 0 1px, transparent 1px 38px),
+    repeating-linear-gradient(0deg, rgb(95 99 104 / 7%) 0 1px, transparent 1px 38px);
+}
+
+.planner-map__route polyline,
+.planner-map__route--day-2 polyline {
+  stroke: #1a73e8;
+  stroke-dasharray: none;
+  stroke-width: 4;
+}
+
+.planner-map__pin,
+.planner-map__pin--day-2 {
+  background: #1a73e8;
+}
+
+.planner-map__city-label {
+  position: absolute;
+  z-index: 2;
+  top: 48%;
+  left: 44%;
+  color: rgb(60 64 67 / 48%);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+.planner-map__zoom {
+  position: absolute;
+  z-index: 6;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 18%);
+}
+
+.planner-map__zoom span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: #3c4043;
+  font-size: 1.1rem;
+}
+
+.planner-map__zoom span + span {
+  border-top: 1px solid #e0e0e0;
+}
+
+.planner-map__open-link {
+  position: absolute;
+  z-index: 7;
+  right: 10px;
+  bottom: 10px;
+  min-height: 36px;
+  border-radius: 8px;
+  padding: 10px 11px;
+  color: #185abc;
+  background: rgb(255 255 255 / 95%);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  font-size: 0.7rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.trip-timeline {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trip-timeline li {
+  display: grid;
+  min-height: 88px;
+  grid-template-columns: 48px 30px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.trip-timeline time {
+  padding-top: 3px;
+  color: var(--color-text);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 850;
+}
+
+.trip-timeline__marker {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #1a73e8;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 18%);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.trip-timeline li:not(:last-child) .trip-timeline__marker::after {
+  position: absolute;
+  z-index: -1;
+  top: 23px;
+  left: 50%;
+  width: 3px;
+  height: 65px;
+  background: #c6dafc;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.trip-timeline__content {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  border-bottom: 1px solid #eeeeee;
+  padding: 0 0 16px;
+}
+
+.trip-timeline__content strong {
+  font-size: 0.9rem;
+}
+
+.trip-timeline__content span,
+.trip-timeline__content p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.trip-timeline__route {
+  width: fit-content;
+  margin-bottom: 3px;
+  color: #185abc;
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.preparation-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.place-candidate-list,
+.preparation-list,
+.checklist,
+.participant-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.place-candidate-list li,
+.preparation-list li {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--color-background);
+}
+
+.place-candidate-list li div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.place-candidate-list span {
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.place-candidate-list a {
+  flex: 0 0 auto;
+  color: #185abc;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.preparation-list li {
+  min-height: 46px;
+  font-size: 0.8rem;
+}
+
+.preparation-list strong {
+  color: #006846;
+  font-size: 0.72rem;
+}
+
+.checklist li {
+  border-bottom: 1px solid #eeeeee;
+  padding: 7px 0;
+}
+
+.checklist label {
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+
+.checklist input {
+  width: 20px;
+  height: 20px;
+  accent-color: #1a73e8;
+}
+
+.participant-list li {
+  display: grid;
+  min-height: 48px;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: var(--color-background);
+}
+
+.participant-list__color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.participant-list li button,
+.inactive-participants button {
+  min-height: 34px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.participant-form {
+  display: grid;
+  gap: 7px;
+  margin-top: 14px;
+}
+
+.participant-form > label {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
+.participant-form > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.participant-form input {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  padding: 9px 11px;
+}
+
+.inactive-participants {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.inactive-participants p {
+  width: 100%;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.receipt-entry-link {
+  width: 100%;
+  margin-top: 12px;
 }
 
 @media (min-width: 640px) {
@@ -1091,6 +1474,11 @@ a {
     min-height: 560px;
   }
 
+  .preparation-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+
   .map-placeholder {
     grid-template-columns: minmax(320px, 390px) minmax(0, 1fr);
   }
@@ -1102,17 +1490,17 @@ a {
   .settlement-placeholder {
     grid-template-columns: minmax(440px, 1.5fr) minmax(280px, 0.8fr);
     grid-template-areas:
-      "expenses personal"
-      "expenses transfers";
+      "participants summary"
+      "expenses expenses";
     align-items: start;
   }
 
-  .settlement-placeholder__personal {
-    grid-area: personal;
+  .settlement-placeholder__participants {
+    grid-area: participants;
   }
 
-  .settlement-placeholder__transfers {
-    grid-area: transfers;
+  .settlement-placeholder__summary {
+    grid-area: summary;
   }
 
   .settlement-placeholder__expenses {

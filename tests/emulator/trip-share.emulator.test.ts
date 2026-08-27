@@ -90,14 +90,24 @@ describe("trip share callable functions", () => {
     const guest = createClient("guest");
     const ownerCredential = await signInAnonymously(owner.auth);
     const createTrip = httpsCallable<
-      { title: string; startDate: string; endDate: string },
+      {
+        title: string;
+        startDate: string;
+        endDate: string;
+        regionType: "international";
+        currency: "JPY";
+        participantCount: number;
+      },
       CreateTripResult
     >(owner.functions, "createTrip");
 
     const created = await createTrip({
-      title: "강릉 여름 여행",
+      title: "도쿄 가을 여행",
       startDate: "2026-08-01",
       endDate: "2026-08-03",
+      regionType: "international",
+      currency: "JPY",
+      participantCount: 3,
     });
 
     await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
@@ -120,7 +130,7 @@ describe("trip share callable functions", () => {
     await joinTrip({ shareCode: created.data.shareCode });
 
     expect(joined.data.tripId).toBe(created.data.tripId);
-    expect(joined.data.title).toBe("강릉 여름 여행");
+    expect(joined.data.title).toBe("도쿄 가을 여행");
 
     const ownerMember = await getDoc(
       doc(owner.firestore, "trips", created.data.tripId, "members", ownerCredential.user.uid),
@@ -135,8 +145,28 @@ describe("trip share callable functions", () => {
     await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
       const firestore = context.firestore();
       const members = await getDocs(collection(firestore, "trips", created.data.tripId, "members"));
+      const participants = await getDocs(
+        collection(firestore, "trips", created.data.tripId, "participants"),
+      );
+      const trip = await getDoc(doc(firestore, "trips", created.data.tripId));
       const code = await getDoc(doc(firestore, "shareCodes", created.data.shareCode));
+      const participantData = participants.docs.map((snapshot) => snapshot.data());
       expect(members.size).toBe(2);
+      expect(participants.size).toBe(3);
+      expect(trip.data()).toMatchObject({ regionType: "international", currency: "JPY" });
+      expect(participantData).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            linkedUid: ownerCredential.user.uid,
+            isActive: true,
+          }),
+        ]),
+      );
+      expect(participantData.filter((participant) => participant.isActive)).toHaveLength(3);
+      expect(participantData.filter((participant) => participant.linkedUid)).toHaveLength(1);
+      expect(participantData.map((participant) => participant.name)).toEqual(
+        expect.arrayContaining(["동행 2", "동행 3"]),
+      );
       expect(code.data()?.useCount).toBe(1);
     });
   });
@@ -217,10 +247,10 @@ describe("members based firestore rules", () => {
       const firestore = context.firestore();
       const timestamp = new Date("2026-07-01T00:00:00.000Z");
       await setDoc(doc(firestore, "trips", tripId), {
-        title: "규칙 테스트 여행",
+        title: "규칙 테스트 해외여행",
         ownerUid: memberUid,
-        regionType: "domestic",
-        currency: "KRW",
+        regionType: "international",
+        currency: "JPY",
         shareCode: "RULES123",
         startDate: "2026-07-01",
         endDate: "2026-07-02",
@@ -247,12 +277,12 @@ describe("members based firestore rules", () => {
     await assertSucceeds(getDoc(doc(memberDb, "trips", tripId)));
     await assertSucceeds(
       setDoc(doc(memberDb, "trips", tripId, "places", "place-1"), {
-        name: "안목해변",
-        address: "강원 강릉시 창해로",
-        lat: 37.77,
-        lng: 128.94,
-        provider: "naver",
-        source: "naverSearch",
+        name: "센소지",
+        address: "2 Chome-3-1 Asakusa, Tokyo",
+        lat: 35.7148,
+        lng: 139.7967,
+        provider: "google",
+        source: "googleSearch",
         addedBy: memberUid,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -276,7 +306,7 @@ describe("members based firestore rules", () => {
         category: "식비",
         expenseDate: "2026-07-01",
         totalAmount: 12_000,
-        currency: "KRW",
+        currency: "JPY",
         payer: { participantId: "participant-1", amount: 12_000 },
         consumers: ["participant-1"],
         allocationMethod: "equal",
@@ -295,7 +325,7 @@ describe("members based firestore rules", () => {
         category: "식비",
         expenseDate: "2026-07-01",
         totalAmount: 12_000,
-        currency: "KRW",
+        currency: "JPY",
         payer: { participantId: "participant-1", amount: 12_000 },
         consumers: ["participant-1"],
         allocationMethod: "equal",

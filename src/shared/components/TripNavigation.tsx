@@ -1,5 +1,5 @@
 import type { SVGProps } from "react";
-import { NavLink } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 type NavigationIconProps = SVGProps<SVGSVGElement>;
 
@@ -22,11 +22,12 @@ function WalletIcon(props: NavigationIconProps) {
   );
 }
 
-function ReceiptIcon(props: NavigationIconProps) {
+function PreparationIcon(props: NavigationIconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" {...props}>
-      <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" />
-      <path d="M9 8h6M9 12h6M9 16h4" />
+      <path d="M8 7V5a4 4 0 0 1 8 0v2" />
+      <path d="M5 7h14l1 14H4z" />
+      <path d="m9 14 2 2 4-5" />
     </svg>
   );
 }
@@ -34,14 +35,14 @@ function ReceiptIcon(props: NavigationIconProps) {
 const navigationItems = [
   { key: "itinerary", label: "일정·지도", icon: CalendarIcon },
   {
-    key: "settlement",
-    label: "정산",
-    icon: WalletIcon,
+    key: "preparation",
+    label: "준비",
+    icon: PreparationIcon,
   },
   {
-    key: "receipts",
-    label: "영수증",
-    icon: ReceiptIcon,
+    key: "settlement",
+    label: "비용",
+    icon: WalletIcon,
   },
 ] as const;
 
@@ -50,21 +51,26 @@ export interface TripNavigationProps {
 }
 
 export function TripNavigation({ tripId }: TripNavigationProps) {
+  const { pathname } = useLocation();
+
   return (
     <nav className="trip-navigation" aria-label="여행 주요 메뉴">
       <ul className="trip-navigation__list">
         {navigationItems.map((item) => {
           const Icon = item.icon;
+          const isCostChild = item.key === "settlement" && pathname.endsWith("/receipts");
+          const isActive = pathname.endsWith(`/${item.key}`) || isCostChild;
 
           return (
             <li key={item.key}>
-              <NavLink
-                className={({ isActive }) => `trip-navigation__link${isActive ? " is-active" : ""}`}
+              <Link
+                className={`trip-navigation__link${isActive ? " is-active" : ""}`}
                 to={`/trips/${encodeURIComponent(tripId)}/${item.key}`}
+                aria-current={isActive ? "page" : undefined}
               >
                 <Icon className="trip-navigation__icon" aria-hidden="true" />
                 <span>{item.label}</span>
-              </NavLink>
+              </Link>
             </li>
           );
         })}

@@ -1,0 +1,316 @@
+import type { TripRepositorySeed } from "../../services/repositories";
+import type {
+  ItineraryItem,
+  Participant,
+  Place,
+  ShareCode,
+  Trip,
+  TripMember,
+} from "../../shared/types";
+
+export const TOKYO_TRIP_ID = "tokyo-2026-11";
+
+export const tokyoFixtureIds = {
+  ownerUid: "user-owner",
+  participants: {
+    me: "tokyo-participant-me",
+    companion2: "tokyo-participant-2",
+    companion3: "tokyo-participant-3",
+  },
+  places: {
+    narita: "tokyo-place-narita",
+    ueno: "tokyo-place-ueno",
+    hotel: "tokyo-place-hotel",
+    asakusa: "tokyo-place-asakusa",
+    skytree: "tokyo-place-skytree",
+    marugame: "tokyo-place-marugame",
+    nikutotamago: "tokyo-place-nikutotamago",
+    painMaison: "tokyo-place-pain-maison",
+  },
+  itinerary: {
+    flight: "tokyo-itinerary-flight",
+    ueno: "tokyo-itinerary-ueno",
+    checkIn: "tokyo-itinerary-check-in",
+    dinner: "tokyo-itinerary-dinner",
+    asakusa: "tokyo-itinerary-asakusa",
+    skytree: "tokyo-itinerary-skytree",
+  },
+  shareCode: "TOKYO26",
+} as const;
+
+const createdAt = Date.UTC(2026, 7, 27, 0, 0, 0);
+const updatedAt = Date.UTC(2026, 7, 27, 9, 0, 0);
+
+const trip: Trip = {
+  id: TOKYO_TRIP_ID,
+  title: "2026년 11월 도쿄 여행",
+  regionType: "international",
+  currency: "JPY",
+  startDate: "2026-11-25",
+  endDate: "2026-12-01",
+  ownerUid: tokyoFixtureIds.ownerUid,
+  shareCode: tokyoFixtureIds.shareCode,
+  createdAt,
+  updatedAt,
+};
+
+const members: TripMember[] = [
+  {
+    uid: tokyoFixtureIds.ownerUid,
+    tripId: TOKYO_TRIP_ID,
+    displayName: "나",
+    role: "editor",
+    joinedAt: createdAt,
+    lastActiveAt: updatedAt,
+  },
+];
+
+const participantColors = ["#1A73E8", "#E56B6F", "#2A9D8F"] as const;
+const participants: Participant[] = [
+  {
+    id: tokyoFixtureIds.participants.me,
+    tripId: TOKYO_TRIP_ID,
+    name: "나",
+    color: participantColors[0],
+    linkedUid: tokyoFixtureIds.ownerUid,
+    isActive: true,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.participants.companion2,
+    tripId: TOKYO_TRIP_ID,
+    name: "동행 2",
+    color: participantColors[1],
+    isActive: true,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.participants.companion3,
+    tripId: TOKYO_TRIP_ID,
+    name: "동행 3",
+    color: participantColors[2],
+    isActive: true,
+    createdAt,
+    updatedAt,
+  },
+];
+
+function googleMapsSearchUrl(query: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+}
+
+const places: Place[] = [
+  {
+    id: tokyoFixtureIds.places.narita,
+    tripId: TOKYO_TRIP_ID,
+    name: "나리타 국제공항",
+    address: "Narita, Chiba, Japan",
+    lat: 35.772,
+    lng: 140.3929,
+    provider: "google",
+    source: "googleSearch",
+    sourceUrl: googleMapsSearchUrl("Narita International Airport"),
+    addedBy: tokyoFixtureIds.ownerUid,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.places.ueno,
+    tripId: TOKYO_TRIP_ID,
+    name: "우에노역",
+    address: "Ueno, Taito City, Tokyo",
+    lat: 35.7138,
+    lng: 139.7773,
+    provider: "google",
+    source: "googleMapsUrl",
+    sourceUrl: googleMapsSearchUrl("Ueno Station Tokyo"),
+    addedBy: tokyoFixtureIds.ownerUid,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.places.hotel,
+    tripId: TOKYO_TRIP_ID,
+    name: "우에노 숙소",
+    address: "Taito City, Tokyo",
+    lat: 35.7108,
+    lng: 139.7752,
+    provider: "manual",
+    source: "manual",
+    memo: "17시 체크인",
+    addedBy: tokyoFixtureIds.ownerUid,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.places.asakusa,
+    tripId: TOKYO_TRIP_ID,
+    name: "센소지",
+    address: "2 Chome-3-1 Asakusa, Taito City, Tokyo",
+    lat: 35.7148,
+    lng: 139.7967,
+    provider: "google",
+    source: "googleSearch",
+    sourceUrl: googleMapsSearchUrl("Sensoji Tokyo"),
+    addedBy: tokyoFixtureIds.ownerUid,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.places.skytree,
+    tripId: TOKYO_TRIP_ID,
+    name: "도쿄 스카이트리",
+    address: "1 Chome-1-2 Oshiage, Sumida City, Tokyo",
+    lat: 35.7101,
+    lng: 139.8107,
+    provider: "google",
+    source: "googleSearch",
+    sourceUrl: googleMapsSearchUrl("Tokyo Skytree"),
+    addedBy: tokyoFixtureIds.ownerUid,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.places.marugame,
+    tripId: TOKYO_TRIP_ID,
+    name: "마루가메 세이멘",
+    address: "Ueno, Taito City, Tokyo",
+    lat: 35.7089,
+    lng: 139.7736,
+    provider: "google",
+    source: "googleSearch",
+    sourceUrl: googleMapsSearchUrl("Marugame Seimen Ueno Tokyo"),
+    addedBy: tokyoFixtureIds.ownerUid,
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.places.nikutotamago,
+    tripId: TOKYO_TRIP_ID,
+    name: "NikutoTamago",
+    provider: "google",
+    source: "googleSearch",
+    sourceUrl: googleMapsSearchUrl("NikutoTamago Tokyo"),
+    addedBy: tokyoFixtureIds.ownerUid,
+    memo: "가보고 싶은 가게",
+    createdAt,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.places.painMaison,
+    tripId: TOKYO_TRIP_ID,
+    name: "パン・メゾン",
+    provider: "google",
+    source: "googleSearch",
+    sourceUrl: googleMapsSearchUrl("パン・メゾン Tokyo"),
+    addedBy: tokyoFixtureIds.ownerUid,
+    memo: "가보고 싶은 가게",
+    createdAt,
+    updatedAt,
+  },
+];
+
+const itinerary: ItineraryItem[] = [
+  {
+    id: tokyoFixtureIds.itinerary.flight,
+    tripId: TOKYO_TRIP_ID,
+    date: "2026-11-25",
+    startTime: "11:20",
+    endTime: "13:40",
+    placeId: tokyoFixtureIds.places.narita,
+    title: "ICN → NRT",
+    memo: "도착 후 입국 심사와 교통카드 준비",
+    order: 0,
+    updatedBy: tokyoFixtureIds.ownerUid,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.itinerary.ueno,
+    tripId: TOKYO_TRIP_ID,
+    date: "2026-11-25",
+    startTime: "15:10",
+    placeId: tokyoFixtureIds.places.ueno,
+    title: "스카이라이너로 우에노 이동",
+    order: 1,
+    updatedBy: tokyoFixtureIds.ownerUid,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.itinerary.checkIn,
+    tripId: TOKYO_TRIP_ID,
+    date: "2026-11-25",
+    startTime: "17:00",
+    placeId: tokyoFixtureIds.places.hotel,
+    title: "숙소 체크인",
+    order: 2,
+    updatedBy: tokyoFixtureIds.ownerUid,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.itinerary.dinner,
+    tripId: TOKYO_TRIP_ID,
+    date: "2026-11-25",
+    startTime: "19:00",
+    placeId: tokyoFixtureIds.places.marugame,
+    title: "우에노 저녁",
+    order: 3,
+    updatedBy: tokyoFixtureIds.ownerUid,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.itinerary.asakusa,
+    tripId: TOKYO_TRIP_ID,
+    date: "2026-11-26",
+    startTime: "09:30",
+    placeId: tokyoFixtureIds.places.asakusa,
+    title: "아사쿠사 산책",
+    order: 0,
+    updatedBy: tokyoFixtureIds.ownerUid,
+    updatedAt,
+  },
+  {
+    id: tokyoFixtureIds.itinerary.skytree,
+    tripId: TOKYO_TRIP_ID,
+    date: "2026-11-26",
+    startTime: "13:30",
+    placeId: tokyoFixtureIds.places.skytree,
+    title: "도쿄 스카이트리",
+    order: 1,
+    updatedBy: tokyoFixtureIds.ownerUid,
+    updatedAt,
+  },
+];
+
+const shareCodes: ShareCode[] = [
+  {
+    code: tokyoFixtureIds.shareCode,
+    tripId: TOKYO_TRIP_ID,
+    createdBy: tokyoFixtureIds.ownerUid,
+    createdAt,
+    isActive: true,
+    useCount: 0,
+  },
+];
+
+export const tokyoTripFixture = {
+  trip,
+  members,
+  participants,
+  places,
+  itinerary,
+  expenses: [],
+  shareCodes,
+};
+
+export const tokyoTripRepositorySeed: TripRepositorySeed = {
+  userProfiles: [],
+  trips: [trip],
+  members,
+  participants,
+  places,
+  itinerary,
+  expenses: [],
+  shareCodes,
+};

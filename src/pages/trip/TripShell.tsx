@@ -11,7 +11,9 @@ export interface TripShellProps {
 }
 
 function getFallbackTitle(tripId: string) {
-  return tripId === "gangneung" ? "강릉 여행" : "여행";
+  if (tripId === "gangneung") return "강릉 여행";
+  if (tripId === "tokyo-2026-11") return "2026년 11월 도쿄 여행";
+  return "여행";
 }
 
 /**
