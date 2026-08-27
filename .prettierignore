@@ -1,7 +1,7 @@
 node_modules
 dist
 coverage
-functions/lib
+backend/lib
 .firebase
 firebase-debug.log
 firestore-debug.log

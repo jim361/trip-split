@@ -6,12 +6,20 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["dist/**", "coverage/**", "functions/lib/**", "node_modules/**"],
+    ignores: [
+      "dist/**",
+      "frontend/dist/**",
+      "coverage/**",
+      "frontend/coverage/**",
+      "backend/coverage/**",
+      "backend/lib/**",
+      "node_modules/**",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["frontend/src/**/*.{ts,tsx}"],
     languageOptions: {
       globals: {
         ...globals.browser,
@@ -28,7 +36,12 @@ export default tseslint.config(
     },
   },
   {
-    files: ["*.config.{js,ts}", "scripts/**/*.mjs", "functions/**/*.ts", "tests/**/*.ts"],
+    files: [
+      "*.config.{js,ts}",
+      "frontend/*.config.{js,ts}",
+      "frontend/scripts/**/*.mjs",
+      "backend/**/*.ts",
+    ],
     languageOptions: {
       globals: {
         ...globals.node,
