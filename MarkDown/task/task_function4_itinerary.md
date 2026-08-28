@@ -12,10 +12,10 @@
 
 ## 작업
 
-- [ ] `ItineraryItem` 타입 정의
-- [ ] Firestore itinerary 구조 설계
+- [x] `ItineraryItem` 타입 정의
+- [x] Firestore itinerary 구조 설계
 - [ ] `Reservation`, `ChecklistItem` 최소 계약과 Firestore 경로 설계
-- [ ] ItineraryItem에 updatedBy, updatedAt 반영
+- [x] ItineraryItem에 updatedBy, updatedAt 반영
 - [ ] 날짜별 탭 또는 섹션 구현
 - [ ] `/trips/:tripId/itinerary` 상단의 지도 미리보기와 아래 타임라인을 하나의 스크롤 흐름으로 구성
 - [ ] 시간대별 일정 항목 추가 구현
