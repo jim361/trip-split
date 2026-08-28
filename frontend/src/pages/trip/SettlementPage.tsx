@@ -17,6 +17,7 @@ function formatMoney(amount: number, currency: CurrencyCode) {
   }).format(amount);
 }
 
+/** [TASK-06 · 정산] 참여자와 지출 원장을 다루는 화면이며 계산 엔진은 별도 구현합니다. */
 export function SettlementPage() {
   const { repositories } = usePlatformServices();
   const { tripId, trip, expenses, participants, isLoading, error, dataSource } = useTripContext();

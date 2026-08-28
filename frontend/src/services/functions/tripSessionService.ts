@@ -27,6 +27,7 @@ export type JoinTripResult = CreateTripResult & {
   title: string;
 };
 
+/** [TASK-02 · 여행 생성·공유] mock과 Firebase Callable이 함께 지키는 프론트엔드 계약입니다. */
 export interface TripSessionService {
   createTrip(input: CreateTripCommand): Promise<CreateTripResult>;
   createShareCode(tripId: string): Promise<CreateTripResult>;

@@ -94,9 +94,11 @@ describe("trip share callable functions", () => {
         title: string;
         startDate: string;
         endDate: string;
-        regionType: "international";
-        currency: "JPY";
-        participantCount: number;
+        countryCode: string;
+        timeZone: string;
+        mapProvider: "google";
+        defaultCurrency: string;
+        participantNames: string[];
       },
       CreateTripResult
     >(owner.functions, "createTrip");
@@ -105,9 +107,11 @@ describe("trip share callable functions", () => {
       title: "도쿄 가을 여행",
       startDate: "2026-08-01",
       endDate: "2026-08-03",
-      regionType: "international",
-      currency: "JPY",
-      participantCount: 3,
+      countryCode: "JP",
+      timeZone: "Asia/Tokyo",
+      mapProvider: "google",
+      defaultCurrency: "JPY",
+      participantNames: ["지민", "서연", "민수"],
     });
 
     await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
@@ -153,7 +157,14 @@ describe("trip share callable functions", () => {
       const participantData = participants.docs.map((snapshot) => snapshot.data());
       expect(members.size).toBe(2);
       expect(participants.size).toBe(3);
-      expect(trip.data()).toMatchObject({ regionType: "international", currency: "JPY" });
+      expect(trip.data()).toMatchObject({
+        countryCode: "JP",
+        timeZone: "Asia/Tokyo",
+        mapProvider: "google",
+        defaultCurrency: "JPY",
+        regionType: "international",
+        currency: "JPY",
+      });
       expect(participantData).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -165,7 +176,7 @@ describe("trip share callable functions", () => {
       expect(participantData.filter((participant) => participant.isActive)).toHaveLength(3);
       expect(participantData.filter((participant) => participant.linkedUid)).toHaveLength(1);
       expect(participantData.map((participant) => participant.name)).toEqual(
-        expect.arrayContaining(["동행 2", "동행 3"]),
+        expect.arrayContaining(["지민", "서연", "민수"]),
       );
       expect(code.data()?.useCount).toBe(1);
     });
@@ -249,6 +260,10 @@ describe("members based firestore rules", () => {
       await setDoc(doc(firestore, "trips", tripId), {
         title: "규칙 테스트 해외여행",
         ownerUid: memberUid,
+        countryCode: "JP",
+        timeZone: "Asia/Tokyo",
+        mapProvider: "google",
+        defaultCurrency: "JPY",
         regionType: "international",
         currency: "JPY",
         shareCode: "RULES123",
@@ -262,6 +277,13 @@ describe("members based firestore rules", () => {
         role: "editor",
         joinedAt: timestamp,
         lastActiveAt: timestamp,
+      });
+      await setDoc(doc(firestore, "trips", tripId, "participants", "participant-1"), {
+        name: "멤버",
+        linkedUid: memberUid,
+        isActive: true,
+        createdAt: timestamp,
+        updatedAt: timestamp,
       });
       await setDoc(doc(firestore, "shareCodes", "RULES123"), {
         tripId,
@@ -295,7 +317,83 @@ describe("members based firestore rules", () => {
     }
   });
 
-  it("canonical 필드와 감사 필드가 올바른 지출만 허용한다", async () => {
+  it("장소 좌표와 provider/source 조합을 검증한다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const basePlace = {
+      name: "도쿄 타워",
+      provider: "google",
+      source: "googleSearch",
+      addedBy: memberUid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "missing-lng"), {
+        ...basePlace,
+        lat: 35.6586,
+      }),
+    );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "invalid-lat"), {
+        ...basePlace,
+        lat: 91,
+        lng: 139.7454,
+      }),
+    );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "mismatched-source"), {
+        ...basePlace,
+        provider: "manual",
+      }),
+    );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "wrong-trip-provider"), {
+        ...basePlace,
+        provider: "naver",
+        source: "naverSearch",
+      }),
+    );
+    await assertSucceeds(
+      setDoc(doc(memberDb, "trips", tripId, "places", "manual-place"), {
+        ...basePlace,
+        provider: "manual",
+        source: "manual",
+      }),
+    );
+  });
+
+  it("일정 시간과 선택적 장소 ID 형식을 검증한다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const baseItem = {
+      date: "2026-11-25",
+      title: "나리타 도착",
+      order: 0,
+      updatedBy: memberUid,
+      updatedAt: serverTimestamp(),
+    };
+
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "itinerary", "invalid-time"), {
+        ...baseItem,
+        startTime: "9:30",
+      }),
+    );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "itinerary", "empty-place"), {
+        ...baseItem,
+        placeId: "",
+      }),
+    );
+    await assertSucceeds(
+      setDoc(doc(memberDb, "trips", tripId, "itinerary", "valid-item"), {
+        ...baseItem,
+        startTime: "09:30",
+      }),
+    );
+  });
+
+  it("정산 validator 서버 경계 전에는 클라이언트 지출 쓰기를 거부한다", async () => {
     const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
     const expenseRef = doc(memberDb, "trips", tripId, "expenses", "expense-1");
 
@@ -319,7 +417,7 @@ describe("members based firestore rules", () => {
         updatedAt: serverTimestamp(),
       }),
     );
-    await assertSucceeds(
+    await assertFails(
       setDoc(expenseRef, {
         title: "점심",
         category: "식비",
@@ -338,6 +436,61 @@ describe("members based firestore rules", () => {
         updatedAt: serverTimestamp(),
       }),
     );
+    await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
+      const timestamp = new Date("2026-07-01T00:00:00.000Z");
+      await setDoc(doc(context.firestore(), "trips", tripId, "expenses", "expense-seeded"), {
+        title: "서버에서 검증한 점심",
+        category: "식비",
+        expenseDate: "2026-07-01",
+        totalAmount: 12_000,
+        currency: "JPY",
+        payer: { participantId: "participant-1", amount: 12_000 },
+        consumers: ["participant-1"],
+        allocationMethod: "equal",
+        allocatedAmounts: [{ participantId: "participant-1", amount: 12_000 }],
+        receiptItems: [],
+        source: "manual",
+        createdBy: memberUid,
+        updatedBy: memberUid,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+    });
+    const seededExpenseRef = doc(memberDb, "trips", tripId, "expenses", "expense-seeded");
+    await assertFails(
+      updateDoc(seededExpenseRef, {
+        memo: "클라이언트 수정",
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(deleteDoc(seededExpenseRef));
+  });
+
+  it("linkedUid는 일반 클라이언트가 생성하거나 변경할 수 없다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const timestamp = serverTimestamp();
+
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "participants", "linked-client"), {
+        name: "직접 연결",
+        linkedUid: memberUid,
+        isActive: true,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(memberDb, "trips", tripId, "participants", "participant-1"), {
+        linkedUid: outsiderUid,
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(memberDb, "trips", tripId, "participants", "participant-1"), {
+        name: "이름만 수정",
+        updatedAt: serverTimestamp(),
+      }),
+    );
   });
 
   it("trip 불변 필드와 member role을 클라이언트에서 바꿀 수 없다", async () => {
@@ -349,6 +502,7 @@ describe("members based firestore rules", () => {
       updateDoc(tripRef, { title: "수정한 제목", updatedAt: serverTimestamp() }),
     );
     await assertFails(updateDoc(tripRef, { ownerUid: outsiderUid, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(tripRef, { countryCode: "KR", updatedAt: serverTimestamp() }));
     await assertFails(updateDoc(memberRef, { role: "owner", lastActiveAt: serverTimestamp() }));
     await assertFails(
       setDoc(doc(memberDb, "trips", tripId, "members", "new-member"), {
@@ -359,6 +513,7 @@ describe("members based firestore rules", () => {
       }),
     );
     await assertFails(deleteDoc(memberRef));
+    await assertFails(deleteDoc(doc(memberDb, "trips", tripId, "participants", "participant-1")));
   });
 
   it("사용자는 자기 프로필만 canonical 형식으로 쓸 수 있다", async () => {

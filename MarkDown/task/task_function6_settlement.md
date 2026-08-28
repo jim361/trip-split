@@ -1,30 +1,34 @@
 # Task Function 6 - Settlement
 
+> **[TASK-06 · 정산]** 지출 원장, 배분과 참여자별 정산 기능입니다.
+
 ## 목표
 
 하나의 정산 원장에서 참여자별 `내가 결제한 금액`, `내가 부담한 금액`, `정산 결과(net)`를 서로 다른 값으로 계산한다. 지출 전체 균등 분할, 영수증 항목별 분할, 참여자별 직접 금액 입력을 지원하고, 개인 소비 내역과 최종 송금 제안을 같은 데이터에서 일관되게 파생한다.
 
 ## 담당
 
-정산·영수증 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 타입, Firestore 경로, 라우트와 보안 규칙 변경을 검토·병합한다.
+정산·영수증 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 타입, Firestore 경로, 라우트와 보안 규칙 변경을 검토·최종 확인한다.
 
 ## 범위와 의존성
 
-- 선행: Task 1의 TypeScript·테스트 기반, Firebase Emulator, Auth/Trip Context가 준비되어야 한다.
-- 선행 계약: `TripMember`와 `Participant` 분리, 공통 ID·timestamp·오류 형식, repository 인터페이스, 강릉·도쿄 fixture가 확정되어야 한다.
+- 선행: Task 1의 Flutter·Dart 테스트 기반, Firebase Emulator와 Auth/`TripSession`이 준비되어야 한다.
+- 선행 계약: `TripMember`와 `Participant` 분리, 공통 ID·timestamp·오류 형식, repository 인터페이스와 `tokyo-2026-11` fixture가 확정되어야 한다.
 - 병렬 가능: 순수 정산 엔진과 mock repository 기반 UI는 Firebase 연결 전에 개발할 수 있다.
 - 후행: Task 7 OCR은 이 문서의 `Expense`, `ReceiptItem`, 검증 함수와 지출 저장 흐름을 재사용한다.
-- MVP: KRW·JPY 통화, 지출당 결제자 한 명, 실시간 원장 재계산, 개인 소비 조회와 송금 제안까지 포함한다.
-- 후속: 복수 결제자, 통화 간 환율, 송금 완료 상태, 정산 snapshot, 수정 이력, 특수 보상 규칙은 제외한다.
+- P0: 수동 `equal/custom`, 통화별 실시간 원장 재계산, 개인 소비 조회와 송금 제안까지 포함한다.
+- P1: `itemized`, 할인·봉사료·기타 조정과 Task 7 OCR 초안을 연결한다.
+- 후속: 복수 결제자, 자동 환율, 송금 완료 상태, 정산 snapshot, 수정 이력과 특수 보상 규칙은 제외한다.
 
 ## Canonical 데이터 계약
 
 ```ts
+// Firestore wire 계약 표기다. Flutter 엔진은 같은 불변식을 Dart 모델로 구현한다.
 type AllocationMethod = "equal" | "itemized" | "custom";
 
 type MoneyAllocation = {
   participantId: string;
-  amount: number; // KRW 원 또는 JPY 엔 단위 정수
+  amount: number; // ISO 통화의 최소 단위 정수
 };
 
 type ExpensePayer = {
@@ -51,7 +55,7 @@ type Expense = {
   category: string;
   expenseDate: string;
   totalAmount: number;
-  currency: "KRW" | "JPY";
+  currency: string; // ISO 4217; MVP supports KRW and JPY
   payer: ExpensePayer;
   consumers: string[];
   allocationMethod: AllocationMethod;
@@ -72,14 +76,16 @@ type Expense = {
 
 ## 계산 불변식
 
-- 모든 금액은 부동소수점이 아닌 각 통화의 최소 단위 정수다.
+- 모든 금액은 부동소수점이 아닌 통화별 최소 단위 정수다.
+- MVP 지출 통화는 KRW와 JPY를 지원하며, 각 통화의 paid/owed/net을 별도로 계산한다.
+- 서로 다른 통화의 paid/owed/net과 송금 제안은 통화별로 분리하고 자동 환율 없이 합산하지 않는다.
 - `payer.amount === totalAmount`이며 MVP의 결제자는 한 명이다.
 - `sum(expense.allocatedAmounts.amount) === expense.totalAmount`다.
 - `itemized`에서는 하나 이상의 `receiptItems`가 필요하고 `sum(receiptItems.amount) === totalAmount`이며, 각 항목의 `sum(allocatedAmounts.amount) === item.amount`다.
 - 일반 항목과 봉사료는 양수, 할인은 음수, 기타 조정은 0이 아닌 양수 또는 음수다. 조정을 반영한 참여자별 최종 부담액은 음수가 될 수 없다.
 - 지출과 각 항목의 `allocatedAmounts`는 consumer마다 정확히 한 행을 가지며 `participantId` 중복을 허용하지 않는다. 0원으로 계산된 consumer도 행을 유지하고 `consumers` 집합과 배분 행의 참여자 집합이 같아야 한다.
 - 삭제되거나 비활성인 참여자 ID를 새 지출에 저장하지 않는다. `linkedUid`는 같은 여행의 멤버를 참조하고 한 여행에서 중복될 수 없다.
-- 균등 분할은 `base = Math.trunc(amount / count)`로 계산하고 남은 ±1 최소 단위를 UI에 표시된 `consumers` 순서대로 배분한다. 같은 입력은 모든 클라이언트에서 같은 결과를 만든다.
+- 균등 분할은 0 방향 정수 나눗셈으로 계산하고 남은 최소 단위 ±1을 UI에 표시된 `consumers` 순서대로 배분한다. 같은 입력은 모든 클라이언트에서 같은 결과를 만든다.
 - 참여자 `p`의 파생값은 다음과 같다.
   - 결제액 `paid(p) = sum(expense.payer.amount where payer.participantId === p)`
   - 부담액 `owed(p) = sum(allocation.amount where allocation.participantId === p)`
@@ -90,9 +96,10 @@ type Expense = {
 
 ### 6.1 타입, fixture와 검증기
 
-- [ ] `Participant`, `Expense`, `ExpensePayer`, `ReceiptItem`, `MoneyAllocation`, `AllocationMethod` 타입과 runtime validator를 정의한다.
+- [x] `Participant`, `Expense`, `ExpensePayer`, `ReceiptItem`, `MoneyAllocation`, `AllocationMethod` 타입을 정의한다.
+- [ ] 저장·가져오기·서버 명령이 공유할 runtime validator를 정의한다.
 - [ ] `TripMember`와 `Participant`를 혼용하지 않도록 지출 폼과 엔진 입력은 `participantId`만 받게 한다.
-- [ ] 예시 영수증과 숙소 지출을 포함한 공통 강릉·도쿄 fixture를 만든다.
+- [ ] JPY 예시 영수증과 예약비를 포함한 `tokyo-2026-11` fixture를 만들고 강릉 KRW fixture는 회귀용으로 보존한다.
 - [ ] 금액 정수 여부, 결제액·총액·배분액 합계, 배분 participantId 유일성, 소비자 집합, itemized 최소 한 항목, 항목 합계, 음수 부담액과 linkedUid 참조·유일성을 검사하고 필드별 오류를 반환한다.
 
 완료 조건:
@@ -101,11 +108,11 @@ type Expense = {
 
 ### 6.2 순수 배분 엔진
 
-- [ ] 지출 전체를 선택한 소비자에게 배분하는 `equal` 계산을 구현한다.
+- [x] 지출 전체를 선택한 소비자에게 배분하는 `equal` 계산을 구현한다.
 - [ ] 각 메뉴·공용 메뉴·할인·봉사료·기타 조정을 항목별 소비자에게 배분하고 이를 지출 `allocatedAmounts`로 합치는 `itemized` 계산을 구현한다.
 - [ ] 참여자별 부담 금액을 직접 입력하고 합계를 검증하는 `custom` 계산을 구현한다.
-- [ ] 소비자 순서에 따른 양수·음수 통화별 최소 단위 나머지 배분을 구현한다.
-- [ ] 계산 함수는 입력을 변경하지 않고 같은 입력에 같은 결과를 반환하게 한다.
+- [x] `Expense.consumers`에 저장된 순서에 따른 양수·음수 1원 나머지 배분을 구현한다. Firestore 참여자 조회 순서에는 의존하지 않는다.
+- [x] 계산 함수는 입력을 변경하지 않고 같은 입력에 같은 결과를 반환하게 한다.
 
 완료 조건:
 
@@ -126,10 +133,11 @@ type Expense = {
 
 ### 6.4 repository와 실시간 원장
 
-- [ ] `trips/{tripId}/participants/{participantId}`와 `trips/{tripId}/expenses/{expenseId}`의 CRUD·구독 인터페이스를 구현한다.
-- [ ] 생성 시 `createdBy/createdAt`, 수정 시 `updatedBy/updatedAt`을 Auth uid와 server timestamp로 기록한다.
+- [x] `trips/{tripId}/participants/{participantId}`와 `trips/{tripId}/expenses/{expenseId}`의 mock CRUD·공통 구독 인터페이스를 구현한다.
+- [ ] runtime validator를 공유하는 서버 저장 경계를 만든 뒤 Firestore expense 생성·수정·삭제를 연다. 그전에는 Rules에서 클라이언트 직접 쓰기를 거부한다.
+- [x] 생성 시 `createdBy/createdAt`, 수정 시 `updatedBy/updatedAt`을 Auth uid와 server timestamp로 기록한다.
 - [ ] 저장 직전에 동일한 validator를 실행하고 Firestore converter에서도 형식을 검증한다.
-- [ ] `onSnapshot` 결과를 정산 엔진에 전달해 지출이나 참여자 변경 시 파생 결과만 다시 계산한다. 별도 settlement snapshot은 저장하지 않는다.
+- [ ] FlutterFire repository `Stream`을 정산 엔진에 전달해 지출이나 참여자 변경 시 파생 결과만 다시 계산한다. 별도 settlement snapshot은 저장하지 않는다.
 - [ ] 참여자 삭제는 참조 중이면 차단하고, 비활성화는 기존 원장 표시를 유지하되 새 지출 선택지에서는 제외한다.
 
 완료 조건:
@@ -153,23 +161,22 @@ type Expense = {
 
 ### 6.6 개인 정산과 지출 관리 UI
 
-- [ ] 모바일 정산 화면은 `개인 요약 → 최종 정산 → 지출 목록` 순서로 배치한다.
+- [ ] Android 비용 화면은 `개인 요약 → 최종 정산 → 지출 목록` 순서로 배치한다.
 - [ ] 개인 요약에 `내가 결제한 금액`, `내가 부담한 금액`, `받을 금액` 또는 `보낼 금액`을 서로 다른 카드로 표시한다.
 - [ ] 카테고리별 개인 소비 합계와 날짜·장소·메뉴/지출 항목별 개인 소비 내역을 표시한다.
-- [ ] PC에서는 지출 관리와 개인/전체 정산 결과를 다중 열로 확장하되 모바일과 같은 정보 구조를 유지한다.
 - [ ] 참여자 선택, 지출 추가·수정·삭제, 원본 지출 열기, 정산 문구 복사를 구현한다.
-- [ ] 로딩·빈 상태·구독 오류·권한 오류를 구현하고 금액은 통화별 형식과 tabular numerals로 표시한다.
+- [ ] 로딩·빈 상태·구독 오류·권한 오류를 구현하고 금액은 locale 형식과 ISO 통화 코드를 함께 표시한다.
 
 완료 조건:
 
 - 한 사용자가 참여자를 바꿔 보아도 결제액·부담액·net의 의미가 섞이지 않는다.
-- 390px 모바일과 PC에서 카테고리 합계, 상세 내역, 송금 제안, 지출 CRUD에 접근할 수 있다.
+- Android handset에서 카테고리 합계, 상세 내역, 송금 제안과 지출 CRUD에 접근할 수 있다.
 
 ## 단위 테스트
 
-- [ ] `10,000원 / 3명`은 소비자 순서대로 `3,334 / 3,333 / 3,333원`이 된다.
-- [ ] `1원 / 3명`은 `1 / 0 / 0원`이 되며 세 consumer의 배분 행이 모두 유지된다.
-- [ ] `-1,000원 할인 / 3명`은 소비자 순서대로 `-334 / -333 / -333원`이 된다.
+- [x] `10,000원 / 3명`은 소비자 순서대로 `3,334 / 3,333 / 3,333원`이 된다.
+- [x] `1원 / 3명`은 `1 / 0 / 0원`이 되며 세 consumer의 배분 행이 모두 유지된다.
+- [x] `-1,000원 할인 / 3명`은 소비자 순서대로 `-334 / -333 / -333원`이 된다.
 - [ ] 점심 33,000원을 `순두부 12,000원: 나`, `커피 6,000원: 지연`, `감자전 15,000원: 나·민수·지연 균등`으로 나누면 부담액은 `나 17,000원`, `지연 11,000원`, `민수 5,000원`이다.
 - [ ] 숙소 180,000원을 `나·민수·지연·도윤`이 균등 부담하면 각 45,000원이다.
 - [ ] 위 점심을 내가 결제하고 숙소를 민수가 결제하면 전체 `paid / owed / net`은 각각 `나 33,000 / 62,000 / -29,000`, `민수 180,000 / 50,000 / 130,000`, `지연 0 / 56,000 / -56,000`, `도윤 0 / 45,000 / -45,000원`이다.
@@ -183,7 +190,7 @@ type Expense = {
 - [ ] mock repository로 지출 생성·수정·삭제와 세 분할 폼의 성공/실패 흐름을 테스트한다.
 - [ ] Firebase Emulator에서 권한이 있는 멤버만 참여자와 지출을 쓰고, 다른 멤버에게 변경이 실시간 반영되는지 테스트한다.
 - [ ] 개인 소비의 카테고리 합계와 상세 행 합계가 정산 엔진 `owed`와 같은지 테스트한다.
-- [ ] 모바일에서 요약→최종 정산→지출 목록 순서와 PC 다중 열 레이아웃을 시각 회귀 또는 E2E로 확인한다.
+- [ ] Flutter widget/integration test에서 요약→최종 정산→지출 목록 순서와 키보드·뒤로 가기 동작을 확인한다.
 - [ ] 정산 문구의 모든 송금액 합계가 채무자 net 및 채권자 net과 일치하는지 테스트한다.
 
 ## 완료 기준

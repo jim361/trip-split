@@ -14,4 +14,9 @@ describe("share code", () => {
   it("공백과 하이픈을 제거하고 대문자로 정규화한다", () => {
     expect(normalizeShareCode(" abcd-efgh ")).toBe("ABCDEFGH");
   });
+
+  it("공유 fixture도 운영 코드와 같은 alphabet을 사용한다", () => {
+    expect(isValidShareCode("TKY26JP")).toBe(true);
+    expect(isValidShareCode("TOKYO26")).toBe(false);
+  });
 });

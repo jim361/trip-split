@@ -41,6 +41,7 @@ const EMPTY_DATA: TripDataState = {
   expenses: [] as Expense[],
 };
 
+/** [TASK-02 · 여행 세션] 현재 여행의 실시간 데이터를 하나의 Context로 제공합니다. */
 export function TripProvider({ tripId, children }: { tripId: EntityId; children: ReactNode }) {
   const { repositories, dataSource } = usePlatformServices();
   const { user, status: authStatus } = useAuth();

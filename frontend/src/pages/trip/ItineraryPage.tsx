@@ -44,6 +44,7 @@ function buildTransitUrl(origin: Place, destination: Place) {
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
+/** [TASK-04 / TASK-05 · 일정·지도] 작은 지도와 날짜별 일정을 한 화면에 제공하는 진입점입니다. */
 export function ItineraryPage() {
   const { trip, itinerary, places, isLoading, error, dataSource } = useTripContext();
   const itineraryDates = [...new Set(itinerary.map((item) => item.date))].sort();

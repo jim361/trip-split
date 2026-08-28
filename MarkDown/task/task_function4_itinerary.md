@@ -1,18 +1,23 @@
 # Task Function 4 - Itinerary
 
+> **[TASK-04 · 일정]** 날짜별 일정 작성, 순서와 장소 연결 기능입니다.
+
 ## 목표
 
 날짜별 시간표를 만들고, 장소 보관함의 장소를 일정 항목에 연결한다.
 
+`ItineraryItemDraft` 생성자가 날짜·시간·제목·order와 선택 문자열을 검증·정규화하므로 mock과 Firestore repository의 모든 쓰기 경로가 같은 입력 계약을 사용한다.
+
 ## 담당
 
-장소·일정·지도 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 라우트와 Firebase 계약을 검토·병합한다.
+장소·일정·지도 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 라우트와 Firebase 계약을 검토·최종 확인한다.
 
 ## 작업
 
-- [ ] `ItineraryItem` 타입 정의
-- [ ] Firestore itinerary 구조 설계
-- [ ] ItineraryItem에 updatedBy, updatedAt 반영
+- [x] `ItineraryItem` 타입 정의
+- [x] Firestore itinerary 구조 설계
+- [ ] `Reservation`, `ChecklistItem` 최소 계약과 Firestore 경로 설계
+- [x] ItineraryItem에 updatedBy, updatedAt 반영
 - [ ] 날짜별 탭 또는 섹션 구현
 - [ ] `/trips/:tripId/itinerary` 상단의 지도 미리보기와 아래 타임라인을 하나의 스크롤 흐름으로 구성
 - [ ] 시간대별 일정 항목 추가 구현
@@ -24,12 +29,16 @@
 - [ ] 일정 메모 입력 구현
 - [ ] 장소 보관함에서 장소 선택 구현
 - [ ] 일정 항목에 장소 연결 구현
+- [x] 장소 없는 항공편·체크인·휴식 일정 허용
 - [ ] 일정 순서 변경 구현
-- [ ] 시간 기준 자동 정렬 구현
-- [ ] 일정 데이터 실시간 구독 구현
+- [ ] 수동 `order`를 canonical로 저장하고 시간순 정렬은 명시적 보조 action으로 제공
+- [ ] 일정·예약·체크리스트 데이터를 FlutterFire repository `Stream`으로 구독
 - [ ] 일정 순서 변경 시 batch write 적용
 - [ ] 다른 참여자의 변경 사항이 즉시 반영되는지 검증
-- [ ] 지도 확대 query(`?map=expanded`)를 유지한 상태에서도 일정 편집이 가능한지 검증
+- [ ] router state에 선택 날짜와 지도 확대 상태를 유지하면서 일정 편집이 가능한지 검증
+- [ ] 예약 제목·유형·상태·URL·메모의 최소 CRUD 구현
+- [ ] 공동·개인 체크리스트와 완료 상태의 최소 CRUD 구현
+- [ ] 민감한 여권·결제 문서가 준비 데이터에 저장되지 않는지 검증
 
 ## 완료 기준
 
@@ -37,3 +46,4 @@
 - 각 일정 항목에 장소를 연결할 수 있다.
 - 일정 순서가 변경되면 지도 표시용 순서 데이터도 바뀐다.
 - 다른 참여자가 추가한 일정이 실시간으로 반영된다.
+- `준비` 탭에서 최소 예약과 체크리스트가 저장·동기화된다.

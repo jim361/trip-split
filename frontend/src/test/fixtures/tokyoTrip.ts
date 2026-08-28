@@ -35,7 +35,7 @@ export const tokyoFixtureIds = {
     asakusa: "tokyo-itinerary-asakusa",
     skytree: "tokyo-itinerary-skytree",
   },
-  shareCode: "TOKYO26",
+  shareCode: "TKY26JP",
 } as const;
 
 const createdAt = Date.UTC(2026, 7, 27, 0, 0, 0);
