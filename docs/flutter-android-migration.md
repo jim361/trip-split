@@ -114,18 +114,18 @@ npm run test:emulator
 
 CI는 Flutter와 backend job을 분리한다. Node.js 22는 Functions용으로 유지하고 Flutter·backend job은 JDK 21을 사용한다. Android 소스·Kotlin bytecode target은 생성된 scaffold의 Java 17을 유지하며 Flutter SDK 3.47.2를 CI에 고정한다.
 
-## 8. 하네스 영향
+## 8. 검증 운영
 
-현재 `feature/codex-harness`의 검증기는 `frontend/package.json`, Vite build와 frontend npm 테스트를 강제하므로 Flutter 전환 계약과 맞지 않는다. 해당 브랜치는 현 상태로 병합하지 않는다.
+기존 Codex 하네스 제안은 Vite 중심 검증을 전제로 해 Flutter 전환 계약과 맞지 않으므로 채택하지 않는다. 별도 대형 검증기 대신 저장소의 기본 명령과 GitHub Actions를 사용한다.
 
-Flutter scaffold PR에서 다음과 같이 단순화한다.
+검증은 다음과 같이 단순화한다.
 
 - frontend: Flutter 기본 format/analyze/test/build 명령
 - backend: 기존 npm과 Emulator 명령
-- 위험 Git 훅: 직접적인 force push, hard reset, 강제 clean 정도만 경고
-- 실제 강제 정책: GitHub의 `dev`·`main` branch protection과 필수 CI
+- `dev` 직접 push: 로컬 검증 후 GitHub Actions에서 같은 검증 재실행
+- `main` 반영: 검증된 `dev`의 릴리스 Pull Request
 
-654줄 검증기와 850줄 훅에 Flutter 예외를 계속 추가하지 않는다.
+대형 사용자 정의 검증기나 Git 훅은 추가하지 않는다.
 
 ## 9. 전환 시 보존할 계약
 
@@ -137,15 +137,15 @@ Flutter scaffold PR에서 다음과 같이 단순화한다.
 - 사용자 확정 전 OCR 초안이 정산 원장을 바꾸지 않는 원칙
 - 다른 작업자의 변경, fixture와 테스트를 삭제해 통과시키지 않는 원칙
 
-## 10. 전환 PR 경계
+## 10. 전환 작업 단위
 
-1. 문서 계약 PR
-2. Flutter scaffold와 mock 세 탭 PR
-3. FlutterFire·Emulator·여행 세션 PR
-4. 일정·Google 지도 PR
-5. 수동 정산 PR
-6. 준비·백업 PR
-7. itemized·OCR·번역 PR
-8. Android 내부 배포 준비 PR
+1. 문서 계약
+2. Flutter scaffold와 mock 세 탭
+3. FlutterFire·Emulator·여행 세션
+4. 일정·Google 지도
+5. 수동 정산
+6. 준비·백업
+7. itemized·OCR·번역
+8. Android 내부 배포 준비
 
-각 PR은 `dev`를 대상으로 하며 commit, push, PR 생성, 실제 배포는 사용자의 별도 요청이 있을 때 수행한다.
+각 작업은 최신 `dev`에서 작은 커밋으로 진행하고 로컬 검증 뒤 `dev`에 직접 푸시한다. 실제 배포, secret과 유료 API 연결은 사용자의 별도 요청이 있을 때만 수행한다.

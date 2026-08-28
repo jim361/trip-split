@@ -56,13 +56,14 @@
 ## Git 운영
 
 - `main`: 배포·발표 가능한 안정 버전만 유지합니다.
-- `dev`: 기능을 모아 통합 검증하고 GitHub Pages로 팀에 공유합니다.
-- 작업 브랜치: 최신 `dev`에서 분기하고 Pull Request로 다시 `dev`에 합칩니다.
-- 출시 시점에는 `dev`에서 `main`으로 Pull Request를 만듭니다.
+- `dev`: 모든 개발 변경을 직접 커밋·푸시하고 GitHub Pages로 팀에 공유합니다.
+- 작업 전 최신 `origin/dev`를 동기화하고, 담당 범위의 검증을 로컬에서 통과시킨 뒤 작은 커밋으로 푸시합니다.
+- 별도 기능 브랜치와 `dev` 대상 Pull Request는 만들지 않습니다.
+- 출시 시점에는 검증된 `dev`에서 `main`으로 릴리스 Pull Request를 만듭니다.
 
-`run-trip`과 같은 scope 방식으로 `frontend/itinerary-map`, `frontend/settlement-ui`, `backend/receipt-ocr`, `platform/firebase`, `docs/feature-scope`처럼 담당 영역을 브랜치 이름에 드러냅니다. `frontend`와 `backend`라는 장기 브랜치를 따로 만들지는 않습니다. 두 폴더는 항상 같은 `dev`와 `main` 트리 안에 있고, `dev → main` 승격으로 동일한 구조를 유지합니다.
+`frontend`와 `backend`는 별도 장기 브랜치가 아니라 같은 `dev`와 `main` 트리의 폴더입니다. 두 영역의 공통 타입, Firestore 경로 또는 Callable 계약을 바꾸면 한 커밋에서 양쪽 영향과 테스트를 함께 확인합니다.
 
-`dev`와 `main` 대상 Pull Request는 CI의 format, typecheck, lint, test, build, Firebase Emulator 검증을 통과해야 합니다. Codex를 포함한 작업자는 루트 [AGENTS.md](AGENTS.md)의 경계와 검증 명령을 따릅니다.
+`dev` push와 `main` 대상 릴리스 Pull Request에서는 CI의 format, typecheck, lint, test, build, Firebase Emulator와 Flutter Android 검증을 실행합니다. Codex를 포함한 작업자는 루트 [AGENTS.md](AGENTS.md)의 경계와 검증 명령을 따릅니다.
 
 ## 빠른 시작
 

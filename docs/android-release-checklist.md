@@ -4,10 +4,11 @@
 
 ## 1. 변경 통합
 
-- [ ] 기능 PR이 `dev`를 대상으로 하고 선행 stacked PR이 순서대로 반영되었는지 확인한다.
-- [ ] `main`에는 `dev` 검증이 끝난 뒤 release PR로만 반영한다.
+- [ ] 최신 `origin/dev`를 동기화하고 변경 범위에 맞는 로컬 검증을 통과시킨 뒤 `dev`에 직접 푸시한다.
+- [ ] `dev` push의 GitHub Actions가 통과했는지 확인한다.
+- [ ] `main`에는 `dev` 검증이 끝난 뒤 release Pull Request로만 반영한다.
 - [ ] `MarkDown/` 계약, Flutter 모델, Firestore Rules와 Callable 요청·응답이 같은지 확인한다.
-- [ ] 알려진 제한 사항과 미완료 외부 연동을 README와 PR에 기록한다.
+- [ ] 알려진 제한 사항과 미완료 외부 연동을 README와 팀 공유 내용에 기록한다.
 
 ## 2. 자동 검증
 

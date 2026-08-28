@@ -10,18 +10,18 @@
 
 | 역할 | 주 작업 경로 | 주 소유 영역 | 관련 Task |
 | --- | --- | --- | --- |
-| 플랫폼·통합 담당 | 루트, `frontend/lib/app`, `frontend/lib/data`, `backend/src/share` | Flutter/Firebase 기반, 인증, 여행 생성·공유·멤버, 앱 셸, 보안 규칙 통합, 백업, Android QA·병합 | `TASK-01`, `TASK-02`, `TASK-08`, `TASK-09` |
+| 플랫폼·통합 담당 | 루트, `frontend/lib/app`, `frontend/lib/data`, `backend/src/share` | Flutter/Firebase 기반, 인증, 여행 생성·공유·멤버, 앱 셸, 보안 규칙 통합, 백업, Android QA·통합 | `TASK-01`, `TASK-02`, `TASK-08`, `TASK-09` |
 | 정산·영수증 담당 | `frontend/lib/features/settlement`, `receipts`, `backend/src/ocr` | `Participant`, `Expense`, `ReceiptItem`, 순수 Dart 정산 엔진, 개인 소비 화면, `parseReceipt`, OCR·번역 검토 | `TASK-06`, `TASK-07` |
 | 장소·일정·지도 담당 | `frontend/lib/features/places`, `itinerary`, `map`, `preparation`, `backend/src/places` | `Place` 정규화, Google 장소·URL·직접 입력, 일정·준비 편집, 지도 adapter | `TASK-03`, `TASK-04`, `TASK-05` |
 
-- 플랫폼·통합 담당이 제품 계약과 병합의 최종 책임자다. 다른 담당자는 공통 타입이나 Firestore 경로를 단독 확정하지 않고 변경 제안 PR을 올린다.
+- 플랫폼·통합 담당이 제품 계약과 통합의 최종 책임자다. 다른 담당자는 공통 타입이나 Firestore 경로를 단독 확정하지 않고 변경 전에 팀에 영향 범위를 공유한다.
 - OCR은 정산 원장과 한 흐름으로 연결되므로 정산·영수증 담당이 소유한다.
 - 장소 보관함, 준비와 Google API는 일정 및 지도 입력에 결합되므로 장소·일정·지도 담당이 소유한다.
 - 각 담당자는 동시에 하나의 구현 작업만 진행한다. 리뷰 대기 작업은 WIP에서 제외할 수 있다.
 
 ## 2. 구현 전 공통 계약
 
-첫 기능 PR 전에 `tech.md`, `structure.md`와 이 문서에서 다음을 세 명이 확인한다.
+첫 기능 구현 전에 `tech.md`, `structure.md`와 이 문서에서 다음을 세 명이 확인한다.
 
 - `TripMember`는 Firebase Auth `uid`를 가진 공동 편집 사용자이고, `Participant`는 비용의 결제자 또는 소비자다. 필요할 때만 `Participant.linkedUid`로 연결한다.
 - 정산 원장은 `Expense`, `ReceiptItem`, `payer`, `consumers`, `allocationMethod`, `allocatedAmounts`를 기준으로 한다.
@@ -91,7 +91,7 @@
 
 ## 5. 공유 파일과 변경 승인
 
-다음 파일은 플랫폼·통합 담당이 최종 병합한다.
+다음 파일은 플랫폼·통합 담당이 최종 확인한다.
 
 - `frontend/pubspec.yaml`·`pubspec.lock`, backend `package.json`·lockfile
 - Flutter router와 전역 App/`TripSession` 진입점
@@ -99,17 +99,16 @@
 - Firestore/Storage 보안 규칙과 Emulator 설정
 - 공통 타입 export, 오류 형식, 공통 fixture
 
-공유 파일 변경이 필요한 담당자는 자신의 기능 PR에 변경 이유, 영향받는 기능, 마이그레이션 여부를 적는다. Firestore 경로·정산 불변식·공통 타입 변경 PR은 나머지 두 명 모두가 검토한 뒤 병합한다.
+공유 파일 변경이 필요한 담당자는 푸시 전에 변경 이유, 영향받는 기능과 마이그레이션 여부를 팀에 공유한다. Firestore 경로·정산 불변식·공통 타입 변경은 나머지 두 명 모두가 검토한 뒤 `dev`에 반영한다.
 
-## 6. 브랜치와 PR 원칙
+## 6. `dev` 직접 통합 원칙
 
-- `main`에 직접 커밋하지 않고 1~3일 안에 리뷰 가능한 작은 기능 PR을 만든다.
-- 권장 브랜치:
-  - 정산·영수증: `frontend/settlement-domain`, `backend/receipt-ocr`
-  - 장소·일정·지도: `frontend/place-provider`, `frontend/itinerary-map`
-  - 플랫폼·통합: `platform/flutter-shell`, `platform/firebase-share`, `platform/android-release`
-- 일반 PR은 최소 한 명이 검토한다. 데이터 계약이나 Firestore 경로 변경은 나머지 두 명의 승인이 필요하다.
-- PR 본문에는 구현 범위, 로딩·빈 상태·오류 상태, Android 캡처, 테스트 결과와 공통 계약 변경 여부를 기록한다.
+- 장기 운영 브랜치는 `dev`와 `main`만 사용하며 기능 브랜치를 따로 만들지 않는다.
+- 작업 전에 최신 `origin/dev`를 동기화하고, 한 번에 한 작업만 작은 커밋으로 `dev`에 직접 반영한다.
+- 푸시 전 담당 검증을 로컬에서 실행하고, 푸시 뒤 GitHub Actions 결과를 확인한다.
+- 일반 변경은 최소 한 명에게 변경 내용을 공유한다. 데이터 계약이나 Firestore 경로 변경은 나머지 두 명의 확인이 필요하다.
+- 공유 내용에는 구현 범위, 로딩·빈 상태·오류 상태, Android 확인 결과, 테스트 결과와 공통 계약 변경 여부를 기록한다.
+- `main`에는 직접 커밋하지 않고 검증된 `dev`의 릴리스 Pull Request로만 반영한다.
 - 매일 `완료 / 오늘 / 막힌 점 / 계약 변경` 네 항목으로만 진행 상황을 공유한다.
 
 ## 7. 공통 완료 게이트

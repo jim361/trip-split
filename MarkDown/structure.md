@@ -9,7 +9,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 핵심 원칙은 다음과 같다.
 
 - 제품 앱은 `frontend/pubspec.yaml`을 사용하는 Flutter workspace이고 backend는 `backend/package.json`을 사용하는 Node.js workspace다. 전환 기간에는 GitHub Pages React 목업 검증을 위해 `frontend/package.json`도 루트 npm workspaces에 임시로 남긴다. Flutter 공유본으로 대체한 뒤 React workspace를 제거한다.
-- 두 프로젝트는 같은 `dev`와 `main` 트리에 유지하고 영역별 작업 브랜치에서 `dev`로 통합한다.
+- 두 프로젝트는 같은 `dev`와 `main` 트리에 유지하고 모든 개발 변경을 `dev`에 직접 통합한다.
 - 화면은 사용 흐름 중심으로 구성한다.
 - 지도, 정산, OCR, Firebase 호출은 UI와 분리한다.
 - 정산 로직은 순수 함수로 작성해 테스트하기 쉽게 만든다.
@@ -24,7 +24,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 
 ### 플랫폼·통합 담당
 
-담당: 앱 기반, 사용자 세션, 공통 계약, 통합 품질과 최종 병합
+담당: 앱 기반, 사용자 세션, 공통 계약과 통합 품질 최종 확인
 
 - Flutter Android 프로젝트, router와 Material 앱 셸 구성
 - 공통 `TripSession` 상태, 디자인 토큰과 공통 Widget 관리
@@ -33,7 +33,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 - Firestore 보안 규칙과 실시간 세션의 통합 검증
 - `.trip.json` 백업·복원·데모 데이터 흐름 관리
 - 공통 타입, Firestore 경로, `pubspec.lock`과 backend lockfile 변경의 최종 승인
-- 통합 QA, 릴리스 기준 확인과 PR 최종 병합
+- 통합 QA, `dev` 검증 결과와 릴리스 기준 최종 확인
 
 ### 정산·영수증 담당
 
@@ -65,7 +65,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 
 | 범위 | 주 담당 | 변경 규칙 |
 | --- | --- | --- |
-| 루트 검증 wrapper, `frontend/pubspec.yaml`·`pubspec.lock`, `frontend/lib/app`, Firebase 진입점·설정·보안 규칙 | 플랫폼·통합 | 다른 담당자는 변경안을 제안하고 플랫폼·통합 담당자가 병합한다. |
+| 루트 검증 wrapper, `frontend/pubspec.yaml`·`pubspec.lock`, `frontend/lib/app`, Firebase 진입점·설정·보안 규칙 | 플랫폼·통합 | 다른 담당자는 변경안을 제안하고 플랫폼·통합 담당자가 최종 확인한다. |
 | `frontend/lib/features/settlement`, `frontend/lib/features/receipts`, expense repository | 정산·영수증 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
 | `frontend/lib/features/places`, `itinerary`, `map`, `preparation`과 관련 repository | 장소·일정·지도 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
 | 여행 생성, 공유 코드 검증·참여 Function | 플랫폼·통합 | 인증·보안 규칙과 함께 통합한다. |
@@ -73,7 +73,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 | 장소 검색, 장소 URL 해석 Function | 장소·일정·지도 | Google 서버 키, 검증·오류 형식은 공통 계약을 따른다. |
 | `backend/src/index.ts`, 공통 HTTP·환경변수 유틸리티 | 플랫폼·통합 | 각 담당의 handler를 export만 하며 도메인 로직을 두지 않는다. |
 
-담당 영역은 코드 소유권과 1차 리뷰 책임을 뜻한다. 다른 영역을 수정할 수 없는 경계가 아니며, 계약 변경은 PR 설명에 영향 범위와 migration 여부를 기록한 뒤 플랫폼·통합 담당자가 최종 승인한다.
+담당 영역은 코드 소유권과 1차 리뷰 책임을 뜻한다. 다른 영역을 수정할 수 없는 경계가 아니며, 계약 변경은 푸시 전에 영향 범위와 migration 여부를 공유하고 플랫폼·통합 담당자가 최종 승인한다.
 
 ## 3. 권장 폴더 구조
 
@@ -453,6 +453,6 @@ abstract interface class ExpensesRepository {
 - API 키와 OCR 키는 Cloud Functions 환경변수로만 관리한다.
 - 공유 코드 검증은 클라이언트 직접 조회가 아니라 Cloud Function을 우선한다.
 - Firestore 접근은 `trips/{tripId}/members/{uid}` 기준으로 제한하는 방향을 우선한다.
-- 공통 타입·Firestore 경로·정산 불변식을 바꾸는 PR은 나머지 두 명이 모두 검토한다. 라우트나 공유 파일의 구현 변경은 최소 한 명이 검토하고 플랫폼·통합 담당자가 최종 병합한다.
-- 각 담당자는 작은 기능 브랜치와 PR을 사용하고, PR 설명에 로딩·빈 상태·오류 상태, Android emulator·실기기 확인 결과, 계약 변경 여부를 기록한다.
+- 공통 타입·Firestore 경로·정산 불변식 변경은 나머지 두 명이 모두 검토한다. 라우트나 공유 파일의 구현 변경은 최소 한 명이 검토하고 플랫폼·통합 담당자가 최종 확인한다.
+- 각 담당자는 최신 `dev`에서 한 번에 하나의 작은 작업을 진행하고, 로딩·빈 상태·오류 상태, Android emulator·실기기 확인 결과와 계약 변경 여부를 공유한 뒤 직접 커밋·푸시한다.
 - 매일 `완료 / 오늘 / 막힌 점 / 계약 변경` 네 항목을 공유하고 동시에 진행하는 작업은 한 명당 하나로 제한한다.

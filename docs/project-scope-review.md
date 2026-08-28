@@ -61,7 +61,7 @@ GitHub Pages 화면은 **전환 전 React 반응형 기능 목업**이고 제품
 
 ### 전환 첫 세로 기능 조각
 
-P0 전체를 한 PR에서 만들지 않는다. 먼저 Flutter Android 셸, `tokyo-2026-11` mock, 세 탭, Anonymous Auth, `createTrip`·공유 코드 입장과 Emulator 연결까지만 완성한다. 이 조각에서 format/analyze/test/debug APK와 두 익명 사용자 입장이 통과한 뒤 일정·Google 지도와 수동 정산으로 넘어간다.
+P0 전체를 한 번에 만들지 않는다. 먼저 Flutter Android 셸, `tokyo-2026-11` mock, 세 탭, Anonymous Auth, `createTrip`·공유 코드 입장과 Emulator 연결까지만 완성한다. 이 조각에서 format/analyze/test/debug APK와 두 익명 사용자 입장이 통과한 뒤 일정·Google 지도와 수동 정산으로 넘어간다.
 
 ### P0 · 여행에서 반드시 작동할 최소선
 

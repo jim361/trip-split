@@ -209,7 +209,7 @@ Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로
 | 정산·영수증 | `parseReceipt` | 이미지 검증, OCR·번역 provider 호출, `ParsedReceipt` 정규화 |
 | 장소·일정·지도 | `searchPlaces`, `parsePlaceLink` | Google 장소 검색·URL 해석, `Place` 후보 정규화 |
 
-플랫폼·통합 담당은 Firebase 초기화, Functions 진입점, 보안 규칙, 공통 라우트, dependency와 lockfile을 최종 병합한다. 도메인 담당은 자신의 `features`, repository, Function 모듈과 테스트를 소유한다. 공통 타입이나 Firestore 경로를 바꾸는 PR은 세 담당자가 함께 검토한다.
+플랫폼·통합 담당은 Firebase 초기화, Functions 진입점, 보안 규칙, 공통 라우트, dependency와 lockfile을 최종 확인한다. 도메인 담당은 자신의 `features`, repository, Function 모듈과 테스트를 소유한다. 공통 타입이나 Firestore 경로 변경은 `dev`에 푸시하기 전에 세 담당자가 함께 검토한다.
 
 첫 공통 fixture는 고정 ID `tokyo-2026-11`을 사용하고 장소, 일정, 준비, 참여자, JPY 수동 지출과 일본어 항목형 영수증을 포함한다. 기존 강릉 fixture는 KRW·국내 회귀용으로 보존한다. 세 도메인의 mock repository와 통합 테스트가 같은 canonical fixture를 사용해 계약 불일치를 조기에 찾는다.
 

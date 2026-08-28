@@ -24,11 +24,12 @@
 
 ## Git 흐름
 
-1. 최신 `dev`에서 짧은 기능 브랜치를 만듭니다.
-2. 브랜치 이름으로 영역을 드러냅니다: `frontend/itinerary-map`, `backend/receipt-ocr`, `docs/feature-scope`, `platform/firebase`.
-3. Pull Request 대상은 `dev`입니다.
-4. `dev`에서 전체 검증과 목업 공유를 마친 뒤 `dev`에서 `main`으로 릴리스 Pull Request를 만듭니다.
-5. `main`과 `dev`에 직접 커밋하거나 서로 다른 폴더 구조를 따로 만들지 않습니다.
+1. 장기 운영 브랜치는 `dev`와 `main`만 사용합니다.
+2. 작업 전에 `dev`를 `origin/dev`와 동기화하고 담당 범위를 작은 커밋으로 나눕니다.
+3. 해당 검증을 로컬에서 통과시킨 뒤 `dev`에 직접 커밋·푸시합니다. 별도 기능 브랜치와 `dev` 대상 Pull Request는 만들지 않습니다.
+4. 공통 타입, Firestore 경로와 Callable 계약 변경은 푸시 전에 영향받는 담당자와 함께 확인합니다.
+5. `dev` push 뒤 GitHub Actions 결과를 확인합니다. 실패하면 다음 작업보다 복구를 우선합니다.
+6. `dev`와 `main`에 force push하지 않습니다. `main`에는 직접 커밋하지 않고 검증된 `dev`에서 릴리스 Pull Request로만 반영합니다.
 
 ## 검증
 
