@@ -388,7 +388,7 @@ function Get-ShellCommandPayload {
     $switchIndex = -1
     for ($optionIndex = $index + 1; $optionIndex -lt $Tokens.Count; $optionIndex++) {
         $option = $Tokens[$optionIndex]
-        if (($shellKind -eq 'posix' -and $option -eq '-c') -or
+        if (($shellKind -eq 'posix' -and $option -cmatch '^-[^-]*c[^-]*$') -or
             ($shellKind -eq 'powershell' -and ($option -eq '-c' -or $option -ieq '-command')) -or
             ($shellKind -eq 'cmd' -and $option -ieq '/c')) {
             $switchIndex = $optionIndex
@@ -574,15 +574,60 @@ function Test-GitCleanDestructive {
     $validOptions = Get-GitLongOptions -Verb 'clean'
     $force = $false
     $dryRun = $false
-    foreach ($argument in $Arguments) {
+    $argumentIndex = 0
+    while ($argumentIndex -lt $Arguments.Count) {
+        $argument = $Arguments[$argumentIndex]
+
+        if ($argument -ceq '--') {
+            break
+        }
+
         $resolved = Resolve-GitLongOption -Argument $argument -ValidOptions $validOptions
-        if ($argument -eq '-n' -or ($null -ne $resolved -and -not $resolved.Negated -and $resolved.Canonical -eq 'dry-run') -or $argument -cmatch '^-[^-]*n[^-]*$') {
-            $dryRun = $true
+        if ($null -ne $resolved) {
+            if ($resolved.Canonical -ceq 'exclude') {
+                if (-not $resolved.HasValue -and ($argumentIndex + 1) -lt $Arguments.Count) {
+                    $argumentIndex++
+                }
+            }
+            elseif (-not $resolved.Negated -and $resolved.Canonical -ceq 'dry-run') {
+                $dryRun = $true
+            }
+            elseif (-not $resolved.Negated -and $resolved.Canonical -ceq 'force') {
+                $force = $true
+            }
+
+            $argumentIndex++
             continue
         }
-        if (($null -ne $resolved -and -not $resolved.Negated -and $resolved.Canonical -eq 'force') -or $argument -cmatch '^-[^-]*f[^-]*$') {
-            $force = $true
+
+        if ($argument -cmatch '^-[^-].*$') {
+            $shortOptions = $argument.Substring(1)
+            $shortIndex = 0
+            $excludeConsumesNext = $false
+            while ($shortIndex -lt $shortOptions.Length) {
+                $shortOption = [string]$shortOptions[$shortIndex]
+                if ($shortOption -ceq 'e') {
+                    # `-e` consumes the rest of this token as its pattern, or
+                    # the next token when no attached pattern exists. A value
+                    # such as `-n` must not be reinterpreted as dry-run.
+                    $excludeConsumesNext = ($shortIndex + 1) -ge $shortOptions.Length
+                    break
+                }
+                if ($shortOption -ceq 'f') {
+                    $force = $true
+                }
+                elseif ($shortOption -ceq 'n') {
+                    $dryRun = $true
+                }
+                $shortIndex++
+            }
+
+            if ($excludeConsumesNext -and ($argumentIndex + 1) -lt $Arguments.Count) {
+                $argumentIndex++
+            }
         }
+
+        $argumentIndex++
     }
 
     # `-n`/`--dry-run` never removes files, even when force is also present.
@@ -668,15 +713,24 @@ if ($TestRawInput) {
         @{ Command = 'git clean --forcex -d'; ExpectedBlocked = $false }
         @{ Command = 'git clean --dr -d'; ExpectedBlocked = $false }
         @{ Command = 'git clean -fdn'; ExpectedBlocked = $false }
+        @{ Command = 'git clean -f -e -n'; ExpectedBlocked = $true }
+        @{ Command = 'git clean -f --ex -n'; ExpectedBlocked = $true }
+        @{ Command = 'git clean -f -e-n'; ExpectedBlocked = $true }
+        @{ Command = 'git clean -f -e pattern -n'; ExpectedBlocked = $false }
+        @{ Command = 'git clean -fn -e pattern'; ExpectedBlocked = $false }
+        @{ Command = 'git clean -f -- -n'; ExpectedBlocked = $true }
         @{ Command = 'git checkout --theirs conflict.txt'; ExpectedBlocked = $false }
         @{ Command = 'git checkout feature'; ExpectedBlocked = $false }
         @{ Command = 'git restore --staged file'; ExpectedBlocked = $false }
         @{ Command = 'echo "git push --force"'; ExpectedBlocked = $false }
         @{ Command = "sh -c 'git reset --hard'"; ExpectedBlocked = $true }
+        @{ Command = "bash -lc 'git reset --hard'"; ExpectedBlocked = $true }
+        @{ Command = "sh -xc 'git push --force origin main'"; ExpectedBlocked = $true }
         @{ Command = 'powershell -NoProfile -Command "git push --force-w origin main"'; ExpectedBlocked = $true }
         @{ Command = 'pwsh -Command "git clean --for -d"'; ExpectedBlocked = $true }
         @{ Command = 'cmd /d /c "git push --mirror origin"'; ExpectedBlocked = $true }
         @{ Command = "sh -c 'echo git reset --hard'"; ExpectedBlocked = $false }
+        @{ Command = "bash -lc 'echo git reset --hard'"; ExpectedBlocked = $false }
         @{ Command = 'powershell -Command "Write-Output ''git push --force''"'; ExpectedBlocked = $false }
         @{ Command = 'cmd /c "echo git clean --force -d"'; ExpectedBlocked = $false }
         @{ Command = 'git clean -n'; ExpectedBlocked = $false }

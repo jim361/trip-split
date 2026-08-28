@@ -15,7 +15,9 @@
 
 - 구현·테스트가 `MarkDown/` 계약과 다르면 코드를 조용히 우선하지 말고 충돌과 필요한 결정을 보고합니다.
 - 문서 충돌은 관련 `MarkDown/`, 최신 `MarkDown/decision_history.md`, `README.md`·`docs/`, 현재 구현·테스트 순서로 확인합니다.
-- 병합 충돌을 해결할 때 기존 문서 기능 ID, `task_function1`~`task_function9` 파일명, Firestore document/path ID와 Callable 이름을 임의로 rename·delete하지 않습니다.
+- 회의용 기능 ID는 `BASE-*`, `IT-*`, `PREP-*`, `ST-*`, `OCR-*`를 사용합니다. 기존 ID를 재번호·재사용·삭제하지 말고 제외 항목은 상태로 보존하며 새 기능은 각 문서의 `추가 제안` 표에 기록합니다.
+- 구현 task는 `Task Function 1`부터 `Task Function 9`까지와 `MarkDown/task/task_function1_*.md`부터 `task_function9_*.md`까지를 사용합니다. 현재 계약에 없는 `TASK-01`부터 `TASK-09`까지를 도입하거나 기존 번호·파일명을 재번호·재사용·변경·삭제하지 않습니다.
+- 병합 충돌을 해결할 때 Firestore document/path ID와 Callable 이름을 임의로 rename·delete하지 않습니다.
 
 ## Git 흐름과 사용자 작업 계약
 

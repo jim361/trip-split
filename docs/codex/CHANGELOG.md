@@ -20,6 +20,15 @@
 - 검증 명령과 결과: 깨끗한 LF checkout의 현재 구조와 `e773cce` 통합 시뮬레이션에서 Fast·Full 모두 `0`; 누락된 `build` script는 `1`, 누락된 Java 전제조건은 `2`; 훅 내장 21개 사례와 인계 스킬 형식 검사 `0`
 - 후속 작업: 실제 합칠 때 `AGENTS.md` 합성본을 선택하고 검증기를 Git이 제안하는 `frontend/scripts/`가 아니라 루트 `scripts/`에 둔 뒤, push 후 Ubuntu CI 결과를 확인
 
+## 2026-08-28 — 최신 dev 통합과 하네스 회귀 보강
+
+- 변경 범위: 최신 `dev` 일반 merge, 실제 기능·task ID 보존 규칙, frontend/backend 전용 레이아웃과 루트 npm 위임 계약, 위험 Git 명령 훅 회귀 사례, CI 실행 조건 설명
+- 변경 이유: 공개 브랜치 이력을 유지하면서 루트 명령이 검증을 우회하거나 폐기 디렉터리가 되살아나는 경우와 `git clean` 옵션 인자·POSIX shell 묶음 옵션을 통한 훅 우회를 막기 위해서
+- 영향을 받는 문서·경로: `AGENTS.md`, `scripts/verify.ps1`, `.codex/hooks/`, `.github/workflows/ci.yml`, `.nvmrc`, `package.json`, `docs/codex/`
+- 계약 해석 변경 여부: 제품 계약 변경은 없음. 구현 task의 실제 이름은 `Task Function 1`부터 `Task Function 9`까지이며 현재 계약에 없는 `TASK-01`부터 `TASK-09`까지를 새로 만들지 않음
+- 검증 명령과 결과: Node.js 22.19.0·Java 21.0.10에서 Fast·Full 모두 `0`; PowerShell 7·5.1 훅 52/52 사례 `0`; 루트 `typecheck`를 `echo ok`로 바꾼 경우와 root `src/`·`functions/`를 만든 경우는 각각 정적 검사 `1`
+- 후속 작업: 일반 push만으로 CI가 실행되지 않으므로 사용자 승인 후 `dev` 대상 Pull Request 또는 수동 실행에서 Ubuntu Full 검증 확인
+
 ## YYYY-MM-DD — 제목
 
 - 변경 범위:

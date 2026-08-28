@@ -10,12 +10,14 @@
 ## 2. 끝난 것
 
 - `origin/dev`의 `52a8eb8`을 일반 merge로 합성하고 `AGENTS.md`, CI, 검증기 위치 충돌을 수동으로 해결했다.
-- 검증기는 폐기한 root `src/`·`functions/` 핵심 파일을 거부하고 typecheck, test, build를 frontend와 backend에서 각각 실행한다.
+- 검증기는 폐기한 root `src/`·`functions/` 디렉터리 자체를 거부하고 typecheck, test, build를 frontend와 backend에서 각각 실행한다. README가 안내하는 루트 script도 두 workspace에 정확히 위임해야 한다.
 - Windows에서는 `npm.cmd`를 우선하고, Node.js major 22와 Full 모드 Java major 21을 실제 버전 출력으로 검사한다.
-- 훅은 Git long-option의 유효한 고유 약어, `push --mirror`, POSIX shell·PowerShell·cmd 래퍼를 실행하지 않고 분석한다.
+- 훅은 Git long-option의 유효한 고유 약어, `push --mirror`, POSIX shell·PowerShell·cmd 래퍼를 실행하지 않고 분석한다. `git clean`의 exclude 인자와 `bash -lc`·`sh -xc` 묶음 옵션도 구분한다.
 - CI는 Ubuntu에서 Node.js 22, Java 21, 훅 자체 테스트와 Full 검증기를 실행한다.
 - `.nvmrc`와 루트 `package.json`에 Node.js 22를 필수 버전으로 고정했다.
 - 사용자가 2026-08-28에 merge commit과 `feature/codex-harness` 일반 push를 명시적으로 승인했다.
+- merge commit `6cf7b54`를 일반 push했고 원격 브랜치는 `dev`보다 0 commit 뒤·3 commit 앞이다.
+- 사용자가 같은 날 리뷰 보강분의 commit과 `feature/codex-harness` 일반 push도 명시적으로 요청했다.
 
 ## 3. 남은 것
 
@@ -44,7 +46,7 @@
 실행 환경:
 
 - Node.js: `22.19.0`
-- Java: `21.0.11`
+- Java: `21.0.10`
 - data source: fixture와 `demo-trip-split` Firebase Emulator
 - 운영체제: Windows 로컬 검증, CI 대상은 Ubuntu
 
@@ -58,10 +60,11 @@ pwsh -NoProfile -File scripts/verify.ps1 -Mode Full
 ```
 
 - `npm ci`: 종료 코드 `0`, 1,219 packages 설치
-- 훅 자체 테스트: PowerShell 7과 Windows PowerShell 5.1 모두 종료 코드 `0`, 43/43 사례 통과
+- 훅 자체 테스트: PowerShell 7과 Windows PowerShell 5.1 모두 종료 코드 `0`, 52/52 사례 통과
 - Fast: 종료 코드 `0`, frontend 20개·backend 7개 테스트 통과
 - Full: 종료 코드 `0`, 두 workspace build와 Emulator 8개 테스트 통과
 - 의도적으로 Node.js 24에서 실행: 종료 코드 `2`, Node.js major 22 전제조건 실패
-- 의도적으로 `functions/package.json` 생성: 종료 코드 `1`, 폐기 레이아웃 검사 실패
-- 일반 push 직전 GitHub 확인: 원격 브랜치는 `dev`보다 3 commit 뒤·2 commit 앞이며, `dev` 대상 Pull Request와 원격 Actions 실행은 각각 0개
+- 의도적으로 루트 `typecheck`를 `echo ok`로 변경: 종료 코드 `1`, 루트 workspace 위임 계약 검사 실패
+- 의도적으로 `src/rogue.ts`와 `functions/src/index.ts` 생성: 각각 종료 코드 `1`, 폐기 디렉터리 검사 실패
+- 일반 push 후 GitHub 확인: 원격 브랜치는 `dev`보다 0 commit 뒤·3 commit 앞이며, `dev` 대상 Pull Request와 원격 Actions 실행은 각각 0개. CI는 일반 push가 아니라 Pull Request 또는 수동 실행에서 시작한다.
 - 다음 작업자가 가장 먼저 재현할 명령: `pwsh -NoProfile -File scripts/verify.ps1 -Mode Fast`

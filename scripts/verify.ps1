@@ -156,9 +156,13 @@ function Resolve-Layout {
     }
   }
 
+  foreach ($legacyDirectory in @("src", "functions")) {
+    if (Test-Path -LiteralPath (Get-RepoPath $legacyDirectory) -PathType Container) {
+      Stop-Verification "폐기된 root/functions 레이아웃 디렉터리를 허용하지 않습니다: $legacyDirectory/"
+    }
+  }
+
   foreach ($legacyPath in @(
-      "functions/package.json",
-      "src/app/App.tsx",
       "firestore.rules",
       "firestore.indexes.json",
       "vitest.emulator.config.ts",
@@ -262,6 +266,19 @@ function Invoke-StaticChecks {
   }
 
   $rootScripts = Get-JsonProperty $rootPackage "scripts"
+  $requiredRootWorkspaceScripts = [ordered]@{
+    "typecheck" = "npm run typecheck --workspace frontend && npm run typecheck --workspace backend"
+    "test"      = "npm test --workspace frontend && npm test --workspace backend"
+    "build"     = "npm run build --workspace frontend && npm run build --workspace backend"
+  }
+  foreach ($scriptName in $requiredRootWorkspaceScripts.Keys) {
+    $actualScript = Get-JsonProperty $rootScripts $scriptName
+    $expectedScript = $requiredRootWorkspaceScripts[$scriptName]
+    if ($actualScript -isnot [string] -or -not $actualScript.Equals($expectedScript, [System.StringComparison]::Ordinal)) {
+      Stop-Verification "package.json의 공식 루트 $scriptName script는 두 workspace에 정확히 위임해야 합니다: $expectedScript"
+    }
+  }
+
   foreach ($scriptName in @("format:check", "lint", "test:emulator")) {
     if ($null -eq (Get-JsonProperty $rootScripts $scriptName)) {
       Stop-Verification "package.json에 루트 전용 필수 script가 없습니다: $scriptName"
