@@ -51,12 +51,13 @@ flutter build apk --debug
 - [ ] Android Maps 키는 package/SHA 제한, backend Places·OCR·번역 키는 서버 API 제한을 적용한다.
 - [ ] Firebase budget alert와 Maps·Places·OCR·Translation quota를 정한다.
 - [ ] `dart_defines.local.json`, Firebase 설정, Functions secret과 signing 자료가 Git에 포함되지 않았는지 확인한다.
+- [ ] Android cloud backup과 기기 간 전송에서 앱의 인증·캐시 데이터가 제외되는지 manifest와 backup rules를 확인한다.
 - [ ] OCR 이미지·원문·임시 초안이 Storage, Firestore, 로그와 분석 이벤트에 남지 않는지 확인한다.
 - [ ] 개인정보처리방침과 Google Play Data Safety 초안을 팀이 검토한다.
 
 ## 5. 배포 승인
 
 - [ ] 버전과 변경 내역을 확정한다.
-- [ ] 서명되지 않은 release build를 검증한다.
+- [ ] debug APK를 검증한다. 현재 release build도 임시 debug key를 사용하므로 외부 배포에 사용하지 않는다.
 - [ ] signing key와 Play Console 업로드는 소유자의 별도 승인을 받는다.
 - [ ] 내부 테스트 설치 링크와 rollback 대상 commit을 기록한다.

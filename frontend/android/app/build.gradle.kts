@@ -28,7 +28,7 @@ android {
 
     buildTypes {
         release {
-            // TASK-09에서 실제 배포용 signing config로 교체합니다.
+            // 내부 smoke build만 허용합니다. 배포 전 TASK-09에서 실제 signing config로 교체합니다.
             signingConfig = signingConfigs.getByName("debug")
         }
     }

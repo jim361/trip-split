@@ -30,7 +30,7 @@ MVP를 데모 가능한 품질로 정리한다.
 - [ ] 카메라·Photo Picker·네트워크 권한과 외부 전송 안내 점검
 - [x] `tokyo-2026-11` 데모 여행과 강릉 회귀 데이터 준비
 - [ ] 개인정보처리방침·Google Play Data Safety 초안과 영수증 임시 처리 정책 점검
-- [ ] debug APK와 서명되지 않은 release build 검증. signing secret과 Play 배포는 별도 승인
+- [ ] debug APK 검증. 현재 release build는 임시 debug key를 사용하므로 배포 금지하며, 실제 signing secret과 Play 배포는 별도 승인
 - [ ] Flutter Web은 선택적 compile/smoke만 수행하고 Android 완료를 막지 않음
 - [x] README 작성
 - [x] 배포 체크리스트 작성
