@@ -10,57 +10,63 @@ const supportedReceiptImageMimeTypes = <String>{
   'image/webp',
 };
 
-/// [TASK-07 · OCR 호출] 이미지 본문을 저장하지 않는 parseReceipt wire 요청입니다.
-final class ParseReceiptRequest {
-  factory ParseReceiptRequest({
-    required String tripId,
-    required String imageBase64,
+/// [TASK-07 · OCR 호출] 앱 내부에서만 유지하는 검증된 영수증 이미지입니다.
+final class ReceiptImageInput {
+  factory ReceiptImageInput({
+    required Uint8List bytes,
     required String mimeType,
-    int maxImageBytes = receiptImageMaxBytes,
+    String? fileName,
   }) {
-    final normalizedTripId = _validateTripId(tripId);
     final normalizedMimeType = _normalizeMimeType(mimeType);
-    _validateMaxImageBytes(maxImageBytes);
-    final bytes = _decodeImageBase64(imageBase64, maxImageBytes);
-    _validateImageBytes(bytes, normalizedMimeType, maxImageBytes);
-    return ParseReceiptRequest._(
-      tripId: normalizedTripId,
-      imageBase64: imageBase64,
+    _validateImageBytes(bytes, normalizedMimeType);
+    return ReceiptImageInput._(
+      bytes: Uint8List.fromList(bytes),
       mimeType: normalizedMimeType,
+      fileName: _normalizeFileName(fileName),
     );
   }
 
-  factory ParseReceiptRequest.fromBytes({
-    required String tripId,
-    required Uint8List imageBytes,
-    required String mimeType,
-    int maxImageBytes = receiptImageMaxBytes,
+  ReceiptImageInput._({
+    required this._bytes,
+    required this.mimeType,
+    required this.fileName,
+  });
+
+  final Uint8List _bytes;
+  final String mimeType;
+  final String? fileName;
+
+  Uint8List get bytes => Uint8List.fromList(_bytes);
+}
+
+/// 검증된 앱 입력을 Firebase Callable wire 형식으로만 변환합니다.
+final class ParseReceiptRequest {
+  factory ParseReceiptRequest({
+    required EntityId tripId,
+    required ReceiptImageInput image,
   }) {
     final normalizedTripId = _validateTripId(tripId);
-    final normalizedMimeType = _normalizeMimeType(mimeType);
-    _validateMaxImageBytes(maxImageBytes);
-    _validateImageBytes(imageBytes, normalizedMimeType, maxImageBytes);
     return ParseReceiptRequest._(
       tripId: normalizedTripId,
-      imageBase64: base64Encode(imageBytes),
-      mimeType: normalizedMimeType,
+      imageBase64: base64Encode(image._bytes),
+      mimeType: image.mimeType,
     );
   }
 
   const ParseReceiptRequest._({
-    required this.tripId,
-    required this.imageBase64,
-    required this.mimeType,
+    required this._tripId,
+    required this._imageBase64,
+    required this._mimeType,
   });
 
-  final EntityId tripId;
-  final String imageBase64;
-  final String mimeType;
+  final EntityId _tripId;
+  final String _imageBase64;
+  final String _mimeType;
 
   Map<String, Object> toJson() => {
-    'tripId': tripId,
-    'imageBase64': imageBase64,
-    'mimeType': mimeType,
+    'tripId': _tripId,
+    'imageBase64': _imageBase64,
+    'mimeType': _mimeType,
   };
 }
 
@@ -109,7 +115,10 @@ typedef ParsedReceipt = ParseReceiptResponse;
 
 /// 호출 구현은 응답만 반환하며 이미지나 OCR 초안을 저장하지 않습니다.
 abstract interface class ReceiptParser {
-  Future<ParseReceiptResponse> parseReceipt(ParseReceiptRequest request);
+  Future<ParseReceiptResponse> parseReceipt({
+    required EntityId tripId,
+    required ReceiptImageInput image,
+  });
 }
 
 String _validateTripId(String value) {
@@ -138,46 +147,34 @@ String _normalizeMimeType(String value) {
   return normalized;
 }
 
-Uint8List _decodeImageBase64(String value, int maxImageBytes) {
-  final maxEncodedLength = ((maxImageBytes + 2) ~/ 3) * 4;
-  if (value.length > maxEncodedLength) {
-    throw _payloadTooLarge(maxImageBytes);
-  }
-  if (value.isEmpty ||
-      value.length % 4 != 0 ||
-      !RegExp(r'^[A-Za-z0-9+/]*={0,2}$').hasMatch(value)) {
-    throw _invalidBase64();
-  }
-  try {
-    return base64Decode(value);
-  } on FormatException {
-    throw _invalidBase64();
-  }
-}
-
-void _validateImageBytes(Uint8List bytes, String mimeType, int maxImageBytes) {
-  if (bytes.length > maxImageBytes) {
-    throw _payloadTooLarge(maxImageBytes, actualBytes: bytes.length);
+void _validateImageBytes(Uint8List bytes, String mimeType) {
+  if (bytes.length > receiptImageMaxBytes) {
+    throw _payloadTooLarge(actualBytes: bytes.length);
   }
   if (bytes.isEmpty || !_matchesImageSignature(bytes, mimeType)) {
     throw const AppError(
       code: AppErrorCode.invalidImage,
       message: '이미지 형식과 파일 내용을 확인해 주세요.',
       retryable: false,
-      field: 'imageBase64',
+      field: 'bytes',
     );
   }
 }
 
-void _validateMaxImageBytes(int value) {
-  if (value < 1) {
+String? _normalizeFileName(String? value) {
+  final normalized = value?.trim();
+  if (normalized == null || normalized.isEmpty) {
+    return null;
+  }
+  if (normalized.length > 255) {
     throw const AppError(
       code: AppErrorCode.invalidArgument,
-      message: '이미지 크기 제한을 확인해 주세요.',
+      message: '파일 이름은 255자 이하여야 합니다.',
       retryable: false,
-      field: 'maxImageBytes',
+      field: 'fileName',
     );
   }
+  return normalized;
 }
 
 bool _matchesImageSignature(Uint8List bytes, String mimeType) =>
@@ -210,17 +207,10 @@ bool _matchesImageSignature(Uint8List bytes, String mimeType) =>
       _ => false,
     };
 
-AppError _invalidBase64() => const AppError(
-  code: AppErrorCode.invalidImage,
-  message: '이미지 데이터를 읽을 수 없습니다.',
-  retryable: false,
-  field: 'imageBase64',
-);
-
-AppError _payloadTooLarge(int maxBytes, {int? actualBytes}) => AppError(
+AppError _payloadTooLarge({required int actualBytes}) => AppError(
   code: AppErrorCode.payloadTooLarge,
   message: '영수증 이미지 크기 제한을 초과했습니다.',
   retryable: false,
-  field: 'imageBase64',
-  details: {'maxBytes': maxBytes, 'actualBytes': ?actualBytes},
+  field: 'bytes',
+  details: {'maxBytes': receiptImageMaxBytes, 'actualBytes': actualBytes},
 );

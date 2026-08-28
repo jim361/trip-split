@@ -106,21 +106,18 @@ MapRenderModel deriveMapRenderModel({
   required List<ItineraryItem> itinerary,
 }) {
   final placesById = {for (final place in places) place.id: place};
-  final sorted =
-      [
-        for (var index = 0; index < itinerary.length; index++)
-          _IndexedItem(index, itinerary[index]),
-      ]..sort((left, right) {
-        final byDate = left.item.date.compareTo(right.item.date);
-        if (byDate != 0) return byDate;
-        final byOrder = left.item.order.compareTo(right.item.order);
-        return byOrder != 0 ? byOrder : left.index.compareTo(right.index);
-      });
+  final sorted = [...itinerary]
+    ..sort((left, right) {
+      final byDate = left.date.compareTo(right.date);
+      if (byDate != 0) return byDate;
+      final byOrder = left.order.compareTo(right.order);
+      return byOrder != 0 ? byOrder : left.id.compareTo(right.id);
+    });
 
   final dates = <LocalDate>[];
-  for (final entry in sorted) {
-    if (dates.isEmpty || dates.last != entry.item.date) {
-      dates.add(entry.item.date);
+  for (final item in sorted) {
+    if (dates.isEmpty || dates.last != item.date) {
+      dates.add(item.date);
     }
   }
   final colorByDate = {
@@ -134,8 +131,7 @@ MapRenderModel deriveMapRenderModel({
   final nextNumberByDate = <LocalDate, int>{};
   final previousPinByDate = <LocalDate, MapPin>{};
 
-  for (final entry in sorted) {
-    final item = entry.item;
+  for (final item in sorted) {
     final number = (nextNumberByDate[item.date] ?? 0) + 1;
     nextNumberByDate[item.date] = number;
     final place = item.placeId == null ? null : placesById[item.placeId];
@@ -200,11 +196,4 @@ MapRenderModel deriveMapRenderModel({
         ? MapEmptyState.noMappableItems
         : MapEmptyState.none,
   );
-}
-
-final class _IndexedItem {
-  const _IndexedItem(this.index, this.item);
-
-  final int index;
-  final ItineraryItem item;
 }

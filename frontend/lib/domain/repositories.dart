@@ -117,7 +117,42 @@ String? _optionalTrim(String? value) {
 }
 
 final class ItineraryItemDraft {
-  const ItineraryItemDraft({
+  factory ItineraryItemDraft({
+    required LocalDate date,
+    required String title,
+    required int order,
+    String? startTime,
+    String? endTime,
+    EntityId? placeId,
+    String? memo,
+  }) {
+    final normalizedDate = date.trim();
+    final normalizedTitle = title.trim();
+    final normalizedStartTime = _optionalItineraryTime(startTime, 'startTime');
+    final normalizedEndTime = _optionalItineraryTime(endTime, 'endTime');
+
+    if (!_isLocalDate(normalizedDate)) {
+      throw _invalidItinerary('date', '일정 날짜는 YYYY-MM-DD 형식의 실제 날짜여야 합니다.');
+    }
+    if (normalizedTitle.isEmpty || normalizedTitle.length > 160) {
+      throw _invalidItinerary('title', '일정 제목은 1자 이상 160자 이하여야 합니다.');
+    }
+    if (order < 0) {
+      throw _invalidItinerary('order', '일정 순서는 0 이상이어야 합니다.');
+    }
+
+    return ItineraryItemDraft._(
+      date: normalizedDate,
+      title: normalizedTitle,
+      order: order,
+      startTime: normalizedStartTime,
+      endTime: normalizedEndTime,
+      placeId: _optionalTrim(placeId),
+      memo: _optionalTrim(memo),
+    );
+  }
+
+  const ItineraryItemDraft._({
     required this.date,
     required this.title,
     required this.order,
@@ -135,6 +170,34 @@ final class ItineraryItemDraft {
   final String? memo;
   final int order;
 }
+
+final _itineraryTimePattern = RegExp(r'^(?:[01]\d|2[0-3]):[0-5]\d$');
+final _localDatePattern = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
+
+bool _isLocalDate(String value) {
+  final match = _localDatePattern.firstMatch(value);
+  if (match == null) return false;
+  final year = int.parse(match.group(1)!);
+  final month = int.parse(match.group(2)!);
+  final day = int.parse(match.group(3)!);
+  final parsed = DateTime.utc(year, month, day);
+  return parsed.year == year && parsed.month == month && parsed.day == day;
+}
+
+String? _optionalItineraryTime(String? value, String field) {
+  final normalized = _optionalTrim(value);
+  if (normalized != null && !_itineraryTimePattern.hasMatch(normalized)) {
+    throw _invalidItinerary(field, '시간은 HH:mm 형식으로 입력해 주세요.');
+  }
+  return normalized;
+}
+
+AppError _invalidItinerary(String field, String message) => AppError(
+  code: AppErrorCode.invalidArgument,
+  message: message,
+  retryable: false,
+  field: field,
+);
 
 final class ExpenseDraft {
   ExpenseDraft({

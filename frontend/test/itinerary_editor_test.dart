@@ -7,16 +7,14 @@ import 'package:trip_split/features/itinerary/itinerary_editor.dart';
 void main() {
   test('도쿄 fixture의 날짜와 시간을 검증하고 날짜별 order를 유지한다', () {
     for (final item in tokyoTripFixture.itinerary) {
-      final draft = validateItineraryItemDraft(
-        ItineraryItemDraft(
-          date: item.date,
-          title: item.title,
-          order: item.order,
-          startTime: item.startTime,
-          endTime: item.endTime,
-          placeId: item.placeId,
-          memo: item.memo,
-        ),
+      final draft = ItineraryItemDraft(
+        date: item.date,
+        title: item.title,
+        order: item.order,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        placeId: item.placeId,
+        memo: item.memo,
       );
       expect(draft.date, item.date);
       expect(draft.startTime, item.startTime);
@@ -55,15 +53,13 @@ void main() {
   });
 
   test('선택 입력을 정리하고 placeId가 없는 일정을 허용한다', () {
-    final draft = validateItineraryItemDraft(
-      const ItineraryItemDraft(
-        date: ' 2026-11-25 ',
-        title: ' 나리타 도착 ',
-        order: 0,
-        startTime: ' 09:05 ',
-        endTime: '',
-        placeId: ' ',
-      ),
+    final draft = ItineraryItemDraft(
+      date: ' 2026-11-25 ',
+      title: ' 나리타 도착 ',
+      order: 0,
+      startTime: ' 09:05 ',
+      endTime: '',
+      placeId: ' ',
     );
 
     expect(draft.date, '2026-11-25');
@@ -75,20 +71,21 @@ void main() {
 
   test('잘못된 날짜, 제목, order와 시간 형식을 거부한다', () {
     for (final date in ['2026/11/25', '2026-02-29', '2026-13-01']) {
-      _expectInvalid(_draft(date: date), 'date');
+      _expectInvalid(() => _draft(date: date), 'date');
     }
-    _expectInvalid(_draft(title: '   '), 'title');
-    _expectInvalid(_draft(order: -1), 'order');
+    _expectInvalid(() => _draft(title: '   '), 'title');
+    _expectInvalid(() => _draft(title: List.filled(161, '가').join()), 'title');
+    _expectInvalid(() => _draft(order: -1), 'order');
     for (final time in ['9:30', '24:00', '12:60']) {
-      _expectInvalid(_draft(startTime: time), 'startTime');
+      _expectInvalid(() => _draft(startTime: time), 'startTime');
     }
-    _expectInvalid(_draft(endTime: '18시'), 'endTime');
+    _expectInvalid(() => _draft(endTime: '18시'), 'endTime');
   });
 }
 
-void _expectInvalid(ItineraryItemDraft draft, String field) {
+void _expectInvalid(void Function() callback, String field) {
   expect(
-    () => validateItineraryItemDraft(draft),
+    callback,
     throwsA(
       isA<AppError>()
           .having((error) => error.code, 'code', AppErrorCode.invalidArgument)

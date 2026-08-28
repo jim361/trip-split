@@ -6,7 +6,7 @@
 
 Firebase 여행 세션 데이터를 `.trip.json` 파일로 내보내고 가져올 수 있게 한다. 이 기능은 핵심 공유 수단이 아니라 백업, 복원, 데모 데이터, 데이터 이전용이다.
 
-schema v1은 항상 새 여행으로 복원한다. 여행 설정, 참여자, 장소, 일정과 지출은 포함하지만 사용자 프로필·member uid·기존 owner/shareCode와 audit uid·timestamp는 제외하고 복원 시 새 값으로 만든다. 기존 여행 병합과 Flutter Web 파일 adapter는 MVP 이후다.
+schema v1은 항상 새 여행으로 복원한다. 여행 설정, 참여자, 장소, 일정과 지출은 포함하지만 사용자 프로필·member uid·기존 owner/shareCode와 audit uid·timestamp는 제외하고 복원 시 새 값으로 만든다. 기존 여행 병합과 Flutter Web 파일 adapter는 MVP 이후다. 실제 Firebase import를 열기 전에는 Android adapter의 파일·entity 개수 제한과 Task 6 지출 validator를 같은 경계에서 적용한다.
 
 ## 담당
 
@@ -17,7 +17,7 @@ schema v1은 항상 새 여행으로 복원한다. 여행 설정, 참여자, 장
 - [x] export JSON schema 정의
 - [x] schemaVersion 필드 정의
 - [ ] 여행 전체 데이터 조회 함수 구현
-- [x] members, places, itinerary, expenses 포함 범위 결정
+- [x] participants, places, itinerary, expenses 포함 범위와 members 제외 결정
 - [x] 사용자 개인정보 export 범위 결정
 - [ ] Android Storage Access Framework 또는 시스템 파일 저장 UI로 `.trip.json` 내보내기 구현
 - [ ] Android share sheet로 내보낸 파일 공유

@@ -41,7 +41,11 @@ final class MockReceiptParser implements ReceiptParser {
   final MockReceiptFailure? failure;
 
   @override
-  Future<ParseReceiptResponse> parseReceipt(ParseReceiptRequest request) async {
+  Future<ParseReceiptResponse> parseReceipt({
+    required EntityId tripId,
+    required ReceiptImageInput image,
+  }) async {
+    ParseReceiptRequest(tripId: tripId, image: image);
     switch (failure) {
       case MockReceiptFailure.unavailable:
         throw const AppError(

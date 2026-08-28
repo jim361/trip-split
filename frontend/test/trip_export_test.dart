@@ -88,6 +88,62 @@ void main() {
     );
   });
 
+  test('중복되거나 저장할 수 없는 entity ID를 거부한다', () {
+    final root = _encodedFixture();
+    final participants = root['participants']! as List<dynamic>;
+    participants.add(Map<String, dynamic>.from(participants.first as Map));
+
+    expect(
+      () => TripExportPayload.decode(jsonEncode(root)),
+      throwsA(
+        isA<AppError>().having(
+          (error) => error.field,
+          'field',
+          'participants[1].id',
+        ),
+      ),
+    );
+
+    final invalidIdRoot = _encodedFixture();
+    (invalidIdRoot['places']! as List<dynamic>).first['id'] = 'folder/place';
+    expect(
+      () => TripExportPayload.decode(jsonEncode(invalidIdRoot)),
+      throwsA(
+        isA<AppError>().having((error) => error.field, 'field', 'places[0].id'),
+      ),
+    );
+  });
+
+  test('존재하지 않는 장소·일정·참여자 참조를 거부한다', () {
+    final itineraryRoot = _encodedFixture();
+    (itineraryRoot['itineraryItems']! as List<dynamic>).first['placeId'] =
+        'missing-place';
+    expect(
+      () => TripExportPayload.decode(jsonEncode(itineraryRoot)),
+      throwsA(
+        isA<AppError>().having(
+          (error) => error.field,
+          'field',
+          'itineraryItems[0].placeId',
+        ),
+      ),
+    );
+
+    final payerRoot = _encodedFixture();
+    final expense = (payerRoot['expenses']! as List<dynamic>).first;
+    (expense['payer'] as Map<String, dynamic>)['participantId'] = 'missing';
+    expect(
+      () => TripExportPayload.decode(jsonEncode(payerRoot)),
+      throwsA(
+        isA<AppError>().having(
+          (error) => error.field,
+          'field',
+          'expenses[0].payer.participantId',
+        ),
+      ),
+    );
+  });
+
   test('malformed JSON을 AppError invalid-argument로 반환한다', () {
     expect(
       () => TripExportPayload.decode('{not-json'),
@@ -145,6 +201,18 @@ void main() {
       ),
     );
   });
+}
+
+Map<String, dynamic> _encodedFixture() {
+  final fixture = _fixture();
+  return TripExportPayload.fromDomain(
+        trip: fixture.trip,
+        participants: fixture.participants,
+        places: fixture.places,
+        itineraryItems: fixture.itineraryItems,
+        expenses: fixture.expenses,
+      ).toJson()
+      as Map<String, dynamic>;
 }
 
 ({

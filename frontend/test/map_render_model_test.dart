@@ -47,6 +47,14 @@ void main() {
       ],
       itinerary: original,
     );
+    final reversedModel = deriveMapRenderModel(
+      places: [
+        _place(id: 'last-place', lat: 3, lng: 3),
+        _place(id: 'first-a-place', lat: 1, lng: 1),
+        _place(id: 'first-b-place', lat: 2, lng: 2),
+      ],
+      itinerary: original.reversed.toList(),
+    );
 
     expect(original.map((item) => item.id), originalIds);
     expect(model.pins.map((pin) => (pin.itineraryItemId, pin.number)), [
@@ -55,6 +63,10 @@ void main() {
       ('last', 3),
     ]);
     expect(model.segments, hasLength(2));
+    expect(
+      reversedModel.pins.map((pin) => pin.itineraryItemId),
+      model.pins.map((pin) => pin.itineraryItemId),
+    );
   });
 
   test('좌표 누락 사유와 빈 상태를 파생한다', () {

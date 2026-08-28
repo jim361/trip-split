@@ -342,7 +342,10 @@ abstract interface class MapAdapter {
 }
 
 abstract interface class ReceiptParser {
-  Future<ParsedReceipt> parseReceipt(ReceiptImageInput input);
+  Future<ParsedReceipt> parseReceipt({
+    required EntityId tripId,
+    required ReceiptImageInput image,
+  });
 }
 ```
 

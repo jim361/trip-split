@@ -160,11 +160,12 @@ final class FirestoreTripRepositories implements TripRepositories {
         _tripCollection(tripId, 'itinerary'),
         (snapshot) => _itineraryItem(tripId, snapshot.id, snapshot.data()),
       ).map((items) {
-        items.sort(
-          (left, right) => left.date.compareTo(right.date) != 0
-              ? left.date.compareTo(right.date)
-              : left.order.compareTo(right.order),
-        );
+        items.sort((left, right) {
+          final date = left.date.compareTo(right.date);
+          if (date != 0) return date;
+          final order = left.order.compareTo(right.order);
+          return order != 0 ? order : left.id.compareTo(right.id);
+        });
         return items;
       });
 
