@@ -13,12 +13,12 @@
 - `TASK-01`~`TASK-09`와 대응 task 파일, `BASE-*`, `IT-*`, `PREP-*`, `ST-*`, `OCR-*` ID는 재번호·재사용·변경·삭제하지 않습니다.
 - 기존 파일이나 다른 작업자의 변경을 삭제하거나 되돌리지 않습니다.
 - 장기 운영 브랜치는 `dev`와 `main`이며 작업 전 `dev`를 최신 상태로 동기화합니다.
-- 검증 후에는 최신 dev의 흐름에 따라 `dev`에 직접 반영하고, `main`은 검증된 dev에서 릴리스 PR로 반영합니다.
+- 검증 후 `dev`에 직접 반영하며 별도 기능 브랜치와 `dev` 대상 Pull Request를 만들지 않습니다. `main`은 검증된 `dev`에서 릴리스 Pull Request로만 반영합니다.
 - commit, push, Pull Request 생성·갱신·merge는 각각 사용자의 명시적 승인을 받은 경우에만 수행합니다.
 - force push, `reset --hard`, 강제 clean, 승인 없는 배포·secret 등록·유료 API 호출을 하지 않습니다.
 - 사용자 설명·진행 업데이트·결과 보고는 한국어로 작성합니다.
 - 필수 런타임은 Node.js 22와 Java 21입니다.
 - 작업 중 `npm run verify:fast`, dev 반영 또는 Pull Request 전 `npm run verify:full`을 실행합니다.
-- Flutter 변경은 `dart format --output=none --set-exit-if-changed lib test`, `flutter analyze`, `flutter test`, `flutter build apk --debug`로 검증합니다.
+- Flutter 변경은 `frontend/`에서 `dart format --output=none --set-exit-if-changed lib test`, `flutter analyze`, `flutter test`, `flutter build apk --debug`로 검증합니다.
 - 테스트·fixture·검증 조건을 약화하거나 삭제해 통과시키지 않습니다.
 - Android가 첫 실행·출시 대상이며 Flutter Web·iOS와 실제 Firebase 연결은 후속 승인 범위입니다.

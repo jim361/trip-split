@@ -95,7 +95,8 @@ Flutter Web은 구현 가능하지만 Android 출시의 완료 조건은 아니�
 ### Flutter
 
 ```bash
-dart format --output=none --set-exit-if-changed .
+cd frontend
+dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
 flutter build apk --debug
@@ -125,7 +126,8 @@ CI는 Flutter와 backend job을 분리한다. Node.js 22는 Functions용으로 �
 - `dev` 직접 push: 로컬 검증 후 GitHub Actions에서 같은 검증 재실행
 - `main` 반영: 검증된 `dev`의 릴리스 Pull Request
 
-대형 사용자 정의 검증기나 Git 훅은 추가하지 않는다.
+대형 사용자 정의 검증기는 추가하지 않는다. 다만 저장소 로컬의 작은 direct Git command hook으로 직접 실행된 강제 `git push`·`git reset --hard`·강제 `git clean`만 보조적으로 차단한다.
+이 hook은 GitHub Actions와 서버 측 보호 규칙을 대체하지 않으며, 셸 wrapper·alias·인코딩 명령의 해석은 범위 밖이다.
 
 ## 9. 전환 시 보존할 계약
 
