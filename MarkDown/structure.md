@@ -69,7 +69,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 | `frontend/lib/features/settlement`, `frontend/lib/features/receipts`, expense repository | 정산·영수증 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
 | `frontend/lib/features/places`, `itinerary`, `map`, `preparation`과 관련 repository | 장소·일정·지도 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
 | 여행 생성, 공유 코드 검증·참여 Function | 플랫폼·통합 | 인증·보안 규칙과 함께 통합한다. |
-| `parseReceipt` Function | 정산·영수증 | OCR 비밀 키, 검증·오류 형식은 공통 계약을 따른다. |
+| `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` Function | 정산·영수증 | 공통 지출 validator, OCR 비밀 키, 검증·오류 형식은 공통 계약을 따른다. |
 | 장소 검색, 장소 URL 해석 Function | 장소·일정·지도 | Google 서버 키, 검증·오류 형식은 공통 계약을 따른다. |
 | `backend/src/index.ts`, 공통 HTTP·환경변수 유틸리티 | 플랫폼·통합 | 각 담당의 handler를 export만 하며 도메인 로직을 두지 않는다. |
 
@@ -265,7 +265,7 @@ type Place = {
   source: "googleSearch" | "googleMapsUrl" | "naverSearch" | "naverLink" | "manual";
   providerPlaceId?: string;
   sourceUrl?: string;
-  addedBy?: string;
+  addedBy: string;
   memo?: string;
   createdAt: EpochMillis;
   updatedAt: EpochMillis;
@@ -414,6 +414,7 @@ type AppError = {
 ```
 
 - repository와 callable Function은 기술별 오류를 `AppError`로 변환한다.
+- Callable은 표준 `HttpsError.code`와 `details.appCode`, `details.retryable`, 선택적 `details.field`를 함께 사용한다. 앱 전용 OCR code를 표준 code 자리에 직접 넣지 않는다.
 - `message`는 화면에 바로 노출 가능한 한국어 기본 문구로 제공하고, 비밀 키·외부 API 원문·stack trace는 포함하지 않는다.
 - 입력 오류는 `invalid-argument`와 `field`, 서비스 일시 장애·오프라인은 `unavailable`, 호출량 제한은 `resource-exhausted`로 통일한다.
 - 재시도 버튼은 `retryable === true`인 경우에만 제공한다.
@@ -440,6 +441,7 @@ abstract interface class ExpensesRepository {
 ```
 
 - 다른 기능 repository도 `Stream<T>` 기반 watch와 `Future<T>` 기반 생성·수정·삭제 패턴을 따른다.
+- expense의 `watchExpenses`는 멤버 기반 Firestore 읽기를 사용하고 create/update/delete command는 각각 같은 이름의 Callable을 사용한다. runtime validator가 준비되기 전에는 Rules의 클라이언트 직접 쓰기 거부를 유지한다.
 - 생성·수정 input에는 서버가 만드는 ID·timestamp와 Auth에서 주입할 `createdBy/updatedBy`를 받지 않는다.
 - Widget과 controller는 repository만 사용하며 Firestore collection 경로나 Firebase SDK 타입을 알지 않는다.
 - 공통 mock repository와 `tokyo-2026-11` fixture는 같은 interface를 구현해 외부 API와 Firebase 없이 세 탭을 검증할 수 있게 한다. 기존 강릉 fixture는 회귀용으로 보존한다.

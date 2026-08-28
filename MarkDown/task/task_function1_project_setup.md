@@ -35,7 +35,7 @@ Flutter stable·Dart 기반 Android 프로젝트를 만들고 mock과 FlutterFir
 - [ ] Android Emulator에서 host 주소 `10.0.2.2` 연결 검증
 - [x] 공통 ID·timestamp·`AppError`·repository 인터페이스 정의
 - [x] `Stream` 조회와 `Future` 명령을 구현하는 mock/Firestore repository 주입 구조
-- [x] 고정 ID `tokyo-2026-11` fixture 추가, 기존 강릉 fixture는 KRW 회귀용으로 보존
+- [x] 고정 ID `tokyo-2026-11` Dart fixture 추가, 기존 React 강릉 fixture는 KRW 회귀용으로 보존
 - [x] Material Theme 초안 작성
 - [x] backend Node.js 22·TypeScript와 Firestore Rules/Emulator 구조 보존
 - [x] Flutter Web을 첫 완료 게이트와 배포에서 제외

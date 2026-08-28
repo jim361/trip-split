@@ -11,12 +11,13 @@
 | 역할 | 주 작업 경로 | 주 소유 영역 | 관련 Task |
 | --- | --- | --- | --- |
 | 플랫폼·통합 담당 | 루트, `frontend/lib/app`, `frontend/lib/data`, `backend/src/share` | Flutter/Firebase 기반, 인증, 여행 생성·공유·멤버, 앱 셸, 보안 규칙 통합, 백업, Android QA·통합 | `TASK-01`, `TASK-02`, `TASK-08`, `TASK-09` |
-| 정산·영수증 담당 | `frontend/lib/features/settlement`, `receipts`, `backend/src/ocr` | `Participant`, `Expense`, `ReceiptItem`, 순수 Dart 정산 엔진, 개인 소비 화면, `parseReceipt`, OCR·번역 검토 | `TASK-06`, `TASK-07` |
+| 정산·영수증 담당 | `frontend/lib/features/settlement`, `frontend/lib/features/receipts`, `backend/src/settlement`, `backend/src/ocr` | `Participant`, `Expense`, `ReceiptItem`, 순수 Dart 정산 엔진, 개인 소비 화면, 지출 Callable, `parseReceipt`, OCR·번역 검토 | `TASK-06`, `TASK-07` |
 | 장소·일정·지도 담당 | `frontend/lib/features/places`, `itinerary`, `map`, `preparation`, `backend/src/places` | `Place` 정규화, Google 장소·URL·직접 입력, 일정·준비 편집, 지도 adapter | `TASK-03`, `TASK-04`, `TASK-05` |
 
 - 플랫폼·통합 담당이 제품 계약과 통합의 최종 책임자다. 다른 담당자는 공통 타입이나 Firestore 경로를 단독 확정하지 않고 변경 전에 팀에 영향 범위를 공유한다.
 - OCR은 정산 원장과 한 흐름으로 연결되므로 정산·영수증 담당이 소유한다.
 - 장소 보관함, 준비와 Google API는 일정 및 지도 입력에 결합되므로 장소·일정·지도 담당이 소유한다.
+- 두 도메인 담당은 backend만이 아니라 자신의 Flutter feature, 순수 Dart 로직, repository와 Function을 세로로 함께 소유한다.
 - 각 담당자는 동시에 하나의 구현 작업만 진행한다. 리뷰 대기 작업은 WIP에서 제외할 수 있다.
 
 ## 2. 구현 전 공통 계약
@@ -28,7 +29,7 @@
 - 금액은 ISO 통화별 최소 단위 정수다. MVP는 KRW와 JPY를 지원하며, 서로 다른 통화는 분리하고 균등 분할의 최소 단위 나머지는 화면에 표시된 소비자 순서대로 배분한다.
 - 장소 API 응답은 앱 내부 `Place`로 정규화한다. 지도는 `Place` 좌표와 `ItineraryItem.order`만 입력받고 실제 도로 경로를 계산하지 않는다.
 - Android 여행 내비게이션은 `일정·지도`, `준비`, `비용` 세 개로 고정한다. 지도는 일정 상단에서 확대하고 영수증/OCR은 비용의 하위 흐름이다.
-- Cloud Function 소유권은 플랫폼의 여행 생성·공유 코드·참여, 정산의 `parseReceipt`, 지도의 장소 검색·장소 링크 파싱으로 나눈다.
+- Cloud Function 소유권은 플랫폼의 여행 생성·공유 코드·참여, 정산의 `createExpense`·`updateExpense`·`deleteExpense`·`parseReceipt`, 지도의 `searchPlaces`·`parsePlaceLink`로 나눈다.
 - 공통 오류는 `code`, `message`, `retryable`, 선택적 `field`와 `details`를 갖는 한 형식으로 변환한다. 문서 ID 생성 방식, Firebase server timestamp, repository의 구독/CRUD 인터페이스도 기능 구현 전에 고정한다.
 - `tokyo-2026-11` fixture를 화면, 순수 함수와 repository 테스트에 사용하고 기존 강릉 fixture는 회귀용으로 보존한다. canonical fixture 변경은 공통 계약 변경으로 취급한다.
 
@@ -68,7 +69,7 @@
 ### 단계 A — Git과 공통 계약 준비
 
 - 작업 시작 전에 정상 clone 또는 기존 Git 메타데이터를 확인한다. 이력이 불명확한 폴더에서 새로 `git init`하지 않는다.
-- 사람과 AI 작업자는 각각 별도 clone 또는 `git worktree`를 사용하고 같은 작업 폴더를 동시에 편집하지 않는다.
+- 동시 작업자는 각각 별도 clone을 사용하고 같은 작업 폴더를 동시에 편집하지 않는다. 모두 같은 `dev`에 직접 반영하므로 하나의 clone에서 여러 worktree가 동시에 `dev`를 checkout하는 방식은 사용하지 않는다.
 - Dart 공통 모델, Firestore 경로, repository 인터페이스, 오류 형식과 도쿄 fixture를 먼저 확정한다.
 
 ### 단계 B — 플랫폼 기반과 mock 병렬 개발
@@ -106,7 +107,7 @@
 ## 6. `dev` 직접 통합 원칙
 
 - 장기 운영 브랜치는 `dev`와 `main`만 사용하며 기능 브랜치를 따로 만들지 않는다.
-- 작업 전에 최신 `origin/dev`를 동기화하고, 한 번에 한 작업만 작은 커밋으로 `dev`에 직접 반영한다.
+- 작업 전과 push 직전에 최신 `origin/dev`를 동기화한다. 원격 변경이 있으면 충돌을 해결하고 영향받는 검증을 다시 실행한 뒤, 한 번에 한 작업만 작은 커밋으로 `dev`에 직접 반영한다.
 - 푸시 전 담당 검증을 로컬에서 실행하고, 푸시 뒤 GitHub Actions 결과를 확인한다.
 - 일반 변경은 최소 한 명에게 변경 내용을 공유한다. 데이터 계약이나 Firestore 경로 변경은 나머지 두 명의 확인이 필요하다.
 - 공유 내용에는 구현 범위, 로딩·빈 상태·오류 상태, Android 확인 결과, 테스트 결과와 공통 계약 변경 여부를 기록한다.

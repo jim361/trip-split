@@ -10,10 +10,16 @@
 
 장소·일정·지도 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 Firebase 계약을 검토·최종 확인한다.
 
+## Callable 경계
+
+- `searchPlaces({ tripId, query })`는 인증 사용자와 여행 멤버십을 확인한 뒤 정규화한 `PlaceCandidate[]`를 반환한다.
+- `parsePlaceLink({ tripId, url })`는 같은 확인 뒤 지원하는 Google Maps URL을 `PlaceCandidate`로 정규화한다.
+- Flutter의 `PlaceProvider`와 `PlaceLinkResolver`도 `tripId`를 검색어와 분리해 받는다. 실제 Google API, 서버 키와 quota 설정은 mock 흐름이 완성된 뒤 연결한다.
+
 ## 작업
 
 - [x] `Place` 타입 정의
-- [x] `PlaceProvider` 인터페이스와 Google/직접 입력 응답을 `Place`로 바꾸는 정규화 함수 정의
+- [x] 여행 범위를 받는 `PlaceProvider`·`PlaceLinkResolver` 인터페이스와 Google/직접 입력 응답을 `Place`로 바꾸는 정규화 함수 정의
 - [x] Firestore places 구조 설계
 - [x] Place에 addedBy, createdAt, updatedAt 반영
 - [x] 공통 `tokyo-2026-11` fixture로 동작하는 mock place provider와 mock places repository 구현

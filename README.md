@@ -57,7 +57,7 @@
 
 - `main`: 배포·발표 가능한 안정 버전만 유지합니다.
 - `dev`: 모든 개발 변경을 직접 커밋·푸시하고 GitHub Pages로 팀에 공유합니다.
-- 작업 전 최신 `origin/dev`를 동기화하고, 담당 범위의 검증을 로컬에서 통과시킨 뒤 작은 커밋으로 푸시합니다.
+- 작업 전과 push 직전에 최신 `origin/dev`를 동기화하고, 원격 변경이 있으면 충돌 해결 뒤 담당 범위 검증을 다시 실행해 작은 커밋으로 푸시합니다.
 - 별도 기능 브랜치와 `dev` 대상 Pull Request는 만들지 않습니다.
 - 출시 시점에는 검증된 `dev`에서 `main`으로 릴리스 Pull Request를 만듭니다.
 
@@ -106,6 +106,8 @@ npm run dev:frontend
 ```bash
 npm run verify:fast
 npm run verify:full
+npm run verify:flutter:fast
+npm run verify:flutter:full
 npm run format:check
 npm run typecheck
 npm run lint
@@ -115,7 +117,7 @@ npm run build:pages
 npm run preview:pages
 ```
 
-`verify:fast`는 임시 React 목업과 backend npm workspace의 format, lint, typecheck와 test를 실행합니다. `verify:full`은 여기에 production build와 안전한 `demo-trip-split` 프로젝트의 Auth, Firestore, Functions Emulator 테스트를 추가합니다. Flutter는 위의 Flutter 명령과 별도 CI job으로 검증하며, 실제 Firebase 프로젝트나 과금 가능한 외부 API에는 접근하지 않습니다.
+`verify:fast`는 임시 React 목업과 backend npm workspace의 format, lint, typecheck와 test를 실행합니다. `verify:full`은 여기에 production build와 안전한 `demo-trip-split` 프로젝트의 Auth, Firestore, Functions Emulator 테스트를 추가합니다. `verify:flutter:fast`는 Dart format, analyze와 test를, `verify:flutter:full`은 debug APK build까지 실행합니다. 실제 Firebase 프로젝트나 과금 가능한 외부 API에는 접근하지 않습니다.
 
 ## Firebase 모드
 
@@ -160,6 +162,7 @@ Functions 일반 환경변수와 secret 구조는 `backend/.env.example`에 있�
 - Auth controller가 익명 세션을 자동 시작하고 Android Google credential의 선택 연결을 제공합니다.
 - `TripSession`이 route의 `tripId`로 여행·멤버·참여자·장소·일정·지출 Stream을 결합합니다. 준비 데이터 repository는 후속입니다.
 - `createTrip`, `createShareCode`, `joinTrip`은 인증된 HTTPS Callable Function입니다. `createTrip`은 입력한 초기 정산 인원만큼 `Participant`를 함께 생성합니다.
+- 새 도메인 Callable은 공통 Auth·여행 멤버 검사와 `details.appCode` 오류 wire를 사용합니다. 장소 검색·링크 해석 요청은 검색어와 별도로 `tripId`를 전달합니다.
 - 최초 공유 코드는 무기한·무제한이며, 재생성하면 기존 활성 코드를 모두 비활성화합니다.
 - 모든 MVP 여행 멤버는 `editor`입니다.
 - Android Firestore 캐시와 pending write 상태를 구분합니다. Google 장소·OCR 호출은 온라인 전용입니다.

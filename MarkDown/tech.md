@@ -191,7 +191,7 @@ AppError
   details?: map
 ```
 
-Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로 같은 wire 값을 구현한다. Firebase SDK 오류와 Callable `HttpsError`는 service 계층에서 `AppError`로 변환한다. 외부 API 원문 응답, 비밀 키와 이미지 본문은 UI 오류나 로그에 노출하지 않는다.
+Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로 같은 wire 값을 구현한다. Callable은 Firebase가 허용하는 표준 `HttpsError.code`를 유지하고 앱 전용 오류는 `details.appCode`, 재시도 여부는 `details.retryable`, 입력 필드는 `details.field`로 전달한다. `backend/src/shared/callable.ts`가 이 형식과 Auth·여행 멤버 확인을 제공하고 Flutter service 계층이 이를 `AppError`로 변환한다. 외부 API 원문 응답, 비밀 키와 이미지 본문은 UI 오류나 로그에 노출하지 않는다.
 
 ### Repository 계약
 
@@ -206,12 +206,14 @@ Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로
 | 담당 | Callable Function | 책임 |
 | --- | --- | --- |
 | 플랫폼·통합 | `createTrip`, `createShareCode`, `joinTrip` | 여행·생성자 멤버 원자적 생성, 공유 코드 생성·검증, 참여 멤버 등록 |
-| 정산·영수증 | `parseReceipt` | 이미지 검증, OCR·번역 provider 호출, `ParsedReceipt` 정규화 |
+| 정산·영수증 | `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` | 지출 runtime 검증·감사 필드 기록, 이미지 검증, OCR·번역 provider 호출과 `ParsedReceipt` 정규화 |
 | 장소·일정·지도 | `searchPlaces`, `parsePlaceLink` | Google 장소 검색·URL 해석, `Place` 후보 정규화 |
 
 플랫폼·통합 담당은 Firebase 초기화, Functions 진입점, 보안 규칙, 공통 라우트, dependency와 lockfile을 최종 확인한다. 도메인 담당은 자신의 `features`, repository, Function 모듈과 테스트를 소유한다. 공통 타입이나 Firestore 경로 변경은 `dev`에 푸시하기 전에 세 담당자가 함께 검토한다.
 
-첫 공통 fixture는 고정 ID `tokyo-2026-11`을 사용하고 장소, 일정, 준비, 참여자, JPY 수동 지출과 일본어 항목형 영수증을 포함한다. 기존 강릉 fixture는 KRW·국내 회귀용으로 보존한다. 세 도메인의 mock repository와 통합 테스트가 같은 canonical fixture를 사용해 계약 불일치를 조기에 찾는다.
+장소·OCR Callable은 `{ tripId, ...도메인 입력 }`을 받고 Auth와 `trips/{tripId}/members/{uid}`를 확인한 뒤에만 외부 provider를 호출한다. `searchPlaces({ tripId, query })`는 `PlaceCandidate[]`, `parsePlaceLink({ tripId, url })`는 `PlaceCandidate`로 정규화한다. 지출 목록과 실시간 Stream은 멤버 기반 Rules로 읽고, 생성·수정·삭제는 공통 runtime validator를 통과하는 위 Callable만 사용한다. validator가 구현될 때까지 expense의 클라이언트 직접 쓰기 거부 규칙을 유지한다.
+
+첫 공통 Dart fixture는 고정 ID `tokyo-2026-11`을 사용하고 장소, 일정, 참여자와 JPY 수동 지출을 포함한다. 일본어 항목형 영수증은 별도 mock parser fixture로 제공한다. 준비 모델과 강릉 Dart fixture는 후속이며, 기존 React 강릉 fixture는 KRW·국내 회귀용으로 보존한다. 도메인 fixture는 같은 canonical 타입과 ID 계약을 사용해 불일치를 조기에 찾는다.
 
 ## 6. 인증과 공유 코드 흐름
 
@@ -332,8 +334,17 @@ Flutter의 도메인 계약은 provider 응답과 SDK 객체를 포함하지 않
 
 ```dart
 abstract interface class PlaceProvider {
-  Future<List<Place>> searchPlaces(String query);
-  Future<PlaceDetail> getPlaceDetail(String placeId);
+  Future<List<PlaceCandidate>> searchPlaces({
+    required EntityId tripId,
+    required PlaceSearchQuery query,
+  });
+}
+
+abstract interface class PlaceLinkResolver {
+  Future<PlaceCandidate> resolvePlaceLink({
+    required EntityId tripId,
+    required Uri url,
+  });
 }
 
 abstract interface class MapAdapter {
@@ -378,7 +389,6 @@ Web을 추가할 때는 `MapCapabilities`, 로그인, 파일·카메라와 공�
 - OCR 이미지의 최대 크기·형식, Functions timeout, 사용자별 호출 제한
 - Firebase Blaze, Google Maps와 Document AI·Translation 예산 알림 및 호출량 제한
 - OCR 외부 전송 동의 문구와 장애·재시도 안내의 최종 표현
-- 첫 여행에서 지출별 KRW·JPY를 허용할지와 통화별 공유 문구
 - Flutter Web 보조판이 필요해지는 시점과 Android 대비 capability 수용 기준
 
 ## 15. 1차 권장 결정
@@ -390,7 +400,7 @@ Web을 추가할 때는 `MapCapabilities`, 로그인, 파일·카메라와 공�
 - 공유: Cloud Function 기반 공유 코드 우선, Android App Links는 후속
 - 세션: `trips/{tripId}/members/{uid}` 기반 멤버 관리
 - 지도: Google 장소 검색·URL·직접 입력, 지도 표시, 번호 핀과 직선 동선 우선
-- 정산: 확정 지출 원장을 기준으로 결제액, 부담액, 정산 결과와 개인 소비 내역 파생
+- 정산: 확정 지출 원장을 기준으로 결제액, 부담액, 정산 결과와 개인 소비 내역을 통화별로 파생. `Trip.defaultCurrency`는 입력 기본값이며 지출별 ISO 통화를 허용하되 환율 없이 서로 합산하지 않음
 - OCR: Android 이미지의 원문과 번역을 담은 수정 가능한 항목 초안을 만들고 사용자 확인 후에만 지출 저장
 - `.trip.json`: 백업, 복원, 데모 데이터 용도
 

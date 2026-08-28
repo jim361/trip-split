@@ -130,11 +130,12 @@ type Expense = {
 
 - 모든 참여자의 `sum(net) === 0`이고 송금 후 각 net이 0이 된다.
 - 개인 소비 합계가 같은 참여자의 `owed`와 일치하고, 상세 행에서 원본 지출을 열 수 있다.
+- KRW와 JPY 원장은 각각 독립적으로 집계·송금 제안을 만들며 환율 없이 서로 합산하지 않는다.
 
 ### 6.4 repository와 실시간 원장
 
 - [x] `trips/{tripId}/participants/{participantId}`와 `trips/{tripId}/expenses/{expenseId}`의 mock CRUD·공통 구독 인터페이스를 구현한다.
-- [ ] runtime validator를 공유하는 서버 저장 경계를 만든 뒤 Firestore expense 생성·수정·삭제를 연다. 그전에는 Rules에서 클라이언트 직접 쓰기를 거부한다.
+- [ ] `createExpense`, `updateExpense`, `deleteExpense` Callable이 같은 runtime validator, Auth·여행 멤버 확인과 participant 참조 검증을 사용하도록 서버 저장 경계를 만든다. 그전에는 Rules에서 클라이언트 직접 쓰기를 거부한다.
 - [x] 생성 시 `createdBy/createdAt`, 수정 시 `updatedBy/updatedAt`을 Auth uid와 server timestamp로 기록한다.
 - [ ] 저장 직전에 동일한 validator를 실행하고 Firestore converter에서도 형식을 검증한다.
 - [ ] FlutterFire repository `Stream`을 정산 엔진에 전달해 지출이나 참여자 변경 시 파생 결과만 다시 계산한다. 별도 settlement snapshot은 저장하지 않는다.

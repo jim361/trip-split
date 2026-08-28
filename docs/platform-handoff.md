@@ -53,12 +53,12 @@
 - `frontend/lib/features/settlement/settlement_engine.dart`의 deterministic equal 엔진
 - `frontend/lib/features/receipts/receipt_parser.dart`의 bytes 기반 요청·응답 계약과 mock parser
 
-equal 외 custom/itemized·runtime validator·paid/owed/net은 아직 없습니다. validator가 모든 중첩 배분을 검사하는 서버 저장 경계를 만들기 전까지 Firestore Rules는 expense 직접 쓰기를 거부합니다. `parseReceipt` backend handler와 OCR provider도 아직 없으며 향후 Callable은 `details.appCode` 오류 계약을 함께 정해야 합니다.
+equal 외 custom/itemized·runtime validator·paid/owed/net은 아직 없습니다. validator가 모든 중첩 배분을 검사하는 서버 저장 경계를 만들기 전까지 Firestore Rules는 expense 직접 쓰기를 거부합니다. 다음 통합 경계는 `createExpense`, `updateExpense`, `deleteExpense` Callable이며 조회 Stream만 Firestore를 직접 사용합니다. `parseReceipt` backend handler와 OCR provider는 아직 없습니다.
 
 ### 장소·일정·지도
 
 - `frontend/lib/domain/repositories.dart`의 place·itinerary 계약
-- `frontend/lib/features/places/place_provider.dart`의 provider-neutral 입력 경계
+- `frontend/lib/features/places/place_provider.dart`의 `tripId`를 포함한 provider-neutral 입력 경계
 - `frontend/lib/features/map/map_render_model.dart`의 번호 핀·날짜 색·직선 segment·좌표 누락 모델
 - `frontend/lib/features/itinerary/`의 편집 core와 상단 지도 placeholder
 
@@ -75,6 +75,8 @@ equal 외 custom/itemized·runtime validator·paid/owed/net은 아직 없습니�
 - `joinTrip`: 코드를 검증하고 현재 auth uid를 editor member로 등록
 
 MVP 생성 코드에는 `expiresAt`과 `maxUses`를 기록하지 않습니다. 손상됐거나 타입이 잘못된 제한 필드가 존재하면 join은 fail-closed로 거부합니다.
+
+`backend/src/shared/callable.ts`는 다음 도메인 Callable이 재사용할 Auth·여행 멤버 확인과 공통 오류 wire를 제공합니다. Firebase 표준 `HttpsError.code`는 유지하고 앱 전용 오류는 `details.appCode`, 재시도 정책은 `details.retryable`, 입력 필드는 `details.field`에 둡니다. Flutter mapper는 새 wire를 우선하고 기존 표준 오류는 이전 방식으로 계속 변환합니다.
 
 ## 보안 규칙
 
