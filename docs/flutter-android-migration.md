@@ -14,7 +14,7 @@
 
 | 영역        | 현재 저장소                                            | 목표                                                                          |
 | ----------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| 사용자 앱   | `frontend/`의 React·Vite·TypeScript 목업               | `frontend/`의 Flutter·Dart Android 앱                                         |
+| 사용자 앱   | Flutter Android scaffold·mock 앱 셸과 임시 React 목업  | `frontend/`의 Flutter·Dart Android 앱                                         |
 | 웹 공유본   | React 빌드를 GitHub Pages에 배포                       | Flutter Web을 별도 수용 기준으로 검증한 뒤 재개                               |
 | 백엔드      | `backend/` Node.js·TypeScript Functions와 Rules 테스트 | 그대로 유지하고 Dart 클라이언트 계약만 연결                                   |
 | 지도        | Google 스타일 mock과 provider 경계                     | Android `google_maps_flutter`, Places는 서버 또는 제한된 API 경계             |
@@ -27,11 +27,11 @@
 
 ### Phase A · 전환 기반
 
-- Flutter 프로젝트를 `frontend/`에 생성하고 Android를 기본 실행 대상으로 설정
-- Android `minSdk 24`, 현재 Play 요구사항에 맞춘 `targetSdk 36`
-- 앱 router, Material 앱 셸과 `일정·지도 / 준비 / 비용` 하단 내비게이션
-- 고정 ID `tokyo-2026-11` fixture와 mock repository 주입
-- `dart format`, `flutter analyze`, unit/widget test, debug APK build
+- [x] Flutter 프로젝트를 `frontend/`에 생성하고 Android를 기본 실행 대상으로 설정
+- [x] Android `minSdk 24`, 현재 Play 요구사항에 맞춘 `targetSdk 36`
+- [x] 앱 router, Material 앱 셸과 `일정·지도 / 준비 / 비용` 하단 내비게이션
+- [x] 고정 ID `tokyo-2026-11` fixture와 mock repository 주입
+- [ ] `dart format`, `flutter analyze`, unit/widget test, debug APK build — 로컬 앞 세 항목 통과, APK는 CI 확인 중
 - FlutterFire 설정과 Auth·Firestore·Functions Emulator 연결
 - Anonymous Auth, `TripSession`, 여행 생성·공유 코드 입장의 세로 기능 조각
 
@@ -112,7 +112,7 @@ npm run build
 npm run test:emulator
 ```
 
-CI는 Flutter와 backend job을 분리한다. Node.js 22는 Functions용으로 유지하고, Java는 생성된 Flutter/Gradle 프로젝트와 호환되는 JDK 17을 우선 검증한다. Flutter SDK는 scaffold를 생성한 PR에서 CI로 확인한 버전을 고정한다.
+CI는 Flutter와 backend job을 분리한다. Node.js 22는 Functions용으로 유지하고 Flutter·backend job은 JDK 21을 사용한다. Android 소스·Kotlin bytecode target은 생성된 scaffold의 Java 17을 유지하며 Flutter SDK 3.47.2를 CI에 고정한다.
 
 ## 8. 하네스 영향
 

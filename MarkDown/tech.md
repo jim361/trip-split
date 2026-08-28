@@ -4,7 +4,7 @@
 
 ## 1. 확정된 기술 방향
 
-Trip Split MVP 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 개발하고 Firebase BaaS를 사용한다. 기존 Node.js 22·TypeScript Cloud Functions와 Firestore Rules 테스트는 유지한다. 첫 실사용은 도쿄 여행이며 Google Maps와 JPY를 우선 검증한다. Flutter Web은 공유 Dart 도메인과 repository를 재사용하는 후속 보조 타깃이고 첫 Android 출시 게이트에 포함하지 않는다.
+Trip Split MVP 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 개발하고 Firebase BaaS를 사용한다. TASK-01 기준 버전은 Flutter 3.47.2·Dart 3.13.2다. 기존 Node.js 22·TypeScript Cloud Functions와 Firestore Rules 테스트는 유지한다. 첫 실사용은 도쿄 여행이며 Google Maps와 JPY를 우선 검증한다. Flutter Web은 공유 Dart 도메인과 repository를 재사용하는 후속 보조 타깃이고 첫 Android 출시 게이트에 포함하지 않는다.
 
 ## 2. 전체 구조
 
@@ -48,9 +48,9 @@ MVP에서는 사용자-facing 로그인 화면 없이 시작한다. 앱 진입 �
 - Android `targetSdk 36`: 2026년 Play 신규 앱 요구사항을 기준으로 scaffold에서 검증
 - Android Emulator에서 host Emulator Suite 주소는 `10.0.2.2`
 - Auth·Firestore·Functions 인스턴스를 처음 사용하기 전에 각 Emulator 연결 설정 적용
-- Flutter CI의 JDK는 생성된 Gradle 프로젝트와 맞는 17을 우선 검증하고 실제 wrapper 확인 없이 Java 21을 강제하지 않음
+- Flutter와 backend CI runtime은 JDK 21을 사용하고 Android 소스·Kotlin bytecode target은 생성된 scaffold의 Java 17을 유지
 - Node.js 22는 기존 Firebase Functions runtime과 backend CI에 유지
-- Flutter SDK 버전은 scaffold PR에서 CI로 확인한 stable 버전을 고정하고 별도 버전 관리 도구는 팀에 실제 필요가 생길 때 도입
+- Flutter SDK는 CI와 `pubspec.yaml`에서 3.47.x stable 기준을 고정하고 별도 버전 관리 도구는 팀에 실제 필요가 생길 때 도입
 
 ## 4. Firestore 컬렉션과 정산 원장
 

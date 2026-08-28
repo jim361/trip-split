@@ -9,7 +9,7 @@
 
 공통 타입, Firestore 경로, Callable 요청·응답을 바꾸면 frontend와 backend 영향을 함께 확인합니다. 기존 파일이나 다른 작업자의 변경을 삭제하거나 되돌리지 않습니다.
 
-2026-08-28 현재 `frontend/`의 React/Vite 코드는 전환 전 목업이며 Flutter scaffold는 아직 생성되지 않았습니다. `TASK-01` 전환 PR은 React 목업 보존 방법, Flutter 생성, 루트 검증과 CI 변경을 한 경계에서 처리합니다. 전환 완료 전 문서의 목표 구조를 이미 존재하는 코드로 오해하지 않습니다.
+2026-08-28 `frontend/`에는 Flutter Android scaffold와 mock 앱 셸이 추가됐습니다. React/Vite 코드는 GitHub Pages 목업을 유지하기 위해 같은 폴더의 `src/`·`public/`에 임시 보존하며, Flutter의 `lib/`·`android/`와 장기 이중 제품으로 운영하지 않습니다.
 
 - 첫 실행·출시 대상은 Android이며 Flutter Web과 iOS는 후속입니다.
 - Widget과 controller에서 Firebase, Google Maps 또는 OCR SDK를 직접 호출하지 않습니다.
@@ -32,7 +32,7 @@
 
 ## 검증
 
-Flutter 전환 전 현재 React 목업과 backend 회귀는 저장소 루트의 기존 npm 명령으로 확인합니다.
+React 목업과 backend 회귀는 저장소 루트의 기존 npm 명령으로 확인합니다.
 
 ```bash
 npm run format:check
@@ -43,7 +43,7 @@ npm run build
 npm run test:emulator
 ```
 
-`TASK-01`이 Flutter scaffold를 추가한 뒤 frontend 검증은 다음으로 교체하고 backend npm·Emulator 검증은 유지합니다.
+Flutter frontend는 다음 명령으로 검증하고 backend npm·Emulator 검증도 유지합니다.
 
 ```bash
 cd frontend

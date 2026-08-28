@@ -2,9 +2,22 @@
 
 > **[코드 안내 · 프론트엔드]** 화면과 기능별 코드 진입점을 안내합니다.
 
-현재 이 폴더는 React·Vite·TypeScript로 만든 전환 전 목업입니다. 2026-08-28 결정에 따라 같은 `frontend/`를 Flutter·Dart Android 앱으로 교체합니다. 각 Flutter 기능이 동등한 mock 흐름을 제공하기 전에는 기존 목업을 삭제하지 않습니다.
+현재 이 폴더에는 Flutter·Dart Android 앱 기반과 React·Vite 팀 공유 목업이 임시 공존합니다. Flutter가 기본 제품이며, 각 세로 기능이 동등한 흐름을 제공하기 전에는 기존 React 목업을 삭제하지 않습니다.
 
-## 현재 React 목업 실행
+## Flutter Android 실행
+
+```bash
+flutter pub get
+flutter run
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter build apk --debug
+```
+
+Flutter 3.47.2, Dart 3.13.2, Android API 24 이상을 기준으로 합니다. Flutter Web은 후속 보조 타깃이며 Android 완료 게이트가 아닙니다.
+
+## React Pages 목업 실행
 
 저장소 루트에서 한 번 `npm install`한 뒤 다음 중 하나를 사용합니다.
 
@@ -19,22 +32,16 @@ npm run dev
 
 검증은 `npm run typecheck`, `npm test`, `npm run build`로 실행합니다. 실제 Firebase 연결값은 `.env.example`을 `.env.local`로 복사해 설정하며 기본 데이터 소스는 mock입니다.
 
-## Flutter 전환 후 실행
+## 현재 코드 경계
 
-`TASK-01`이 Flutter scaffold를 추가한 뒤 이 절이 기본 실행법이 됩니다.
+- `lib/app`: router, `TripShell`과 mock `TripSession`
+- `lib/domain`: canonical 모델, `AppError`와 repository interface
+- `lib/data/mock`: 고정 도쿄 fixture와 in-memory repository
+- `lib/features`: 일정·지도, 준비, 비용, 영수증 placeholder Widget
+- `android`: `com.jim361.tripsplit`, minSdk 24, targetSdk 36
+- `test`: route/widget와 mock repository 테스트
 
-```bash
-flutter pub get
-flutter run
-dart format --output=none --set-exit-if-changed .
-flutter analyze
-flutter test
-flutter build apk --debug
-```
-
-첫 실행 대상은 Android API 24 이상입니다. Flutter Web은 후속 보조 타깃이며 Android 완료 게이트가 아닙니다.
-
-## 현재 목업 경계
+전환 전 React 목업은 다음 경계에 남아 있습니다.
 
 - `src/app`, `src/pages`: 앱 셸, 라우트와 화면
 - `src/features`: 일정·지도, 준비, 정산·영수증 기능
@@ -56,14 +63,12 @@ flutter build apk --debug
 
 화면 컴포넌트에서 Firebase SDK나 외부 지도 SDK를 직접 호출하지 않고 service, repository 또는 adapter를 사용합니다.
 
-## 목표 Flutter 경계
+## 남은 Flutter 경계
 
-- `lib/app`: router, `TripShell`, Auth와 `TripSession` 조립
-- `lib/domain`: immutable Dart 모델, 오류와 repository interface
-- `lib/data`: mock·FlutterFire repository와 mapper
-- `lib/features`: 일정·지도, 준비, 비용과 영수증 검토 Widget
-- `test`, `integration_test`: 순수 Dart, Widget와 Android Emulator 검증
-- `android`: package, Maps 설정과 Android 전용 capability
+- `lib/app`: `TASK-02` Auth와 Firebase `TripSession` 조립
+- `lib/data/firebase`: FlutterFire repository와 mapper
+- `integration_test`: Android Emulator 수직 조각
+- `android`: Maps 설정과 Android 전용 capability
 - `web`: 후속 Flutter Web 진입점
 
 Flutter Widget과 controller도 Firebase, Google Maps와 OCR SDK를 직접 호출하지 않습니다.

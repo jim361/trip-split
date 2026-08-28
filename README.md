@@ -4,7 +4,7 @@
 
 일정·장소·지도·준비와 여행 지출 정산을 하나의 여행 세션에서 다루는 Flutter/Firebase Android 앱입니다. 첫 실사용 기준은 2026년 11월 도쿄 여행이며 Google Maps와 JPY를 우선합니다.
 
-2026-08-28 현재 저장소의 `frontend/`는 전환 전 React/Vite 목업입니다. Flutter scaffold와 앱 코드는 아직 생성하지 않았으며 [Flutter Android 전환 계획](docs/flutter-android-migration.md)의 순서로 옮깁니다. 기존 목업과 다른 작업자의 변경은 각 Flutter 세로 기능 조각이 대체될 때까지 보존합니다.
+2026-08-28 `frontend/`에 Flutter 3.47.2 Android scaffold, 도쿄 fixture, mock repository와 세 탭 앱 셸을 추가했습니다. 기존 React/Vite 목업은 팀 공유 Pages가 끊기지 않도록 `src/`·`public/`에 임시 보존하며 [Flutter Android 전환 계획](docs/flutter-android-migration.md)의 세로 기능 조각이 대체할 때 정리합니다.
 
 팀 검토용 [GitHub Pages React 목업](https://jim361.github.io/trip-split/)은 UI 참고 자료로 계속 볼 수 있습니다. 현재 Flutter 앱이나 Android 배포본은 아니며 실제 Firebase 프로젝트에는 연결하지 않습니다.
 
@@ -44,14 +44,14 @@
 
 ## 저장소 구성
 
-| 경로                             | 역할                                                                 | 독립 실행                                             |
-| -------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------- |
-| [`frontend`](frontend/README.md) | 현재 React 목업, 목표 Flutter Android 앱·mock/FlutterFire repository | 전환 전 `npm run dev:frontend`, 전환 후 `flutter run` |
-| [`backend`](backend/README.md)   | 유지하는 Firebase Functions, Firestore 규칙, Emulator 통합 테스트    | `npm run dev:backend`                                 |
-| `docs`                           | 기능 회의, 구현 인계와 팀 검토용 목업                                | 문서                                                  |
-| `MarkDown`                       | 합의된 제품·요구사항·기술 계약과 기능별 task                         | 문서                                                  |
-| `.github`                        | 현재 npm CI·목업 Pages, 전환 후 Flutter/backend 분리 CI              | GitHub Actions                                        |
-| 루트 `package.json`              | 전환 전 npm workspace와 backend 명령 위임                            | 전환 PR에서 단순화                                    |
+| 경로                             | 역할                                                              | 독립 실행                                    |
+| -------------------------------- | ----------------------------------------------------------------- | -------------------------------------------- |
+| [`frontend`](frontend/README.md) | Flutter Android 앱·mock repository와 임시 React Pages 목업        | `flutter run`, 목업은 `npm run dev:frontend` |
+| [`backend`](backend/README.md)   | 유지하는 Firebase Functions, Firestore 규칙, Emulator 통합 테스트 | `npm run dev:backend`                        |
+| `docs`                           | 기능 회의, 구현 인계와 팀 검토용 목업                             | 문서                                         |
+| `MarkDown`                       | 합의된 제품·요구사항·기술 계약과 기능별 task                      | 문서                                         |
+| `.github`                        | Flutter Android, npm·Emulator CI와 React 목업 Pages               | GitHub Actions                               |
+| 루트 `package.json`              | 임시 React Pages와 backend 명령 위임                              | React 목업 제거 시 단순화                    |
 
 ## Git 운영
 
@@ -66,7 +66,19 @@
 
 ## 빠른 시작
 
-Flutter scaffold 전 현재 React 목업 확인에는 Node.js 22를 사용합니다.
+Android SDK가 준비된 환경에서는 Flutter 앱을 기본으로 실행합니다.
+
+```bash
+cd frontend
+flutter pub get
+flutter run
+dart format --output=none --set-exit-if-changed lib test
+flutter analyze
+flutter test
+flutter build apk --debug
+```
+
+팀 공유용 React 목업 확인에는 Node.js 22를 사용합니다.
 
 ```bash
 npm install
@@ -82,18 +94,9 @@ npm run dev:frontend
 
 `/trips/gangneung/map`은 기존 링크 호환을 위해 확대된 통합 일정 화면으로 redirect합니다. 일정 화면의 `지도 크게 보기` 상태는 `?map=expanded` URL로 공유할 수 있습니다.
 
-390px 모바일에서는 `일정·지도 / 준비 / 비용` 세 메뉴가 하단 내비게이션으로, 1024px 이상에서는 같은 순서의 좌측 확장 내비게이션으로 표시됩니다. 기존 강릉 경로와 `/map`, `/receipts`는 회귀 검토와 담당자 연결을 위해 유지합니다.
+390px 모바일에서는 `일정·지도 / 준비 / 비용` 세 메뉴가 하단 내비게이션으로 표시됩니다. Flutter는 720px 이상에서 같은 순서의 좌측 내비게이션을 사용합니다. 기존 강릉 React 경로와 Flutter의 `/map`, `/receipts` 호환 경로는 회귀 검토와 담당자 연결을 위해 유지합니다.
 
-위 명령과 URL은 모두 전환 전 React 목업용입니다. `TASK-01` 완료 뒤 Android 개발 명령은 다음으로 교체합니다.
-
-```bash
-cd frontend
-flutter pub get
-flutter run
-flutter analyze
-flutter test
-flutter build apk --debug
-```
+위 URL은 React Pages 목업과 Flutter route가 공유하는 정보 구조입니다. Flutter의 `/map` 호환 route는 확대된 일정·지도 상태로 정규화됩니다.
 
 ## 검증 명령
 
@@ -144,6 +147,6 @@ Functions 일반 환경변수와 secret 구조는 `backend/.env.example`에 있�
 - 모든 MVP 여행 멤버는 `editor`입니다.
 - Android Firestore 캐시와 pending write 상태를 구분합니다. Google 장소·OCR 호출은 온라인 전용입니다.
 
-현재 React 목업에는 완성된 정산 엔진, OCR·번역 provider, 실제 Google Maps SDK와 Android `.trip.json` 처리가 없습니다. 도쿄 목업은 API 키와 과금 없이 정보 구조만 검토하는 자료입니다.
+현재 Flutter 기반에는 FlutterFire 인증·실시간 repository, 완성된 정산 엔진, OCR·번역 provider, 실제 Google Maps SDK와 Android `.trip.json` 처리가 없습니다. 도쿄 mock은 API 키와 과금 없이 정보 구조와 개발 경계를 검토하는 자료입니다.
 
 화면 검토는 [일정·지도 통합 목업 리뷰](docs/mockup-review.md), 자세한 경로와 인계 사항은 [플랫폼 인계 문서](docs/platform-handoff.md)를 참고하세요.
