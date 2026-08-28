@@ -21,7 +21,8 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     final results = await provider.searchPlaces(
-      const PlaceSearchQuery(text: '센소지'),
+      tripId: tokyoTripId,
+      query: const PlaceSearchQuery(text: '센소지'),
     );
     final created = await repositories.createPlace(
       tokyoTripId,
@@ -39,7 +40,8 @@ void main() {
 
   test('mock 검색 후보는 공통 도쿄 fixture의 출처를 그대로 사용한다', () async {
     final results = await MockPlaceProvider().searchPlaces(
-      const PlaceSearchQuery(text: 'Ueno'),
+      tripId: tokyoTripId,
+      query: const PlaceSearchQuery(text: 'Ueno'),
     );
 
     expect(results.single.providerPlaceId, 'mock-google-ueno');
@@ -48,7 +50,8 @@ void main() {
 
   test('일치하는 장소가 없으면 빈 결과를 반환한다', () async {
     final results = await MockPlaceProvider().searchPlaces(
-      const PlaceSearchQuery(text: '파리 에펠탑'),
+      tripId: tokyoTripId,
+      query: const PlaceSearchQuery(text: '파리 에펠탑'),
     );
 
     expect(results, isEmpty);
@@ -56,7 +59,10 @@ void main() {
 
   test('빈 검색어는 invalid-argument로 거부한다', () async {
     await expectLater(
-      MockPlaceProvider().searchPlaces(const PlaceSearchQuery(text: '  ')),
+      MockPlaceProvider().searchPlaces(
+        tripId: tokyoTripId,
+        query: const PlaceSearchQuery(text: '  '),
+      ),
       throwsA(
         isA<AppError>()
             .having((error) => error.code, 'code', AppErrorCode.invalidArgument)
@@ -124,7 +130,8 @@ void main() {
 
   test('지원하는 Google Maps URL을 후보로 바꾼다', () async {
     final result = await MockPlaceProvider().resolvePlaceLink(
-      Uri.parse('https://maps.google.com/?q=Ueno+Station'),
+      tripId: tokyoTripId,
+      url: Uri.parse('https://maps.google.com/?q=Ueno+Station'),
     );
 
     expect(result.name, '우에노역');
@@ -136,12 +143,16 @@ void main() {
     final provider = MockPlaceProvider();
 
     await expectLater(
-      provider.resolvePlaceLink(Uri.parse('https://example.com/place')),
+      provider.resolvePlaceLink(
+        tripId: tokyoTripId,
+        url: Uri.parse('https://example.com/place'),
+      ),
       throwsA(_invalidField('sourceUrl')),
     );
     await expectLater(
       provider.resolvePlaceLink(
-        Uri.parse('https://maps.google.com/?q=Unknown+Place'),
+        tripId: tokyoTripId,
+        url: Uri.parse('https://maps.google.com/?q=Unknown+Place'),
       ),
       throwsA(
         isA<AppError>()
@@ -153,13 +164,25 @@ void main() {
 
   test('검색 provider 장애는 재시도 가능한 unavailable로 변환한다', () async {
     await expectLater(
-      MockPlaceProvider(isAvailable: false)
-          .searchPlaces(const PlaceSearchQuery(text: '우에노')),
+      MockPlaceProvider(isAvailable: false).searchPlaces(
+        tripId: tokyoTripId,
+        query: const PlaceSearchQuery(text: '우에노'),
+      ),
       throwsA(
         isA<AppError>()
             .having((error) => error.code, 'code', AppErrorCode.unavailable)
             .having((error) => error.retryable, 'retryable', isTrue),
       ),
+    );
+  });
+
+  test('여행 범위가 없는 장소 요청은 provider 호출 전에 거부한다', () async {
+    await expectLater(
+      MockPlaceProvider().searchPlaces(
+        tripId: ' ',
+        query: const PlaceSearchQuery(text: '우에노'),
+      ),
+      throwsA(_invalidField('tripId')),
     );
   });
 }

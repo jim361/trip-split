@@ -26,6 +26,8 @@
     "test:watch": "npm run test:watch --workspace frontend",
     "verify:fast": "npm run format:check && npm run lint && npm run typecheck && npm run test",
     "verify:full": "npm run verify:fast && npm run build && npm run test:emulator",
+    "verify:flutter:fast": "cd frontend && dart format --output=none --set-exit-if-changed lib test && flutter analyze && flutter test",
+    "verify:flutter:full": "npm run verify:flutter:fast && cd frontend && flutter build apk --debug",
     "test:emulator": "npm run build --workspace backend && firebase emulators:exec --project demo-trip-split --only auth,firestore,functions \"npm run test:emulator:run --workspace backend\"",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

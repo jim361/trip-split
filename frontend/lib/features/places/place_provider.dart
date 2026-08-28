@@ -79,9 +79,15 @@ final class PlaceCandidate {
 }
 
 abstract interface class PlaceProvider {
-  Future<List<PlaceCandidate>> searchPlaces(PlaceSearchQuery query);
+  Future<List<PlaceCandidate>> searchPlaces({
+    required EntityId tripId,
+    required PlaceSearchQuery query,
+  });
 }
 
 abstract interface class PlaceLinkResolver {
-  Future<PlaceCandidate> resolvePlaceLink(Uri url);
+  Future<PlaceCandidate> resolvePlaceLink({
+    required EntityId tripId,
+    required Uri url,
+  });
 }

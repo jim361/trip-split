@@ -46,7 +46,8 @@ npm run dev
 - `lib/domain`: canonical 모델, `AppError`와 repository interface
 - `lib/data/mock`, `lib/data/firebase`: 고정 도쿄 fixture와 같은 계약의 in-memory/Firestore repository
 - `lib/services`: 익명·Google 연결 Auth와 여행 공유 Callable의 mock/FlutterFire 구현
-- `lib/features`: 여행 생성·입장과 일정·지도, 준비, 비용, 영수증 Widget
+- `lib/features`: 여행 생성·입장과 일정·지도, 준비, 비용, 영수증 Widget. 장소·링크 provider는 여행 멤버 범위용 `tripId`를 함께 받음
+- `lib/data/firebase/firebase_error_mapper.dart`: 표준 Firebase code와 Callable `details.appCode`를 공통 `AppError`로 변환
 - `android`: `com.jim361.tripsplit`, minSdk 24, targetSdk 36
 - `test`: route/widget와 mock repository 테스트
 
@@ -74,7 +75,7 @@ npm run dev
 ## 남은 Flutter 경계
 
 - Android Emulator에서 Flutter 클라이언트→로컬 Emulator 전체 수직 조각 확인
-- runtime validator와 서버 저장 경계 구현 뒤 Firestore expense 쓰기 개방
+- runtime validator와 `createExpense`·`updateExpense`·`deleteExpense` 서버 저장 경계 구현 뒤 Firestore expense command 연결
 - member 참조와 여행 내 유일성을 보장하는 Participant `linkedUid` 연결 Callable
 - `android`: Maps 설정과 Android 전용 capability
 - `web`: 후속 Flutter Web 진입점

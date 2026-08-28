@@ -30,7 +30,7 @@ AppError mapFirebaseError(Object error) {
 
   if (error case FirebaseException(:final code, :final message)) {
     final normalized = code.replaceFirst('functions/', '');
-    final appCode = switch (normalized) {
+    final firebaseAppCode = switch (normalized) {
       'unauthenticated' => AppErrorCode.unauthenticated,
       'permission-denied' => AppErrorCode.permissionDenied,
       'invalid-argument' => AppErrorCode.invalidArgument,
@@ -46,16 +46,17 @@ AppError mapFirebaseError(Object error) {
       'network-request-failed' => AppErrorCode.unavailable,
       _ => AppErrorCode.unknown,
     };
-    final retryable = switch (appCode) {
-      AppErrorCode.unavailable || AppErrorCode.resourceExhausted => true,
-      _ => false,
-    };
     final callableDetails = error is FirebaseFunctionsException
         ? error.details
         : null;
     final details = callableDetails is Map
         ? Map<String, Object?>.from(callableDetails)
         : const <String, Object?>{};
+    final appCode =
+        _appErrorCodeFromWire(details['appCode']) ?? firebaseAppCode;
+    final retryable = details['retryable'] is bool
+        ? details['retryable']! as bool
+        : _defaultRetryable(appCode);
     return AppError(
       code: appCode,
       message: (message == null || message.trim().isEmpty)
@@ -82,5 +83,24 @@ String _fallbackMessage(AppErrorCode code) => switch (code) {
   AppErrorCode.conflict => '현재 상태에서 요청을 처리할 수 없습니다.',
   AppErrorCode.resourceExhausted => '잠시 후 다시 시도해 주세요.',
   AppErrorCode.unavailable => '서비스에 연결할 수 없습니다.',
+  AppErrorCode.invalidImage => '지원하는 영수증 이미지를 선택해 주세요.',
+  AppErrorCode.payloadTooLarge => '이미지 크기를 줄여 다시 시도해 주세요.',
+  AppErrorCode.ocrUnavailable => '영수증 인식을 잠시 사용할 수 없습니다.',
+  AppErrorCode.ocrNoResult => '영수증에서 항목을 찾지 못했습니다.',
   _ => '예상하지 못한 오류가 발생했습니다.',
+};
+
+AppErrorCode? _appErrorCodeFromWire(Object? value) {
+  if (value is! String) return null;
+  for (final code in AppErrorCode.values) {
+    if (code.wireValue == value) return code;
+  }
+  return null;
+}
+
+bool _defaultRetryable(AppErrorCode code) => switch (code) {
+  AppErrorCode.unavailable ||
+  AppErrorCode.resourceExhausted ||
+  AppErrorCode.ocrUnavailable => true,
+  _ => false,
 };

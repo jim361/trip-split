@@ -33,9 +33,40 @@ void main() {
     expect(mapped.field, 'participantNames');
     expect(mapped.details, {'field': 'participantNames'});
   });
+
+  test('Callable details의 앱 전용 OCR 오류와 재시도 정책을 우선한다', () {
+    final mapped = mapFirebaseError(
+      _TestFunctionsException(
+        code: 'unavailable',
+        message: '',
+        details: const {
+          'appCode': 'ocr-unavailable',
+          'retryable': false,
+          'field': 'image',
+        },
+      ),
+    );
+
+    expect(mapped.code, AppErrorCode.ocrUnavailable);
+    expect(mapped.message, '영수증 인식을 잠시 사용할 수 없습니다.');
+    expect(mapped.retryable, isFalse);
+    expect(mapped.field, 'image');
+  });
+
+  test('알 수 없는 appCode는 Firebase 표준 code로 되돌아간다', () {
+    final mapped = mapFirebaseError(
+      _TestFunctionsException(details: const {'appCode': 'future-error'}),
+    );
+
+    expect(mapped.code, AppErrorCode.invalidArgument);
+    expect(mapped.retryable, isFalse);
+  });
 }
 
 final class _TestFunctionsException extends FirebaseFunctionsException {
-  _TestFunctionsException({required super.details})
-    : super(code: 'invalid-argument', message: '입력값 오류');
+  _TestFunctionsException({
+    required super.details,
+    super.code = 'invalid-argument',
+    super.message = '입력값 오류',
+  });
 }

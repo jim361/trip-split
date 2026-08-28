@@ -11,7 +11,11 @@ final class MockPlaceProvider implements PlaceProvider, PlaceLinkResolver {
   final bool isAvailable;
 
   @override
-  Future<List<PlaceCandidate>> searchPlaces(PlaceSearchQuery query) async {
+  Future<List<PlaceCandidate>> searchPlaces({
+    required EntityId tripId,
+    required PlaceSearchQuery query,
+  }) async {
+    _requireTripId(tripId);
     final normalized = query.text.trim().toLowerCase();
     if (normalized.isEmpty) {
       throw const AppError(
@@ -33,7 +37,11 @@ final class MockPlaceProvider implements PlaceProvider, PlaceLinkResolver {
   }
 
   @override
-  Future<PlaceCandidate> resolvePlaceLink(Uri url) async {
+  Future<PlaceCandidate> resolvePlaceLink({
+    required EntityId tripId,
+    required Uri url,
+  }) async {
+    _requireTripId(tripId);
     _ensureAvailable();
     if (url.scheme != 'https' || url.host != 'maps.google.com') {
       throw const AppError(
@@ -59,7 +67,10 @@ final class MockPlaceProvider implements PlaceProvider, PlaceLinkResolver {
         field: 'sourceUrl',
       );
     }
-    final matches = await searchPlaces(PlaceSearchQuery(text: query));
+    final matches = await searchPlaces(
+      tripId: tripId,
+      query: PlaceSearchQuery(text: query),
+    );
     if (matches.isNotEmpty) {
       final match = matches.first;
       return PlaceCandidate(
@@ -89,6 +100,20 @@ final class MockPlaceProvider implements PlaceProvider, PlaceLinkResolver {
       message: '장소 검색을 잠시 사용할 수 없습니다.',
       retryable: true,
     );
+  }
+
+  void _requireTripId(EntityId tripId) {
+    final normalized = tripId.trim();
+    if (normalized.isEmpty ||
+        normalized.length > 160 ||
+        normalized.contains('/')) {
+      throw const AppError(
+        code: AppErrorCode.invalidArgument,
+        message: 'tripId 값을 확인해 주세요.',
+        retryable: false,
+        field: 'tripId',
+      );
+    }
   }
 }
 
