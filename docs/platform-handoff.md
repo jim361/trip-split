@@ -2,6 +2,33 @@
 
 > **[인계 01 · 플랫폼·통합 구현 현황]** 공통 계약과 도메인 담당자 연결점을 정리합니다.
 
+## 2026-08-29 `dev` 팀 공유 체크포인트
+
+구현 기준은 [`99762e1`](https://github.com/jim361/trip-split/commit/99762e1b8fc0d03334a54fc3b91859b45528ed0b)입니다. 제품은 Flutter Android와 Firebase Node.js backend로 전환했고, React/Vite 화면은 Flutter 기능이 대체될 때까지 [GitHub Pages 목업](https://jim361.github.io/trip-split/)으로만 유지합니다.
+
+| 영역           | 현재 완료                                                                                            | 다음 통합 지점                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 공통·Flutter   | Android scaffold, 도쿄 fixture, mock/FlutterFire repository 주입, `일정·지도 / 준비 / 비용` 앱 셸    | Android Emulator에서 Flutter→Firebase Emulator 수직 통합                                       |
+| 인증·여행 공유 | 익명 인증 자동 시작, Google 계정 연결 경계, `TripSession`, `createTrip`·`createShareCode`·`joinTrip` | 실제 Firebase 프로젝트 설정과 Auth provider 활성화                                             |
+| 일정·장소·지도 | 일정 편집 core, 지도 render model과 확대 route, `tripId`를 받는 장소 provider/link resolver 계약     | `searchPlaces`·`parsePlaceLink`와 실제 MapAdapter/Google Maps SDK                              |
+| 정산·영수증    | Participant/Expense repository, equal 엔진, bytes 기반 receipt parser와 mock                         | runtime validator, expense CRUD Callable, custom/itemized/net, `parseReceipt` OCR·번역 adapter |
+| 백업·출시      | `.trip.json` schema codec, Node·Flutter Android CI, React Pages 배포                                 | Android 파일 선택·가져오기, 최종 아이콘·접근성·내부 배포                                       |
+
+### 검증 결과
+
+- `npm run verify:full`: React 20개, backend 27개, Emulator 11개 테스트와 build 통과
+- `npm run verify:flutter:fast`: Dart format·analyze와 Flutter 64개 테스트 통과
+- [GitHub Actions CI](https://github.com/jim361/trip-split/actions/runs/33196354092): `verify`, `flutter-android` 모두 통과
+- [GitHub Pages 배포](https://github.com/jim361/trip-split/actions/runs/33196354018): 통과
+- 로컬 debug APK build는 Android SDK가 없어 실행하지 못했지만 GitHub의 Android build는 통과
+
+### 두 백엔드 담당의 다음 분담 후보
+
+1. 일정·장소: 공통 Auth·여행 멤버 guard를 사용해 `searchPlaces`와 `parsePlaceLink`를 만들고 Google 응답을 canonical `Place`로 정규화합니다.
+2. 정산·영수증: expense runtime validator와 `createExpense`·`updateExpense`·`deleteExpense`를 먼저 만든 뒤 provider-neutral `parseReceipt`를 연결합니다. Firebase mode의 기존 expense 직접 쓰기는 Rules가 의도적으로 거부하므로 Callable client로 교체해야 합니다.
+
+두 영역 모두 실제 외부 API 연결 전 mock과 Emulator 테스트로 완료 조건을 고정합니다. Flutter Widget에서 Firebase·Google Maps·OCR SDK를 직접 호출하지 않고 기존 repository/service/adapter 계약을 사용합니다.
+
 ## 현재 Flutter 진입점
 
 - 앱 조립: `frontend/lib/main.dart`
