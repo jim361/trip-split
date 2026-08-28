@@ -388,9 +388,14 @@ function Get-ShellCommandPayload {
     $switchIndex = -1
     for ($optionIndex = $index + 1; $optionIndex -lt $Tokens.Count; $optionIndex++) {
         $option = $Tokens[$optionIndex]
+        if ($shellKind -eq 'cmd' -and -not $option.StartsWith('/')) {
+            # After cmd.exe reaches its command text, a later literal `/c`
+            # belongs to that command and must not be treated as a cmd switch.
+            break
+        }
         if (($shellKind -eq 'posix' -and $option -cmatch '^-[^-]*c[^-]*$') -or
-            ($shellKind -eq 'powershell' -and ($option -eq '-c' -or $option -ieq '-command')) -or
-            ($shellKind -eq 'cmd' -and $option -ieq '/c')) {
+            ($shellKind -eq 'powershell' -and (Test-PowerShellCommandSwitch -Option $option)) -or
+            ($shellKind -eq 'cmd' -and (Test-CmdCommandSwitch -Option $option))) {
             $switchIndex = $optionIndex
             break
         }
@@ -410,6 +415,48 @@ function Get-ShellCommandPayload {
     # was not quoted as one token. Joining here reconstructs that command as
     # text for the tokenizer without executing it.
     return [string[]]@($Tokens[($switchIndex + 1)..($Tokens.Count - 1)] -join ' ')
+}
+
+function Test-PowerShellCommandSwitch {
+    param([string]$Option)
+
+    # PowerShell accepts case-insensitive, unambiguous prefixes of -Command.
+    # Restrict prefix matching to the actual word "command" so -Configuration
+    # and other unrelated switches are not treated as command payloads.
+    if (-not $Option.StartsWith('-') -or $Option.Length -le 1) {
+        return $false
+    }
+
+    $name = $Option.Substring(1)
+    return 'command'.StartsWith($name, [System.StringComparison]::OrdinalIgnoreCase)
+}
+
+function Test-CmdCommandSwitch {
+    param([string]$Option)
+
+    if ($Option -ieq '/c') {
+        return $true
+    }
+
+    # cmd.exe accepts slash-delimited switch bundles such as /d/s/c and /d/c.
+    # Only recognize documented switches before the final /c so arbitrary
+    # slash-containing arguments are not reinterpreted as command payloads.
+    if (-not $Option.StartsWith('/')) {
+        return $false
+    }
+
+    $parts = @($Option.Substring(1).Split('/'))
+    if ($parts.Count -lt 2 -or $parts[-1] -ine 'c') {
+        return $false
+    }
+
+    foreach ($part in $parts[0..($parts.Count - 2)]) {
+        if ($part -notmatch '^(?i:d|q|a|u|s|e:(?:on|off)|f:(?:on|off)|v:(?:on|off))$') {
+            return $false
+        }
+    }
+
+    return $true
 }
 
 function Test-EnvironmentAssignment {
@@ -589,11 +636,12 @@ function Test-GitCleanDestructive {
                     $argumentIndex++
                 }
             }
-            elseif (-not $resolved.Negated -and $resolved.Canonical -ceq 'dry-run') {
-                $dryRun = $true
+            elseif ($resolved.Canonical -ceq 'dry-run') {
+                # Git boolean options use the last positive or --no-* spelling.
+                $dryRun = -not $resolved.Negated
             }
-            elseif (-not $resolved.Negated -and $resolved.Canonical -ceq 'force') {
-                $force = $true
+            elseif ($resolved.Canonical -ceq 'force') {
+                $force = -not $resolved.Negated
             }
 
             $argumentIndex++
@@ -630,7 +678,8 @@ function Test-GitCleanDestructive {
         $argumentIndex++
     }
 
-    # `-n`/`--dry-run` never removes files, even when force is also present.
+    # The effective final dry-run state wins; a later --no-dry-run re-enables
+    # destructive execution and a later -n/--dry-run makes the command safe.
     return $force -and -not $dryRun
 }
 
@@ -713,6 +762,12 @@ if ($TestRawInput) {
         @{ Command = 'git clean --forcex -d'; ExpectedBlocked = $false }
         @{ Command = 'git clean --dr -d'; ExpectedBlocked = $false }
         @{ Command = 'git clean -fdn'; ExpectedBlocked = $false }
+        @{ Command = 'git clean -f -n --no-dry-run'; ExpectedBlocked = $true }
+        @{ Command = 'git clean -f --no-dry-run -n'; ExpectedBlocked = $false }
+        @{ Command = 'git clean --force --no-force -d'; ExpectedBlocked = $false }
+        @{ Command = 'git clean --no-force --force -d'; ExpectedBlocked = $true }
+        @{ Command = 'git clean --dry-run --no-dry-run --force'; ExpectedBlocked = $true }
+        @{ Command = 'git clean --no-dry-run --dry-run --force'; ExpectedBlocked = $false }
         @{ Command = 'git clean -f -e -n'; ExpectedBlocked = $true }
         @{ Command = 'git clean -f --ex -n'; ExpectedBlocked = $true }
         @{ Command = 'git clean -f -e-n'; ExpectedBlocked = $true }
@@ -728,11 +783,22 @@ if ($TestRawInput) {
         @{ Command = "sh -xc 'git push --force origin main'"; ExpectedBlocked = $true }
         @{ Command = 'powershell -NoProfile -Command "git push --force-w origin main"'; ExpectedBlocked = $true }
         @{ Command = 'pwsh -Command "git clean --for -d"'; ExpectedBlocked = $true }
+        @{ Command = 'pwsh -C "git reset --hard"'; ExpectedBlocked = $true }
+        @{ Command = 'pwsh -Co "git reset --hard"'; ExpectedBlocked = $true }
+        @{ Command = 'pwsh -Com "git reset --hard"'; ExpectedBlocked = $true }
+        @{ Command = 'powershell -Com "git push --force origin main"'; ExpectedBlocked = $true }
         @{ Command = 'cmd /d /c "git push --mirror origin"'; ExpectedBlocked = $true }
+        @{ Command = 'cmd /d/s/c "git reset --hard"'; ExpectedBlocked = $true }
+        @{ Command = 'cmd /s/d/c "git reset --hard"'; ExpectedBlocked = $true }
+        @{ Command = 'cmd /d/c "git push --force origin main"'; ExpectedBlocked = $true }
         @{ Command = "sh -c 'echo git reset --hard'"; ExpectedBlocked = $false }
         @{ Command = "bash -lc 'echo git reset --hard'"; ExpectedBlocked = $false }
         @{ Command = 'powershell -Command "Write-Output ''git push --force''"'; ExpectedBlocked = $false }
+        @{ Command = 'pwsh -Com "Write-Output ''git reset --hard''"'; ExpectedBlocked = $false }
+        @{ Command = 'powershell -ConfigurationName local "git reset --hard"'; ExpectedBlocked = $false }
         @{ Command = 'cmd /c "echo git clean --force -d"'; ExpectedBlocked = $false }
+        @{ Command = 'cmd /d/s/c "echo git push --force"'; ExpectedBlocked = $false }
+        @{ Command = 'cmd echo /c "git reset --hard"'; ExpectedBlocked = $false }
         @{ Command = 'git clean -n'; ExpectedBlocked = $false }
     )
 

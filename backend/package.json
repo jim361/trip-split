@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run --config vitest.config.ts --passWithNoTests",
+    "test": "vitest run --config vitest.config.ts",
     "test:emulator:run": "vitest run --config vitest.emulator.config.ts",
     "emulators": "firebase --config ../firebase.json emulators:start --project demo-trip-split --only auth,firestore,functions"
   },

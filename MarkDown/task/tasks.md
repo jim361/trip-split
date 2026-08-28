@@ -8,9 +8,9 @@
 
 | 역할 | 주 작업 경로 | 주 소유 영역 | 관련 Task |
 | --- | --- | --- | --- |
-| 플랫폼·통합 담당 | 루트, `frontend/src/app`, `backend/src/share` | npm/Firebase 기반, 인증, 여행 생성·공유·멤버, 앱 셸·PWA, 보안 규칙 통합, 백업, 최종 QA·병합 | 1, 2, 8, 9 |
-| 정산·영수증 담당 | `frontend/src/features/settlement`, `frontend/src/features/receipts`, `backend/src/ocr` | `Participant`, `Expense`, `ReceiptItem`, 분할·정산 엔진, 개인 소비 화면, 지출 UI, `parseReceipt`, OCR 검토·등록 | 6, 7 |
-| 장소·일정·지도 담당 | `frontend/src/features/places`, `frontend/src/features/itinerary`, `frontend/src/features/map`, `backend/src/places` | `Place` 정규화, 장소 검색·링크·직접 입력, 장소 보관함, 일정 편집, 지도 어댑터 | 3, 4, 5 |
+| 플랫폼·통합 담당 | 루트, `frontend/src/app`, `backend/src/share` | npm/Firebase 기반, 인증, 여행 생성·공유·멤버, 앱 셸·PWA, 보안 규칙 통합, 백업, 최종 QA·병합 | `TASK-01`, `TASK-02`, `TASK-08`, `TASK-09` |
+| 정산·영수증 담당 | `frontend/src/features/settlement`, `frontend/src/features/receipts`, `backend/src/ocr` | `Participant`, `Expense`, `ReceiptItem`, 분할·정산 엔진, 개인 소비 화면, 지출 UI, `parseReceipt`, OCR 검토·등록 | `TASK-06`, `TASK-07` |
+| 장소·일정·지도 담당 | `frontend/src/features/places`, `frontend/src/features/itinerary`, `frontend/src/features/map`, `backend/src/places` | `Place` 정규화, 장소 검색·링크·직접 입력, 장소 보관함, 일정 편집, 지도 어댑터 | `TASK-03`, `TASK-04`, `TASK-05` |
 
 - 플랫폼·통합 담당이 제품 계약과 병합의 최종 책임자다. 다른 담당자는 공통 타입이나 Firestore 경로를 단독 확정하지 않고 변경 제안 PR을 올린다.
 - OCR은 정산 원장과 한 흐름으로 연결되므로 정산·영수증 담당이 소유한다.
@@ -32,31 +32,33 @@
 
 ## 3. 기능별 Task 파일
 
-1. [task_function1_project_setup.md](task_function1_project_setup.md)
+`TASK-01`부터 `TASK-09`까지는 고정 작업 ID다. 숫자 suffix가 같은 `task_function1_*.md`부터 `task_function9_*.md`까지에 1:1 대응하며 기존 ID와 파일명을 재번호·재사용·변경·삭제하지 않는다.
+
+1. `TASK-01` — [task_function1_project_setup.md](task_function1_project_setup.md)
    - 앱 셸, 라우팅, 공통 UI, Firebase 클라이언트·에뮬레이터, 테스트 기반
 
-2. [task_function2_trip_share.md](task_function2_trip_share.md)
+2. `TASK-02` — [task_function2_trip_share.md](task_function2_trip_share.md)
    - 익명 인증, 선택적 Google 계정 연결, 여행 생성, 공유 코드·초대 링크, 멤버 세션
 
-3. [task_function3_places.md](task_function3_places.md)
+3. `TASK-03` — [task_function3_places.md](task_function3_places.md)
    - 장소 보관함, 네이버 장소 검색, 장소 링크 붙여넣기, 직접 입력, `Place` 정규화
 
-4. [task_function4_itinerary.md](task_function4_itinerary.md)
+4. `TASK-04` — [task_function4_itinerary.md](task_function4_itinerary.md)
    - 날짜별 타임라인, 장소 연결, 일정 순서 관리
 
-5. [task_function5_map.md](task_function5_map.md)
+5. `TASK-05` — [task_function5_map.md](task_function5_map.md)
    - 네이버 지도, 일정 순서 기반 번호 핀, 날짜별 색상과 직선 동선
 
-6. [task_function6_settlement.md](task_function6_settlement.md)
+6. `TASK-06` — [task_function6_settlement.md](task_function6_settlement.md)
    - 정산 원장, 균등·항목별·직접 입력 분할, 개인 소비 내역, 최종 송금 계산
 
-7. [task_function7_ocr.md](task_function7_ocr.md)
+7. `TASK-07` — [task_function7_ocr.md](task_function7_ocr.md)
    - 로컬 이미지 선택, stateless CLOVA OCR, 수정 가능한 초안, 항목 분할, 사용자 확정 저장
 
-8. [task_function8_backup_export.md](task_function8_backup_export.md)
+8. `TASK-08` — [task_function8_backup_export.md](task_function8_backup_export.md)
    - 데이터 모델 안정화 이후 `.trip.json` 백업·복원·데모 데이터
 
-9. [task_function9_polish_release.md](task_function9_polish_release.md)
+9. `TASK-09` — [task_function9_polish_release.md](task_function9_polish_release.md)
    - 모바일 우선 PWA, PC 확장 레이아웃, 빈 상태·오류 상태, 접근성, 출시 QA
 
 ## 4. 구현 및 통합 순서

@@ -22,11 +22,11 @@
 
 ## 2026-08-28 — 최신 dev 통합과 하네스 회귀 보강
 
-- 변경 범위: 최신 `dev` 일반 merge, 실제 기능·task ID 보존 규칙, frontend/backend 전용 레이아웃과 루트 npm 위임 계약, 위험 Git 명령 훅 회귀 사례, CI 실행 조건 설명
-- 변경 이유: 공개 브랜치 이력을 유지하면서 루트 명령이 검증을 우회하거나 폐기 디렉터리가 되살아나는 경우와 `git clean` 옵션 인자·POSIX shell 묶음 옵션을 통한 훅 우회를 막기 위해서
-- 영향을 받는 문서·경로: `AGENTS.md`, `scripts/verify.ps1`, `.codex/hooks/`, `.github/workflows/ci.yml`, `.nvmrc`, `package.json`, `docs/codex/`
-- 계약 해석 변경 여부: 제품 계약 변경은 없음. 구현 task의 실제 이름은 `Task Function 1`부터 `Task Function 9`까지이며 현재 계약에 없는 `TASK-01`부터 `TASK-09`까지를 새로 만들지 않음
-- 검증 명령과 결과: Node.js 22.19.0·Java 21.0.10에서 Fast·Full 모두 `0`; PowerShell 7·5.1 훅 52/52 사례 `0`; 루트 `typecheck`를 `echo ok`로 바꾼 경우와 root `src/`·`functions/`를 만든 경우는 각각 정적 검사 `1`
+- 변경 범위: 최신 `dev` 일반 merge, 실제 기능·task ID 보존 규칙, frontend/backend 전용 레이아웃과 루트 npm 위임 계약, backend 단위 테스트 0개 차단, 위험 Git 명령 훅 회귀 사례, CI 실행 조건 설명
+- 변경 이유: 공개 브랜치 이력을 유지하면서 루트 명령이나 테스트 0개 상태가 검증을 우회하거나 폐기 디렉터리가 되살아나는 경우와 `git clean` 최종 boolean 옵션·POSIX shell·PowerShell·cmd 래퍼를 통한 훅 우회를 막기 위해서
+- 영향을 받는 문서·경로: `AGENTS.md`, `scripts/verify.ps1`, `.codex/hooks/`, `.github/workflows/ci.yml`, `.nvmrc`, `package.json`, `backend/package.json`, `docs/codex/`
+- 계약 해석 변경 여부: 작업 식별자 계약 변경 있음. `TASK-01`부터 `TASK-09`까지를 기존 `task_function1_*.md`부터 `task_function9_*.md`까지에 1:1 대응하는 고정 작업 ID로 사용하고, `BASE-*`, `IT-*`, `PREP-*`, `ST-*`, `OCR-*`는 회의용 기능 ID로 유지한다. 기존 ID는 재번호·재사용하지 않으며 제품 동작 계약 변경은 없음
+- 검증 명령과 결과: Node.js 22.19.0·Java 21.0.11에서 Fast·Full 모두 `0`; PowerShell 7·5.1 훅 69/69 사례 `0`; backend 단위 테스트를 모두 제거한 임시 복제, 루트 `typecheck`를 `echo ok`로 바꾼 경우, root `src/`·`functions/`를 만든 경우는 각각 정적 검사 `1`
 - 후속 작업: 일반 push만으로 CI가 실행되지 않으므로 사용자 승인 후 `dev` 대상 Pull Request 또는 수동 실행에서 Ubuntu Full 검증 확인
 
 ## YYYY-MM-DD — 제목

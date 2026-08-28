@@ -297,6 +297,21 @@ function Invoke-StaticChecks {
     }
   }
 
+  $backendScripts = Get-JsonProperty $backendPackage "scripts"
+  $backendTestScript = Get-JsonProperty $backendScripts "test"
+  if ($backendTestScript -is [string] -and $backendTestScript -match '(?i)(?:^|\s)--passwithnotests(?:=\S+)?(?:\s|$)') {
+    Stop-Verification "backend/package.json의 test script는 테스트 0개를 성공으로 처리하는 --passWithNoTests를 사용할 수 없습니다."
+  }
+
+  $backendUnitTestRoot = Get-RepoPath (Join-Path $script:Layout.BackendRelativeRoot "src")
+  $backendUnitTests = @()
+  if (Test-Path -LiteralPath $backendUnitTestRoot -PathType Container) {
+    $backendUnitTests = @(Get-ChildItem -LiteralPath $backendUnitTestRoot -Recurse -File -Filter "*.test.ts")
+  }
+  if ($backendUnitTests.Count -eq 0) {
+    Stop-Verification "backend/src 아래에 Vitest 단위 테스트(*.test.ts)가 하나 이상 있어야 합니다."
+  }
+
   $backendEngines = Get-JsonProperty $backendPackage "engines"
   if ((Get-JsonProperty $backendEngines "node") -ne "22") {
     Stop-Verification "backend/package.json의 Node engine은 22여야 합니다."
