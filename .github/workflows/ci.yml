@@ -6,6 +6,7 @@ on:
       - dev
   pull_request:
     branches:
+      - dev
       - main
   workflow_dispatch:
 
@@ -28,33 +29,22 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Set up Java
         uses: actions/setup-java@v6
         with:
           distribution: temurin
-          java-version: 21
+          java-version: "21"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Check formatting
-        run: npm run format:check
+      - name: Test direct Git guard
+        run: pwsh -NoProfile -File .codex/hooks/block-dangerous-command.ps1 -SelfTest
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Test
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-      - name: Test Firebase Emulator
-        run: npm run test:emulator
+      - name: Verify (Full)
+        run: npm run verify:full
 
   flutter-android:
     runs-on: ubuntu-latest

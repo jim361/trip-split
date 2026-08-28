@@ -25,14 +25,16 @@
 
 - `TripMember`는 Firebase Auth `uid`를 가진 공동 편집 사용자이고, `Participant`는 비용의 결제자 또는 소비자다. 필요할 때만 `Participant.linkedUid`로 연결한다.
 - 정산 원장은 `Expense`, `ReceiptItem`, `payer`, `consumers`, `allocationMethod`, `allocatedAmounts`를 기준으로 한다.
-- 금액은 ISO 통화별 최소 단위 정수다. 서로 다른 통화는 분리하며 균등 분할의 최소 단위 나머지는 화면에 표시된 소비자 순서대로 배분한다.
+- 금액은 ISO 통화별 최소 단위 정수다. MVP는 KRW와 JPY를 지원하며, 서로 다른 통화는 분리하고 균등 분할의 최소 단위 나머지는 화면에 표시된 소비자 순서대로 배분한다.
 - 장소 API 응답은 앱 내부 `Place`로 정규화한다. 지도는 `Place` 좌표와 `ItineraryItem.order`만 입력받고 실제 도로 경로를 계산하지 않는다.
-- Android 여행 내비게이션은 `일정·지도`, `준비`, `비용` 세 개로 고정한다. 지도는 일정 상단에서 확대하고 영수증은 비용의 하위 흐름이다.
+- Android 여행 내비게이션은 `일정·지도`, `준비`, `비용` 세 개로 고정한다. 지도는 일정 상단에서 확대하고 영수증/OCR은 비용의 하위 흐름이다.
 - Cloud Function 소유권은 플랫폼의 여행 생성·공유 코드·참여, 정산의 `parseReceipt`, 지도의 장소 검색·장소 링크 파싱으로 나눈다.
 - 공통 오류는 `code`, `message`, `retryable`, 선택적 `field`와 `details`를 갖는 한 형식으로 변환한다. 문서 ID 생성 방식, Firebase server timestamp, repository의 구독/CRUD 인터페이스도 기능 구현 전에 고정한다.
 - `tokyo-2026-11` fixture를 화면, 순수 함수와 repository 테스트에 사용하고 기존 강릉 fixture는 회귀용으로 보존한다. canonical fixture 변경은 공통 계약 변경으로 취급한다.
 
 ## 3. 기능별 Task 파일
+
+`TASK-01`부터 `TASK-09`까지는 고정 작업 ID다. 숫자 suffix가 같은 `task_function1_*.md`부터 `task_function9_*.md`까지에 1:1 대응하며 기존 ID와 파일명을 재번호·재사용·변경·삭제하지 않는다.
 
 1. [`TASK-01 · 프로젝트 기반`](task_function1_project_setup.md)
    - 앱 셸, 라우팅, 공통 UI, Firebase 클라이언트·에뮬레이터, 테스트 기반
@@ -41,13 +43,13 @@
    - 익명 인증, 선택적 Google 계정 연결, 여행 생성, 공유 코드, 멤버 세션
 
 3. [`TASK-03 · 장소 보관함·검색`](task_function3_places.md)
-   - 장소 보관함, Google 장소 검색, Maps URL, 직접 입력과 `Place` 정규화
+   - 장소 보관함, Google 장소 검색, Maps URL, 직접 입력과 `Place` 정규화 (국내 NAVER provider는 같은 계약의 후속 범위)
 
 4. [`TASK-04 · 일정`](task_function4_itinerary.md)
    - 날짜별 타임라인, 장소 연결, 일정 순서, 예약과 체크리스트
 
 5. [`TASK-05 · 지도`](task_function5_map.md)
-   - Google 지도, 일정 순서 기반 번호 핀, 날짜별 색상과 직선 동선
+   - Google 지도, 일정 순서 기반 번호 핀, 날짜별 색상과 직선 동선 (국내 NAVER adapter는 후속 범위)
 
 6. [`TASK-06 · 정산`](task_function6_settlement.md)
    - 정산 원장, 균등·항목별·직접 입력 분할, 개인 소비 내역, 최종 송금 계산

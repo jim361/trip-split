@@ -55,7 +55,7 @@ type Expense = {
   category: string;
   expenseDate: string;
   totalAmount: number;
-  currency: string; // ISO 4217
+  currency: string; // ISO 4217; MVP supports KRW and JPY
   payer: ExpensePayer;
   consumers: string[];
   allocationMethod: AllocationMethod;
@@ -77,6 +77,7 @@ type Expense = {
 ## 계산 불변식
 
 - 모든 금액은 부동소수점이 아닌 통화별 최소 단위 정수다.
+- MVP 지출 통화는 KRW와 JPY를 지원하며, 각 통화의 paid/owed/net을 별도로 계산한다.
 - 서로 다른 통화의 paid/owed/net과 송금 제안은 통화별로 분리하고 자동 환율 없이 합산하지 않는다.
 - `payer.amount === totalAmount`이며 MVP의 결제자는 한 명이다.
 - `sum(expense.allocatedAmounts.amount) === expense.totalAmount`다.
@@ -150,7 +151,7 @@ type Expense = {
 - [ ] 항목별 분할에서 항목명·금액을 추가·수정·삭제하고 각 항목 소비자 또는 직접 부담액을 지정한다.
 - [ ] 공용 메뉴는 선택한 소비자끼리 균등 분할한다.
 - [ ] 할인, 봉사료, 기타 조정 행을 추가하고 소비자 또는 직접 부담액을 지정한다.
-- [ ] 총액, 항목 합계, 참여자별 배분 합계의 검증 상태와 1원 나머지 결과를 저장 전에 보여준다.
+- [ ] 총액, 항목 합계, 참여자별 배분 합계의 검증 상태와 통화별 최소 단위 나머지 결과를 저장 전에 보여준다.
 - [ ] 저장 중 중복 제출을 막고 성공 후 저장된 지출 상세로 이동한다.
 
 완료 조건:

@@ -4,7 +4,7 @@
 
 ## 목표
 
-장소 보관함을 만들고 Google 장소 검색, Google Maps URL과 직접 입력으로 장소를 추가한다.
+장소 보관함을 만들고 Google 장소 검색, Google Maps URL과 직접 입력으로 장소를 추가한다. 국내 NAVER provider/source는 같은 계약으로 이어질 후속 범위다.
 
 ## 담당
 
