@@ -1,10 +1,10 @@
-import { HttpsError } from "firebase-functions/v2/https";
+import { appError } from "./callable";
 
 export type UnknownRecord = Record<string, unknown>;
 
 export function asRecord(value: unknown): UnknownRecord {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new HttpsError("invalid-argument", "요청 형식이 올바르지 않습니다.");
+    throw appError("invalid-argument", "요청 형식이 올바르지 않습니다.");
   }
 
   return value as UnknownRecord;
@@ -20,12 +20,12 @@ export function requireString(
   const maxLength = options.maxLength ?? 120;
 
   if (typeof value !== "string") {
-    throw new HttpsError("invalid-argument", `${field} 값을 확인해 주세요.`, { field });
+    throw appError("invalid-argument", `${field} 값을 확인해 주세요.`, { field });
   }
 
   const normalized = value.trim();
   if (normalized.length < minLength || normalized.length > maxLength) {
-    throw new HttpsError("invalid-argument", `${field} 길이를 확인해 주세요.`, { field });
+    throw appError("invalid-argument", `${field} 길이를 확인해 주세요.`, { field });
   }
 
   return normalized;
@@ -43,10 +43,19 @@ export function optionalString(
   }
 
   if (typeof value !== "string" || value.trim().length > maxLength) {
-    throw new HttpsError("invalid-argument", `${field} 값을 확인해 주세요.`, { field });
+    throw appError("invalid-argument", `${field} 값을 확인해 주세요.`, { field });
   }
 
   return value.trim();
+}
+
+export function requireDocumentId(record: UnknownRecord, field: string, maxLength = 160): string {
+  const value = requireString(record, field, { minLength: 1, maxLength });
+  if (value.includes("/")) {
+    throw appError("invalid-argument", `${field} 값을 확인해 주세요.`, { field });
+  }
+
+  return value;
 }
 
 export function requireLocalDate(record: UnknownRecord, field: string): string {
@@ -54,7 +63,7 @@ export function requireLocalDate(record: UnknownRecord, field: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
 
   if (!match) {
-    throw new HttpsError("invalid-argument", `${field} 날짜를 확인해 주세요.`, { field });
+    throw appError("invalid-argument", `${field} 날짜를 확인해 주세요.`, { field });
   }
 
   const [, yearText, monthText, dayText] = match;
@@ -70,7 +79,7 @@ export function requireLocalDate(record: UnknownRecord, field: string): string {
     parsed.getUTCMonth() !== month - 1 ||
     parsed.getUTCDate() !== day
   ) {
-    throw new HttpsError("invalid-argument", `${field} 날짜를 확인해 주세요.`, { field });
+    throw appError("invalid-argument", `${field} 날짜를 확인해 주세요.`, { field });
   }
 
   return date;

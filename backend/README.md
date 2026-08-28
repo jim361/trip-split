@@ -25,11 +25,12 @@ npm run dev:backend
 npm run test:emulator
 ```
 
-Emulator 명령은 과금되지 않는 `demo-trip-split` 프로젝트 ID를 명시합니다. 실제 Firebase 프로젝트 생성·배포와 외부 유료 API 호출은 별도 승인 없이 수행하지 않습니다.
+Emulator 시작 명령은 Functions를 먼저 빌드하고 과금되지 않는 `demo-trip-split` 프로젝트 ID를 명시합니다. 실제 Firebase 프로젝트 생성·배포와 외부 유료 API 호출은 별도 승인 없이 수행하지 않습니다.
 
 ## 작업 경계
 
-- `src`: `createTrip`, `createShareCode`, `joinTrip`과 향후 Google 장소·provider-neutral OCR·번역 Callable
+- `src`: `createTrip`, `createShareCode`, `joinTrip`과 향후 Google 장소·지출·provider-neutral OCR·번역 Callable
+- `src/shared/callable.ts`: 공통 Auth·여행 멤버 검사와 `HttpsError`/`AppError` wire
 - `firestore.rules`, `firestore.indexes.json`: 멤버 기반 Firestore 접근 계약
 - `tests/emulator`: 익명 사용자·공유 코드·보안 규칙 통합 테스트
 - `.env.example`: Functions 일반 환경변수와 secret 이름 예시

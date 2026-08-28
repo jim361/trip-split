@@ -1,7 +1,7 @@
 import { HttpsError } from "firebase-functions/v2/https";
 import { describe, expect, it } from "vitest";
 
-import { requireLocalDate } from "./input";
+import { requireDocumentId, requireLocalDate } from "./input";
 
 describe("requireLocalDate", () => {
   it("실제로 존재하는 날짜만 허용한다", () => {
@@ -14,4 +14,19 @@ describe("requireLocalDate", () => {
       expect(() => requireLocalDate({ startDate: value }, "startDate")).toThrow(HttpsError);
     },
   );
+});
+
+describe("requireDocumentId", () => {
+  it("공백을 제거한 단일 Firestore 문서 ID를 반환한다", () => {
+    expect(requireDocumentId({ tripId: " trip-a " }, "tripId")).toBe("trip-a");
+  });
+
+  it("하위 경로로 해석될 수 있는 값을 거부한다", () => {
+    expect(() => requireDocumentId({ tripId: "trip/a" }, "tripId")).toThrowError(
+      expect.objectContaining({
+        code: "invalid-argument",
+        details: expect.objectContaining({ field: "tripId" }),
+      }),
+    );
+  });
 });

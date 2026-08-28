@@ -1,23 +1,16 @@
 import type { DecodedIdToken } from "firebase-admin/auth";
 import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
-import { HttpsError, type CallableRequest, onCall } from "firebase-functions/v2/https";
+import { onCall } from "firebase-functions/v2/https";
 
+import { appError, requireAuth } from "../shared/callable";
 import { FUNCTIONS_REGION } from "../shared/env";
-import { asRecord, optionalString, requireString } from "../shared/input";
+import { asRecord, optionalString, requireDocumentId, requireString } from "../shared/input";
 import { generateShareCode, isValidShareCode, normalizeShareCode } from "./shareCode";
 import { normalizeCreateTripInput } from "./tripInput";
 
 const MAX_CODE_GENERATION_ATTEMPTS = 8;
 
 class ShareCodeCollisionError extends Error {}
-
-function requireAuth(request: CallableRequest<unknown>) {
-  if (!request.auth) {
-    throw new HttpsError("unauthenticated", "로그인 세션이 필요합니다.");
-  }
-
-  return request.auth;
-}
 
 function getDisplayName(token: DecodedIdToken, uid: string, requestedName?: string): string {
   const tokenName = typeof token.name === "string" ? token.name.trim() : "";
@@ -147,7 +140,7 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
     }
   }
 
-  throw new HttpsError(
+  throw appError(
     "resource-exhausted",
     "공유 코드를 만들지 못했습니다. 잠시 후 다시 시도해 주세요.",
   );
@@ -157,7 +150,7 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
 export const createShareCode = onCall({ region: FUNCTIONS_REGION, cors: true }, async (request) => {
   const auth = requireAuth(request);
   const input = asRecord(request.data);
-  const tripId = requireString(input, "tripId", { minLength: 1, maxLength: 160 });
+  const tripId = requireDocumentId(input, "tripId");
   const db = getFirestore();
   const tripRef = db.collection("trips").doc(tripId);
   const memberRef = tripRef.collection("members").doc(auth.uid);
@@ -182,11 +175,11 @@ export const createShareCode = onCall({ region: FUNCTIONS_REGION, cors: true }, 
         );
 
         if (!tripSnapshot.exists) {
-          throw new HttpsError("not-found", "여행을 찾을 수 없습니다.");
+          throw appError("not-found", "여행을 찾을 수 없습니다.");
         }
 
         if (!memberSnapshot.exists) {
-          throw new HttpsError("permission-denied", "이 여행의 멤버만 공유할 수 있습니다.");
+          throw appError("permission-denied", "이 여행의 멤버만 공유할 수 있습니다.");
         }
 
         if (codeSnapshot.exists) {
@@ -223,7 +216,7 @@ export const createShareCode = onCall({ region: FUNCTIONS_REGION, cors: true }, 
     }
   }
 
-  throw new HttpsError(
+  throw appError(
     "resource-exhausted",
     "공유 코드를 만들지 못했습니다. 잠시 후 다시 시도해 주세요.",
   );
@@ -238,7 +231,7 @@ export const joinTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (
   const shareCode = normalizeShareCode(rawCode);
 
   if (!isValidShareCode(shareCode)) {
-    throw new HttpsError("invalid-argument", "공유 코드 형식을 확인해 주세요.", {
+    throw appError("invalid-argument", "공유 코드 형식을 확인해 주세요.", {
       field: "shareCode",
     });
   }
@@ -250,7 +243,7 @@ export const joinTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (
     const codeSnapshot = await transaction.get(codeRef);
 
     if (!codeSnapshot.exists) {
-      throw new HttpsError("not-found", "유효한 공유 코드를 찾을 수 없습니다.");
+      throw appError("not-found", "유효한 공유 코드를 찾을 수 없습니다.");
     }
 
     const codeData = codeSnapshot.data() ?? {};
@@ -266,7 +259,7 @@ export const joinTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (
       expired ||
       hasInvalidUsageLimit
     ) {
-      throw new HttpsError("not-found", "만료되었거나 비활성화된 공유 코드입니다.");
+      throw appError("not-found", "만료되었거나 비활성화된 공유 코드입니다.");
     }
 
     if (
@@ -274,7 +267,9 @@ export const joinTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (
       typeof codeData.useCount === "number" &&
       codeData.useCount >= codeData.maxUses
     ) {
-      throw new HttpsError("resource-exhausted", "공유 코드 사용 가능 횟수를 초과했습니다.");
+      throw appError("resource-exhausted", "공유 코드 사용 가능 횟수를 초과했습니다.", {
+        retryable: false,
+      });
     }
 
     const tripRef = db.collection("trips").doc(tripId);
@@ -287,7 +282,7 @@ export const joinTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (
     ]);
 
     if (!tripSnapshot.exists) {
-      throw new HttpsError("not-found", "여행을 찾을 수 없습니다.");
+      throw appError("not-found", "여행을 찾을 수 없습니다.");
     }
 
     const timestamp = FieldValue.serverTimestamp();

@@ -1,5 +1,4 @@
-import { HttpsError } from "firebase-functions/v2/https";
-
+import { appError } from "../shared/callable";
 import { type UnknownRecord, requireLocalDate, requireString } from "../shared/input";
 
 export type NormalizedCreateTripInput = {
@@ -14,7 +13,7 @@ export type NormalizedCreateTripInput = {
 };
 
 function invalid(field: string, message: string): never {
-  throw new HttpsError("invalid-argument", message, { field });
+  throw appError("invalid-argument", message, { field });
 }
 
 function normalizedCode(
