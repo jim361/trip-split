@@ -112,7 +112,19 @@ npm run test:emulator
 
 `test:emulator`는 안전한 `demo-trip-split` 프로젝트 ID로 Auth, Firestore, Functions Emulator를 실행합니다. 실제 Firebase 프로젝트나 과금 가능한 외부 API에는 접근하지 않습니다.
 
-## Firebase 모드 · 전환 전 React 목업
+## Firebase 모드
+
+Flutter 앱의 기본값은 mock입니다. 로컬 Auth·Firestore·Functions Emulator와 연결할 때는 backend Emulator를 먼저 실행하고 Android Emulator에서 `10.0.2.2`를 사용합니다.
+
+```bash
+npm run dev:backend
+cd frontend
+flutter run --dart-define-from-file=dart_defines.example.json
+```
+
+실제 Firebase 프로젝트 값은 `frontend/dart_defines.local.json`에 두며 Git에 저장하지 않습니다. Console 프로젝트 생성, Auth provider 활성화와 배포는 별도 승인 후 수행합니다.
+
+### 전환 전 React 목업
 
 `frontend/.env.example`을 `frontend/.env.local`로 복사한 뒤 다음 값을 설정합니다.
 
@@ -132,7 +144,7 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
-이 절은 현재 React 목업의 환경변수입니다. Flutter 전환 뒤에는 `flutterfire configure`로 Android Firebase App을 생성하고 Auth·Firestore·Functions Emulator를 사용합니다. Android Emulator에서 host 주소는 `10.0.2.2`입니다. 실제 Firebase 프로젝트 생성·배포·secret 등록은 수행하지 않았습니다.
+이 절은 현재 React 목업의 환경변수입니다. 실제 Firebase 프로젝트 생성·배포·secret 등록은 수행하지 않았습니다.
 
 Functions 일반 환경변수와 secret 구조는 `backend/.env.example`에 있습니다. OCR·번역 provider가 benchmark 뒤 확정되면 provider별 secret 이름을 추가하며 실제 secret은 repository에 저장하지 않습니다.
 
@@ -147,6 +159,6 @@ Functions 일반 환경변수와 secret 구조는 `backend/.env.example`에 있�
 - 모든 MVP 여행 멤버는 `editor`입니다.
 - Android Firestore 캐시와 pending write 상태를 구분합니다. Google 장소·OCR 호출은 온라인 전용입니다.
 
-현재 Flutter 기반에는 FlutterFire 인증·실시간 repository, 완성된 정산 엔진, OCR·번역 provider, 실제 Google Maps SDK와 Android `.trip.json` 처리가 없습니다. 도쿄 mock은 API 키와 과금 없이 정보 구조와 개발 경계를 검토하는 자료입니다.
+현재 Flutter 기반에는 FlutterFire 인증·실시간 repository와 여행 생성·공유·입장 경계가 있습니다. 아직 없는 범위는 완성된 정산 엔진, OCR·번역 provider, 실제 Google Maps SDK, Flutter 클라이언트의 Android Emulator 수직 통합 테스트와 Android `.trip.json` 처리입니다. 도쿄 mock은 API 키와 과금 없이 정보 구조와 개발 경계를 검토하는 자료입니다.
 
 화면 검토는 [일정·지도 통합 목업 리뷰](docs/mockup-review.md), 자세한 경로와 인계 사항은 [플랫폼 인계 문서](docs/platform-handoff.md)를 참고하세요.

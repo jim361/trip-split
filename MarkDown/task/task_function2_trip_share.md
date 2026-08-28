@@ -12,30 +12,30 @@
 
 ## 작업
 
-- [ ] Firebase Anonymous Auth 자동 진입 구현
-- [ ] `UserProfile` 타입 정의
-- [ ] `TripMember` 타입 정의
-- [ ] `ShareCode` 타입 정의
-- [ ] `Trip` 타입에 ownerUid, shareCode 반영
-- [ ] `users/{uid}` 생성/갱신 로직 구현
-- [ ] 선택적 Google 계정 연결 UX 구현
-- [ ] Android Google Sign-In credential을 익명 계정에 link해 기존 uid와 여행 접근 권한 유지
-- [ ] 여행 생성 폼 구현
-- [ ] 여행 제목, 시작일, 종료일, 예상 인원 입력 구현
-- [ ] 국가·time zone·기본 통화·지도 provider 입력 계약 정의
-- [ ] 첫 도쿄 flow는 Google·JPY·Asia/Tokyo 기본값 사용
-- [ ] 예상 인원 수만큼 이름을 수정할 수 있는 Participant 초안을 `createTrip`에서 원자적으로 생성
-- [ ] 확정된 Firestore `trips`와 `members` 계약 적용
-- [ ] 여행, 생성자 member, 첫 공유 코드를 원자적으로 만드는 `createTrip` Callable Function 구현
-- [ ] 공유 코드를 추가·재생성하는 `createShareCode` Callable Function 구현
-- [ ] 코드를 검증하고 `trips/{tripId}/members/{uid}`에 등록하는 `joinTrip` Callable Function 구현
+- [x] Firebase Anonymous Auth 자동 진입 구현
+- [x] `UserProfile` 타입 정의
+- [x] `TripMember` 타입 정의
+- [x] `ShareCode` 타입 정의
+- [x] `Trip` 타입에 ownerUid, shareCode 반영
+- [x] `users/{uid}` 생성/갱신 로직 구현
+- [x] 선택적 Google 계정 연결 UX 구현
+- [x] Android Google Sign-In credential을 익명 계정에 link해 기존 uid와 여행 접근 권한 유지
+- [x] 여행 생성 폼 구현
+- [x] 여행 제목, 시작일, 종료일, 예상 인원 입력 구현
+- [x] 국가·time zone·기본 통화·지도 provider 입력 계약 정의
+- [x] 첫 도쿄 flow는 Google·JPY·Asia/Tokyo 기본값 사용
+- [x] 예상 인원 수만큼 이름을 수정할 수 있는 Participant 초안을 `createTrip`에서 원자적으로 생성
+- [x] 확정된 Firestore `trips`와 `members` 계약 적용
+- [x] 여행, 생성자 member, 첫 공유 코드를 원자적으로 만드는 `createTrip` Callable Function 구현
+- [x] 공유 코드를 추가·재생성하는 `createShareCode` Callable Function 구현
+- [x] 코드를 검증하고 `trips/{tripId}/members/{uid}`에 등록하는 `joinTrip` Callable Function 구현
 - [ ] 공유 코드 복사와 Android share sheet 구현
 - [ ] Android App Links 기반 초대 링크는 공유 코드 흐름이 안정된 뒤 별도 단계로 구현
-- [ ] 공유 코드로 여행 참여 구현
+- [x] 공유 코드로 여행 참여 구현
 - [ ] 초대 링크 접속 시 여행 참여 구현
 - [ ] 여행 기본 정보 수정 구현
-- [ ] 여행 데이터 실시간 구독 구현
-- [ ] members 기반 Firestore 보안 규칙 초안 작성
+- [x] 여행 데이터 실시간 구독 구현
+- [x] members 기반 Firestore 보안 규칙 초안 작성
 
 ## 완료 기준
 
