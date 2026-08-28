@@ -53,3 +53,43 @@ jobs:
 
       - name: Test Firebase Emulator
         run: npm run test:emulator
+
+  flutter-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2
+          channel: stable
+          cache: true
+
+      - name: Check Flutter formatting
+        working-directory: frontend
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Install Flutter dependencies
+        working-directory: frontend
+        run: flutter pub get
+
+      - name: Analyze Flutter
+        working-directory: frontend
+        run: flutter analyze
+
+      - name: Test Flutter
+        working-directory: frontend
+        run: flutter test
+
+      - name: Build Android debug APK
+        working-directory: frontend
+        run: flutter build apk --debug
