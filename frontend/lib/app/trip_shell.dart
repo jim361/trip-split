@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../domain/repositories.dart';
 import '../features/itinerary/itinerary_page.dart';
 import '../features/preparation/preparation_page.dart';
 import '../features/receipts/receipts_page.dart';
 import '../features/settlement/settlement_page.dart';
+import 'auth_session_gate.dart';
 import 'router.dart';
 import 'trip_session.dart';
 
@@ -56,9 +58,12 @@ final class _TripRouteHostState extends State<TripRouteHost> {
       }
 
       final trip = _session.trip!;
+      final auth = AuthSessionScope.of(context);
       return TripShell(
         location: widget.location,
         tripTitle: trip.title,
+        userId: auth.user.uid,
+        shareCode: trip.shareCode,
         body: switch (widget.location.destination) {
           TripDestination.itinerary => ItineraryPage(
             trip: trip,
@@ -100,6 +105,8 @@ final class TripShell extends StatelessWidget {
   const TripShell({
     required this.location,
     required this.tripTitle,
+    required this.userId,
+    required this.shareCode,
     required this.body,
     required this.onDestinationSelected,
     super.key,
@@ -107,6 +114,8 @@ final class TripShell extends StatelessWidget {
 
   final TripLocation location;
   final String tripTitle;
+  final String userId;
+  final String shareCode;
   final Widget body;
   final ValueChanged<TripDestination> onDestinationSelected;
 
@@ -127,15 +136,20 @@ final class TripShell extends StatelessWidget {
           children: [
             Text(tripTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
             Text(
-              'mock · ${location.tripId}',
+              'uid ${_shortUid(userId)} · ${location.tripId}',
               style: Theme.of(context).textTheme.labelSmall,
             ),
           ],
         ),
-        actions: const [
+        actions: [
+          IconButton(
+            tooltip: '공유 코드 복사',
+            onPressed: () => _copyShareCode(context),
+            icon: const Icon(Icons.ios_share_outlined),
+          ),
           Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Chip(label: Text('Android MVP')),
+            padding: const EdgeInsets.only(right: 12),
+            child: Center(child: Text(shareCode)),
           ),
         ],
       ),
@@ -205,7 +219,16 @@ final class TripShell extends StatelessWidget {
       _ => TripDestination.settlement,
     });
   }
+
+  Future<void> _copyShareCode(BuildContext context) async {
+    await Clipboard.setData(ClipboardData(text: shareCode));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('공유 코드 $shareCode를 복사했습니다.')));
+  }
 }
+
+String _shortUid(String uid) => uid.length <= 8 ? uid : uid.substring(0, 8);
 
 final class _LoadState extends StatelessWidget {
   const _LoadState({

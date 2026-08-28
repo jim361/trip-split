@@ -43,6 +43,68 @@ final class AppError implements Exception {
   String toString() => 'AppError(${code.wireValue}): $message';
 }
 
+final class UserProfile {
+  const UserProfile({
+    required this.uid,
+    required this.displayName,
+    required this.authProvider,
+    required this.createdAt,
+    required this.updatedAt,
+    this.email,
+    this.photoUrl,
+  });
+
+  final String uid;
+  final String displayName;
+  final String? email;
+  final String? photoUrl;
+  final String authProvider;
+  final EpochMillis createdAt;
+  final EpochMillis updatedAt;
+}
+
+final class TripMember {
+  const TripMember({
+    required this.uid,
+    required this.tripId,
+    required this.displayName,
+    required this.role,
+    required this.joinedAt,
+    required this.lastActiveAt,
+    this.photoUrl,
+  });
+
+  final String uid;
+  final EntityId tripId;
+  final String displayName;
+  final String? photoUrl;
+  final String role;
+  final EpochMillis joinedAt;
+  final EpochMillis lastActiveAt;
+}
+
+final class ShareCode {
+  const ShareCode({
+    required this.code,
+    required this.tripId,
+    required this.createdBy,
+    required this.createdAt,
+    required this.isActive,
+    required this.useCount,
+    this.expiresAt,
+    this.maxUses,
+  });
+
+  final String code;
+  final EntityId tripId;
+  final String createdBy;
+  final EpochMillis createdAt;
+  final bool isActive;
+  final int useCount;
+  final EpochMillis? expiresAt;
+  final int? maxUses;
+}
+
 final class Trip {
   const Trip({
     required this.id,
