@@ -1,5 +1,9 @@
 # 해외여행 중심 Trip Split 목업 리뷰
 
+> **[검토 01 · 해외여행 목업]** 도쿄 중심 반응형 화면과 팀 리뷰 질문입니다.
+
+> **전환 전 참고 자료:** 아래 화면과 실행 명령은 React/Vite GitHub Pages 목업입니다. 2026-08-28부터 제품 구현 대상은 Flutter Android이며 이 페이지를 현재 Android 빌드나 Flutter Web 결과로 보지 않습니다.
+
 업로드 후 설치 없이 확인: [GitHub Pages 반응형 목업](https://jim361.github.io/trip-split/)
 
 이 변경을 GitHub에 반영하면 공개 페이지는 실제 Firebase나 유료 API에 연결하지 않고 도쿄·강릉 fixture와 mock repository만 사용합니다.
@@ -27,7 +31,7 @@
 | ---------------------------------------------------------------- | --------------------------------------------------------- |
 | ![도쿄 장소 후보와 예약](./mockups/tokyo-preparation-mobile.png) | ![정산 인원 추가와 제외](./mockups/tokyo-cost-mobile.png) |
 
-## 로컬에서 직접 확인
+## 기존 React 목업을 로컬에서 확인
 
 ```bash
 npm run dev --workspace frontend -- --host 127.0.0.1 --port 4173
@@ -50,3 +54,5 @@ npm run dev --workspace frontend -- --host 127.0.0.1 --port 4173
 ## 구현 경계
 
 현재 지도는 `Place[]`와 `ItineraryItem[]`로 만든 mock 표현입니다. Google Maps SDK, Places 자동완성, 앱 내부 대중교통 경로와 예상 이동 시간은 아직 연결하지 않았습니다. 실제 adapter는 동일한 입력 계약을 사용하며, 현재 `Google Maps에서 열기` 링크는 Maps URL만 사용합니다.
+
+Flutter 포팅은 [Flutter Android 전환 계획](flutter-android-migration.md)을 따릅니다. 목업의 정보 구조와 문구는 참고하되 React component, CSS breakpoint와 query state를 그대로 이식할 의무는 없습니다.

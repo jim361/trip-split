@@ -25,7 +25,7 @@ export interface MapAdapter {
   destroy(): void;
 }
 
-/** 실제 지도 SDK 어댑터가 소비할 provider-neutral 입력을 만든다. */
+/** [TASK-05 · 지도] 실제 지도 SDK 어댑터가 소비할 provider-neutral 입력을 만듭니다. */
 export function createMapRenderModel(places: Place[], itinerary: ItineraryItem[]): MapRenderModel {
   const placeById = new Map(places.map((place) => [place.id, place]));
   const ordered = [...itinerary]

@@ -25,6 +25,7 @@ export type PlatformServices = {
 
 const PlatformServicesContext = createContext<PlatformServices | null>(null);
 
+/** [TASK-01 / TASK-02 · 플랫폼 서비스 주입] mock과 Firebase 구현을 같은 계약으로 선택합니다. */
 function createDefaultServices(): PlatformServices {
   const dataSource = import.meta.env.VITE_DATA_SOURCE === "firebase" ? "firebase" : "mock";
 

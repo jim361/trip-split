@@ -43,6 +43,7 @@ function isExpired(expiresAt: unknown): boolean | null {
   return null;
 }
 
+/** [TASK-02 · 여행 생성] 여행, 생성자 멤버, 정산 참여자와 최초 공유 코드를 함께 만듭니다. */
 export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (request) => {
   const auth = requireAuth(request);
   const input = asRecord(request.data);
@@ -180,6 +181,7 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
   );
 });
 
+/** [TASK-02 · 공유 코드 재생성] 기존 코드를 비활성화하고 새 활성 코드를 만듭니다. */
 export const createShareCode = onCall({ region: FUNCTIONS_REGION, cors: true }, async (request) => {
   const auth = requireAuth(request);
   const input = asRecord(request.data);
@@ -255,6 +257,7 @@ export const createShareCode = onCall({ region: FUNCTIONS_REGION, cors: true }, 
   );
 });
 
+/** [TASK-02 · 여행 참여] 활성 공유 코드를 검증하고 인증 사용자를 여행 멤버로 등록합니다. */
 export const joinTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (request) => {
   const auth = requireAuth(request);
   const input = asRecord(request.data);

@@ -28,6 +28,7 @@ const domesticReservations = [
   ["현지 이동", "미정"],
 ] as const;
 
+/** [TASK-04 · 준비 목업] 예약과 체크리스트를 검토하는 현재 화면 진입점입니다. */
 export function PreparationPage() {
   const { trip, itinerary, places, isLoading, error, dataSource } = useTripContext();
   const scheduledPlaceIds = new Set(

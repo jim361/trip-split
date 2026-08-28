@@ -3,6 +3,7 @@ import type { Place } from "../../shared/types";
 
 export type PlaceCandidate = Omit<Place, "id" | "tripId" | "createdAt" | "updatedAt" | "addedBy">;
 
+/** [TASK-03 · 장소] Google, NAVER와 mock 검색 구현이 함께 지키는 provider 경계입니다. */
 export interface PlaceProvider {
   searchPlaces(query: string): Promise<PlaceCandidate[]>;
   parsePlaceLink(url: string): Promise<PlaceCandidate[]>;
