@@ -10,7 +10,7 @@
 
 ### 현재 코드
 
-`frontend/`는 React/Vite 목업이고 `backend/`는 재사용할 Node.js·TypeScript Firebase 기반이다. Flutter scaffold는 아직 없으므로 문서의 목표 구조를 구현 완료로 보지 않는다.
+`frontend/`의 제품 앱은 Flutter Android scaffold이고 React/Vite는 GitHub Pages 목업을 위해 임시 보존한다. `backend/`는 Node.js·TypeScript Firebase 기반이다. Flutter mock 앱과 client 경계는 구현됐지만 실기기·Android Emulator 수직 검증까지 완료된 것으로 보지 않는다.
 
 ### 확정한 제품 방향
 
@@ -26,34 +26,34 @@
 
 ## 2. 현재 구현 상태
 
-| 영역          | 지금 확인할 수 있는 것                                                                                                 | 아직 구현되지 않았거나 확인할 것                                                                                |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| 프로젝트 기반 | 전환 전 Vite·React·TypeScript 목업, frontend/backend 구조, 테스트·Emulator·PWA 기반                                    | Flutter scaffold, Dart 검증, Android APK, FlutterFire 연결과 실기기 QA                                          |
-| 인증·공유     | 익명 인증 자동 시작, 선택적 Google 연결 경계, `createTrip`·`createShareCode`·`joinTrip`, members 보안 규칙             | Console provider 활성화, 초대 링크 UX, 코드 표시·복사·재생성 UI, 내 여행 목록과 익명 세션 소실 안내             |
-| 여행 생성     | mock에서는 입력값으로 고정 `tokyo-2026-11` fixture를 갱신하고, Firebase Callable은 새 여행·초기 Participant를 생성한다 | 국내/해외·국가·통화·provider·time zone 결정 UI, 여행 수정·목록·삭제                                             |
-| 데이터 연결   | React 공통 타입, mock/Firestore repository, TripContext 실시간 구독, 강릉·도쿄 fixture                                 | Dart 모델, `TripSession`, FlutterFire `Stream`, 실제 운영 데이터 마이그레이션과 백업 복원                       |
-| 일정·지도     | 날짜 전환, 상단 mock 지도, 번호 핀·직선 동선, 확대 query, Google 외부 길찾기, 지도 adapter 경계 초안                   | 장소·일정 CRUD와 재정렬, 실제 Google/NAVER 검색·지도 SDK·링크 파싱. 현재 강릉 fixture도 Google 문구·링크를 사용 |
-| 준비          | 미배치 장소 후보, 예약과 체크리스트 정적 목업                                                                          | `Reservation`·`ChecklistItem` 타입, repository, 저장·공유·편집                                                  |
-| 비용          | 참여자 추가·제외·재포함, KRW·JPY 지출 합계와 fixture 원장                                                              | 참여자 이름 수정·멤버 연결 UI, 지출 CRUD, 계산 엔진, 저장 전 runtime validator와 원장 불변식 검증               |
-| 영수증        | `parseReceipt` 클라이언트 경계와 검토 단계 placeholder                                                                 | 이미지 선택, OCR Function/provider, 수정·배분·합계 검증·확정 저장                                               |
-| 백업·오프라인 | React 정적 앱 셸 캐시                                                                                                  | Android Storage Access Framework, Firestore cache·pending write 상태와 `.trip.json` 복원                        |
+| 영역          | 지금 확인할 수 있는 것                                                                                       | 아직 구현되지 않았거나 확인할 것                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| 프로젝트 기반 | Flutter Android scaffold·세 탭 mock·Dart 검증과 CI debug APK, 임시 React Pages 목업                          | Android 실기기 QA와 Flutter client→Firebase Emulator 수직 검증                                                |
+| 인증·공유     | Flutter 익명 인증·Google 연결 service 경계, `TripSession`, 세 Callable과 members 규칙                        | Console provider 활성화, 코드 재생성 UI, Participant 연결 Callable, 내 여행 목록과 익명 세션 소실 안내        |
+| 여행 생성     | Flutter mock과 Firebase Callable이 새 여행·초기 Participant를 생성한다                                       | 국내/해외·국가·통화·provider·time zone 선택 UI, 여행 수정·목록·삭제                                           |
+| 데이터 연결   | Dart canonical 모델, mock/Firestore repository, `TripSession` Stream, 도쿄 fixture와 강릉 React 회귀 fixture | 실제 운영 데이터 migration, 준비 repository와 Android 백업 복원                                               |
+| 일정·지도     | 일정 편집 core, 날짜·순서·ID 기반 지도 render model, 상단 mock 지도와 확대 route                             | CRUD Widget, 실제 Google 검색·지도 SDK·URL adapter. NAVER는 후속                                              |
+| 준비          | 미배치 장소 후보, 예약과 체크리스트 정적 목업                                                                | `Reservation`·`ChecklistItem` 타입, repository, 저장·공유·편집                                                |
+| 비용          | Participant·Expense 모델, mock CRUD, equal 순수 엔진, KRW·JPY 분리 표시와 Firestore 읽기                     | 참여자 관리 UI, custom/itemized·net, runtime validator와 서버 저장 Callable. 그전까지 Firebase 직접 쓰기 차단 |
+| 영수증        | bytes 기반 `parseReceipt` 요청·mock 응답 경계와 검토 placeholder                                             | 이미지 선택, OCR Function/provider, 오류 appCode mapping, 수정·배분·확정 저장                                 |
+| 백업·오프라인 | `.trip.json` schema v1 codec와 Android backup 제외 정책, React 정적 앱 셸 캐시                               | Android 파일 선택기, Firebase import, Firestore cache·pending write UI                                        |
 
-현재 화면은 **전환 전 React 반응형 기능 목업**이다. 실제 Flutter Android 앱, 장소·일정 편집, 준비 데이터 저장, 정산 계산과 OCR이 완성된 상태는 아니다.
+GitHub Pages 화면은 **전환 전 React 반응형 기능 목업**이고 제품 코드는 Flutter Android다. Flutter에도 mock 세 탭은 있지만 실제 지도 SDK, 준비 저장, 완성된 정산과 OCR은 아직 없다.
 
 ## 3. 공통 데이터 경계와 아직 확인할 가정
 
-| 경계             | 현재 사실                                                                                                | 회의에서 확인할 점                                                                                |
-| ---------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| 여행 모델        | 현재 `Trip` 타입은 솔로·단체를 별도 타입으로 나누지 않는다.                                              | Participant가 한 명일 때 같은 원장을 개인 소비 중심 UI로 보여줄지                                 |
-| 멤버와 정산 인원 | `TripMember.uid`와 `Participant.id`는 분리되어 있고 `linkedUid`로 연결할 수 있다.                        | 입장한 멤버가 기존 Participant를 안전하게 선택·연결하는 방법                                      |
-| 인원 생명주기    | 클라이언트는 지출에서 참조 중인 Participant 삭제를 막지만 repository와 보안 규칙은 일부 삭제를 허용한다. | 삭제 없이 모두 `isActive: false`로 둘지, 미참조 임시 인원만 삭제할지                              |
-| 장소             | Google·NAVER·직접 입력 결과를 공통 `Place`로 정규화하는 타입과 provider 경계가 있다.                     | provider 원문 보관 범위, 중복 판정 기준과 국내 NAVER 연결 시점                                    |
-| 일정             | 장소 없는 일정과 사용자 `order`를 표현할 수 있다.                                                        | 수동 `order`를 canonical로 할지, 시간순 정렬은 보조 action으로 둘지                               |
-| 지도             | 번호 핀·직선 동선 render model과 확대 query가 있고 실제 경로·시간 계산은 외부 지도로 보낼 수 있다.       | 선택 날짜만 표시할지, 전체 여행 보기까지 넣을지. 실제 adapter 주입과 SDK는 아직 없다              |
-| 비용 원장        | 한 `Expense`에서 결제자와 소비자를 표현하므로 개인·공동 비용을 같은 모델에 담을 수 있다.                 | 배분 합계, 소비자 집합, 중복·비활성 Participant, itemized 합계를 저장 전에 어떤 계층에서 검증할지 |
-| 통화             | 계약은 ISO 통화별 최소 단위 정수와 통화별 계산을 요구하며 현재 React 타입은 KRW·JPY만 허용한다.          | 첫 Android UI에서 여행당 한 통화만 허용할지, 지출별 통화를 허용할지                               |
-| OCR              | 계약은 provider-neutral `parseReceipt`와 일본어 원문·한국어 번역을 요구하고 실제 provider는 미정이다.    | fixture 정확도·가격·보관 정책의 합격 기준                                                         |
-| 오프라인 경계    | Android Firestore persistence는 마지막 데이터와 pending write를 제공한다.                                | pending 표시 UX와 외부 장소·OCR 온라인 실패 처리                                                  |
+| 경계             | 현재 사실                                                                                             | 회의에서 확인할 점                                                                                |
+| ---------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 여행 모델        | 현재 `Trip` 타입은 솔로·단체를 별도 타입으로 나누지 않는다.                                           | Participant가 한 명일 때 같은 원장을 개인 소비 중심 UI로 보여줄지                                 |
+| 멤버와 정산 인원 | `TripMember.uid`와 `Participant.id`는 분리되어 있고 `linkedUid`로 연결할 수 있다.                     | 입장한 멤버가 기존 Participant를 안전하게 선택·연결하는 방법                                      |
+| 인원 생명주기    | Dart repository는 비활성화만 제공하고 Firestore Rules도 Participant 물리 삭제를 거부한다.             | 비활성 인원을 새 지출 선택지에서 제외하면서 과거 원장에는 유지하는 UI·validator                   |
+| 장소             | Google·NAVER·직접 입력 결과를 공통 `Place`로 정규화하는 타입과 provider 경계가 있다.                  | provider 원문 보관 범위, 중복 판정 기준과 국내 NAVER 연결 시점                                    |
+| 일정             | 장소 없는 일정과 사용자 `order`를 표현할 수 있다.                                                     | 수동 `order`를 canonical로 할지, 시간순 정렬은 보조 action으로 둘지                               |
+| 지도             | 번호 핀·직선 동선 render model과 확대 query가 있고 실제 경로·시간 계산은 외부 지도로 보낼 수 있다.    | 선택 날짜만 표시할지, 전체 여행 보기까지 넣을지. 실제 adapter 주입과 SDK는 아직 없다              |
+| 비용 원장        | 한 `Expense`에서 결제자와 소비자를 표현하므로 개인·공동 비용을 같은 모델에 담을 수 있다.              | 배분 합계, 소비자 집합, 중복·비활성 Participant, itemized 합계를 저장 전에 어떤 계층에서 검증할지 |
+| 통화             | 계약은 ISO 통화별 최소 단위 정수와 통화별 계산을 요구하며 현재 React 타입은 KRW·JPY만 허용한다.       | 첫 Android UI에서 여행당 한 통화만 허용할지, 지출별 통화를 허용할지                               |
+| OCR              | 계약은 provider-neutral `parseReceipt`와 일본어 원문·한국어 번역을 요구하고 실제 provider는 미정이다. | fixture 정확도·가격·보관 정책의 합격 기준                                                         |
+| 오프라인 경계    | Android Firestore persistence는 마지막 데이터와 pending write를 제공한다.                             | pending 표시 UX와 외부 장소·OCR 온라인 실패 처리                                                  |
 
 ## 4. 도쿄 여행 전 범위 제안
 
@@ -69,7 +69,7 @@ P0 전체를 한 PR에서 만들지 않는다. 먼저 Flutter Android 셸, `toky
 
 - 여행 이름, 기간과 예상 인원을 입력한다. 첫 배포에 국내 여행도 포함할 때만 국내/해외를 선택하게 한다.
 - 도쿄 템플릿에는 Google·JPY를 기본값으로 제안하되 통화는 사용자가 확인·변경한다. 일반 해외여행의 국가·통화·time zone 입력 범위는 회의에서 정한다.
-- Anonymous Auth로 바로 시작하고 공유 코드 또는 초대 링크로 같은 여행에 참여한다.
+- Anonymous Auth로 바로 시작하고 MVP에서는 공유 코드로 같은 여행에 참여한다. Android App Links는 후속이다.
 - 입장한 사용자는 기존 정산 명단에서 자신을 선택해 연결하고, 한 Participant에 중복 `linkedUid`가 생기지 않게 한다.
 - 모든 멤버는 첫 배포에서 editor로 두고 세부 권한은 추가하지 않는다.
 
@@ -152,7 +152,7 @@ Flutter·Android·Google 우선과 구현 순서는 확정됐다. 아래 선택�
 | P0       | 어떤 Google Maps URL을 지원할까?                  | 일반 장소·검색 URL부터 지원하고 단축 URL은 서버 비용·abuse 제한 확인 뒤 추가한다. |
 | P0       | `준비`의 최소 저장 범위는 어디까지인가?           | 예약 제목·유형·상태·URL·메모와 공동/개인 체크리스트까지만 저장한다.               |
 | P0       | 한 여행에서 KRW와 JPY를 함께 쓸까?                | 지출별 통화를 허용한다면 모든 합계·net·송금안을 통화별로 분리한다.                |
-| P0       | Participant 제외·삭제와 과거 지출은 어떻게 할까?  | 미참조 임시 인원만 삭제하고 그 외에는 비활성화한다.                               |
+| P0       | Participant 제외와 과거 지출을 어떻게 다룰까?     | 물리 삭제하지 않고 `isActive: false`로 두며 과거 지출 참조는 유지한다.            |
 | P1       | 예약비의 `expenseDate`는 결제일인가 이용일인가?   | 결제일로 통일하고 이용일은 연결된 일정에서 확인한다.                              |
 | P1       | OCR provider benchmark의 합격 기준은 무엇인가?    | 일본어 항목·총액 정확도, 번역 이해도, 처리 비용과 보관 정책을 수치로 정한다.      |
 | P1       | 앱 삭제·익명 세션 소실을 어떻게 안내할까?         | Google 연결과 `.trip.json` 백업을 제공하되 강제 로그인은 하지 않는다.             |
@@ -177,19 +177,19 @@ Flutter·Android·Google 우선과 구현 순서는 확정됐다. 아래 선택�
 - [x] 메뉴를 `일정·지도 / 준비 / 비용`으로 맞추고 영수증을 비용 하위로 둔다.
 - [x] Task 3·5를 Google 우선, Task 6을 통화별 최소 단위, Task 7을 provider-neutral OCR·번역으로 정리한다.
 - [x] `Reservation`, `ChecklistItem`의 최소 wire 계약과 Firestore 경로를 문서화한다.
-- [ ] Flutter Dart 모델과 repository에 문서 계약을 구현한다.
-- [ ] 현재 `KrwAmount` 코드명을 `CurrencyAmount` 또는 `MinorUnitAmount`로 migration한다.
-- [ ] `Trip` 코드의 국가·time zone·지도 provider·기본 통화를 새 계약으로 migration한다.
-- [ ] Participant 삭제 정책을 repository, Firestore rules와 Emulator 테스트에서 동일하게 강제한다.
+- [x] 핵심 Flutter Dart 모델과 mock/Firestore repository 계약을 구현한다. 준비 모델은 후속이다.
+- [x] Flutter 금액 타입을 `CurrencyAmount`로 정의한다. React `KrwAmount`는 legacy 목업 종료 때 제거한다.
+- [x] Flutter `Trip`에 국가·time zone·지도 provider·기본 통화를 반영한다.
+- [x] Participant 물리 삭제를 repository와 Firestore Rules에서 막고 비활성화만 제공한다.
 - [ ] 새 독립 기능은 상세 문서의 `추가 제안` 표에서 ID를 먼저 배정한다.
 - [ ] 채택한 기존 기능 ID만 `TASK-01`~`TASK-09` 체크리스트와 완료 조건에 반영한다.
 
 ## 10. 담당별 다음 구현 묶음
 
-| 담당           | 첫 구현 묶음                                                                                  | 통합 전 확인                                              |
-| -------------- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 플랫폼·통합    | Flutter scaffold, 세 탭 mock, FlutterFire/Auth·여행 세션, 멤버-Participant 연결, Android 백업 | Dart 모델·Firestore 경로·보안 규칙·Emulator               |
-| 장소·일정·지도 | Google place provider와 링크 fallback, 장소·일정 CRUD, 수동 순서·날짜·지도 갱신               | NAVER가 같은 `Place`·`MapAdapter` 경계를 사용할 수 있는지 |
-| 정산·영수증    | runtime validator, 수동 equal/custom, paid/owed/net, 이후 itemized와 영수증 검토 UI           | 통화별 결정성, 비활성 인원, 사용자 확정 전 미반영         |
+| 담당           | 첫 구현 묶음                                                                                 | 통합 전 확인                                              |
+| -------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| 플랫폼·통합    | Flutter client→Emulator 수직 검증, 멤버-Participant 연결 Callable, Android 백업 파일 adapter | Dart 모델·Firestore 경로·보안 규칙·Emulator               |
+| 장소·일정·지도 | Google place provider와 링크 fallback, 장소·일정 CRUD, 수동 순서·날짜·지도 갱신              | NAVER가 같은 `Place`·`MapAdapter` 경계를 사용할 수 있는지 |
+| 정산·영수증    | runtime validator, 수동 equal/custom, paid/owed/net, 이후 itemized와 영수증 검토 UI          | 통화별 결정성, 비활성 인원, 사용자 확정 전 미반영         |
 
 다음 회의에서는 남은 P0 질문을 먼저 결정하고 추가 후보는 첫 Android 배포 일정에 영향을 주지 않는 범위에서만 채택한다.

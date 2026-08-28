@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:trip_split/domain/models.dart';
 
+import '../map/map_render_model.dart';
+
 // [TASK-04 / TASK-05 · 일정·지도] 날짜별 일정과 지도 mock의 화면 경계입니다.
 class ItineraryPage extends StatelessWidget {
   const ItineraryPage({
@@ -21,7 +23,18 @@ class ItineraryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final placeById = {for (final place in places) place.id: place};
-    final dates = itinerary.map((item) => item.date).toSet().toList()..sort();
+    final sortedItinerary = [...itinerary]
+      ..sort((left, right) {
+        final byDate = left.date.compareTo(right.date);
+        if (byDate != 0) return byDate;
+        final byOrder = left.order.compareTo(right.order);
+        return byOrder != 0 ? byOrder : left.id.compareTo(right.id);
+      });
+    final dates = sortedItinerary.map((item) => item.date).toSet().toList();
+    final mapModel = deriveMapRenderModel(
+      places: places,
+      itinerary: sortedItinerary,
+    );
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
@@ -33,7 +46,12 @@ class ItineraryPage extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
-        _MockMap(places: places, expanded: mapExpanded, onToggle: onToggleMap),
+        _MockMap(
+          tripTitle: trip.title,
+          model: mapModel,
+          expanded: mapExpanded,
+          onToggle: onToggleMap,
+        ),
         const SizedBox(height: 24),
         Text('일정', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),
@@ -50,9 +68,9 @@ class ItineraryPage extends StatelessWidget {
               padding: const EdgeInsets.only(top: 12, bottom: 6),
               child: Text(date, style: Theme.of(context).textTheme.titleMedium),
             ),
-            for (final item
-                in itinerary.where((item) => item.date == date).toList()
-                  ..sort((a, b) => a.order.compareTo(b.order)))
+            for (final item in sortedItinerary.where(
+              (item) => item.date == date,
+            ))
               Card(
                 child: ListTile(
                   leading: CircleAvatar(
@@ -76,12 +94,14 @@ class ItineraryPage extends StatelessWidget {
 
 class _MockMap extends StatelessWidget {
   const _MockMap({
-    required this.places,
+    required this.tripTitle,
+    required this.model,
     required this.expanded,
     required this.onToggle,
   });
 
-  final List<Place> places;
+  final String tripTitle;
+  final MapRenderModel model;
   final bool expanded;
   final VoidCallback onToggle;
 
@@ -90,7 +110,7 @@ class _MockMap extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: '도쿄 일정 위치를 표시할 Google 지도 자리',
+      label: '$tripTitle 일정 위치를 표시할 Google 지도 자리',
       container: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -107,16 +127,18 @@ class _MockMap extends StatelessWidget {
                 painter: _MapGridPainter(colors.outlineVariant),
               ),
             ),
-            for (final entry in places.take(4).indexed)
+            for (final entry in model.pins.take(expanded ? 8 : 4).indexed)
               Positioned(
                 left: 28 + (entry.$1 % 2) * 128,
                 top: 34 + (entry.$1 ~/ 2) * (expanded ? 140 : 58),
                 child: Tooltip(
-                  message: entry.$2.name,
-                  child: Icon(
-                    Icons.location_on,
-                    color: colors.primary,
-                    size: 34,
+                  message: entry.$2.placeName,
+                  child: CircleAvatar(
+                    key: ValueKey('map-pin-${entry.$2.itineraryItemId}'),
+                    radius: 16,
+                    backgroundColor: _colorFromHex(entry.$2.colorHex),
+                    foregroundColor: colors.onPrimary,
+                    child: Text('${entry.$2.number}'),
                   ),
                 ),
               ),
@@ -126,9 +148,12 @@ class _MockMap extends StatelessWidget {
                   color: colors.surface.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  child: Text('Google 지도 연동 예정'),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child: Text(_mapStatusText(model)),
                 ),
               ),
             ),
@@ -149,6 +174,17 @@ class _MockMap extends StatelessWidget {
     );
   }
 }
+
+String _mapStatusText(MapRenderModel model) => switch (model.emptyState) {
+  MapEmptyState.noItinerary => '일정을 추가하면 지도에 표시됩니다.',
+  MapEmptyState.noMappableItems => '좌표가 있는 일정 장소가 없습니다.',
+  MapEmptyState.none =>
+    'Google 지도 연동 예정 · 동선 ${model.segments.length}구간'
+        '${model.missingLocations.isEmpty ? '' : ' · 지도 제외 ${model.missingLocations.length}건'}',
+};
+
+Color _colorFromHex(String value) =>
+    Color(int.parse('FF${value.replaceFirst('#', '')}', radix: 16));
 
 class _MapGridPainter extends CustomPainter {
   const _MapGridPainter(this.color);

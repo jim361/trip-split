@@ -23,7 +23,7 @@ Flutter 3.47.2, Dart 3.13.2, Android API 24 이상을 기준으로 합니다. Fl
 flutter run --dart-define-from-file=dart_defines.example.json
 ```
 
-실제 프로젝트 값은 Git에 올리지 않는 `dart_defines.local.json`에 두고 같은 옵션으로 실행합니다. demo 프로젝트 값으로 Emulator 없이 시작하면 앱이 이를 거부합니다.
+실제 프로젝트 값은 Git에 올리지 않는 `dart_defines.local.json`에 두고 같은 옵션으로 실행합니다. Android Google 계정 연결을 사용할 때는 공개 식별자인 Web OAuth client ID를 `GOOGLE_SERVER_CLIENT_ID`에 넣습니다. client secret은 앱이나 Git에 두지 않습니다. demo 프로젝트 값으로 Emulator 없이 시작하면 앱이 이를 거부합니다.
 
 ## React Pages 목업 실행
 
@@ -74,6 +74,8 @@ npm run dev
 ## 남은 Flutter 경계
 
 - Android Emulator에서 Flutter 클라이언트→로컬 Emulator 전체 수직 조각 확인
+- runtime validator와 서버 저장 경계 구현 뒤 Firestore expense 쓰기 개방
+- member 참조와 여행 내 유일성을 보장하는 Participant `linkedUid` 연결 Callable
 - `android`: Maps 설정과 Android 전용 capability
 - `web`: 후속 Flutter Web 진입점
 

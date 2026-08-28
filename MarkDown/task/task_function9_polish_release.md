@@ -21,7 +21,7 @@ MVP를 데모 가능한 품질로 정리한다.
 - [ ] 로딩 상태 정리
 - [ ] 에러 상태 정리
 - [ ] 저장 중/저장 완료 상태 정리
-- [x] Firebase 보안 규칙 점검
+- [ ] Firebase 전체 보안 규칙 점검. members·공유·장소 baseline은 완료했고 expense 저장 Callable·validator와 `linkedUid` 연결 Callable은 남음
 - [x] Anonymous Auth와 members 보안 규칙 점검
 - [ ] Google 로그인 연결 UX 점검
 - [x] 공유 코드 만료/비활성 정책 점검

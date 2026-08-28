@@ -60,7 +60,7 @@ final tokyoTripFixture = TokyoTripFixture(
     startDate: '2026-11-25',
     endDate: '2026-12-01',
     ownerUid: tokyoOwnerUid,
-    shareCode: 'TOKYO26',
+    shareCode: 'TKY26JP',
     createdAt: _createdAt,
     updatedAt: _updatedAt,
   ),
@@ -85,7 +85,7 @@ final tokyoTripFixture = TokyoTripFixture(
   ],
   shareCodes: [
     ShareCode(
-      code: 'TOKYO26',
+      code: 'TKY26JP',
       tripId: tokyoTripId,
       createdBy: tokyoOwnerUid,
       createdAt: _createdAt,

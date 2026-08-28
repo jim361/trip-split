@@ -67,7 +67,7 @@ void main() {
 
     await tester.drag(find.byType(ListView), const Offset(0, -900));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('share-code')), 'tokyo26');
+    await tester.enterText(find.byKey(const Key('share-code')), 'tky26jp');
     await tester.tap(find.byKey(const Key('join-trip')));
     await tester.pumpAndSettle();
 

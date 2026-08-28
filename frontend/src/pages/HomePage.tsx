@@ -129,7 +129,7 @@ export function HomePage() {
               <input
                 value={shareCode}
                 onChange={(event) => setShareCode(event.target.value)}
-                placeholder="예: TOKYO26"
+                placeholder="예: TKY26JP"
                 required
               />
             </label>

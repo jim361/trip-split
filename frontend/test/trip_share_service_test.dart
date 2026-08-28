@@ -90,7 +90,7 @@ void main() {
     addTearDown(repositories.close);
     final service = MockTripShareService(repositories);
 
-    final joined = await service.joinTrip(' tokyo-26 ', displayName: '게스트');
+    final joined = await service.joinTrip(' tky-26jp ', displayName: '게스트');
     final members = await repositories.watchMembers(joined.tripId).first;
 
     expect(joined.tripId, tokyoTripId);
