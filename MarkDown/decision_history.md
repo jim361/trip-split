@@ -1,5 +1,7 @@
 # Trip Split Decision History
 
+> **[이력 01 · 제품 결정 이력]** 변경 이유를 기록하며 현재 계약을 대체하지 않습니다.
+
 이 문서는 Trip Split을 기획하면서 상의하고 발전시킨 주요 결정 흐름을 남긴 기록이다.
 
 ## 1. 시작점: 강릉 여행 HTML
@@ -329,3 +331,25 @@ OCR 결정:
 - 고정 ID `tokyo-2026-11` fixture를 추가해 생성, 일정·지도, 준비, 비용 흐름을 Firebase 없이 검토할 수 있게 한다.
 - 이번 단계에서는 실제 Google Maps SDK, Places API, Routes API를 연결하지 않으며 지도 카드와 외부 Google Maps 링크만 제공한다.
 - 정산 계산 엔진과 OCR 구현은 기존 담당 경계를 유지한다.
+
+## 21. 2026-08-28 - Flutter Android 우선 전환
+
+React 웹 목업으로 정보 구조를 확인한 뒤 실제 여행 중 카메라, 파일 공유, 오프라인 캐시와 향후 위치·활동 데이터를 다룰 가능성을 다시 검토했다. 첫 제품을 Android 앱으로 만들고 Web은 같은 Flutter 코드베이스의 후속 보조 채널로 두기로 했다.
+
+결정:
+
+- 사용자 앱은 Flutter stable·Dart 기반으로 전환하고 첫 출시 대상은 Android로 한정한다.
+- 기존 Node.js 22·TypeScript Cloud Functions, Firestore 경로, Callable 이름, members 기반 Rules와 Emulator 테스트는 유지한다.
+- Android 기준은 `minSdk 24`와 현재 Play 요구사항에 맞춘 `targetSdk 36`을 scaffold에서 검증한다.
+- 2026년 11월 도쿄 여행을 첫 실사용 시나리오로 삼아 Google Maps와 JPY를 우선 구현한다.
+- 하단 내비게이션은 `일정·지도 / 준비 / 비용`이며 영수증은 비용의 하위 흐름이다.
+- 기존 React·GitHub Pages 목업은 Flutter 포팅을 위한 UX 참고 자료이며 장기적으로 두 클라이언트를 병행하지 않는다.
+- Flutter Web은 Android MVP가 안정된 뒤 계획·검토·공유용 보조 타깃으로 검증한다. 지도, 카메라, 로그인과 캐시의 플랫폼 차이를 별도 수용 기준으로 둔다.
+- 수동 일정·공유·정산을 먼저 완성하고 영수증 OCR·일본어 원문·한국어 번역 검토는 P1로 연결한다.
+- OCR provider는 클라이언트에 고정하지 않고 `parseReceipt` 뒤에서 Google Document AI Expense Parser, 일반 OCR·Translation과 다른 후보를 fixture로 비교한다.
+- 걸음 수, 이동 거리와 백그라운드 여행 경로는 권한·배터리·개인정보·Google Play 정책 검토가 필요한 P2로 두며 첫 Android MVP에 권한도 추가하지 않는다.
+- 국내 NAVER 지도 adapter, iOS와 실제 경로 계산도 P2다.
+
+Flutter Web은 공식 지원되므로 후속 구현에 기술적 장애는 없다. 다만 Android의 백그라운드 위치와 Health Connect를 Web에서 동일하게 제공할 수 없고 Google Maps Web도 일부 capability가 다르므로 “한 번 구현하면 모든 플랫폼이 동일하다”는 전제는 두지 않는다.
+
+이 결정은 2번의 국내 우선, 4번의 웹/PWA 우선, 14번의 현재 MVP 정의와 17번의 PWA 앱 셸 중 현재 방향을 대체한다. 과거 결정은 당시 맥락을 보존하기 위해 수정하지 않는다.

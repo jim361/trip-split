@@ -1,5 +1,7 @@
 # Task Function 9 - Polish And Release
 
+> **[TASK-09 · 마감·출시]** Android 접근성, 권한과 출시 전 품질 검증입니다.
+
 ## 목표
 
 MVP를 데모 가능한 품질로 정리한다.
@@ -10,10 +12,11 @@ MVP를 데모 가능한 품질로 정리한다.
 
 ## 작업
 
-- [ ] 모바일 반응형 QA
-- [ ] PC 레이아웃 QA
-- [ ] manifest, 아이콘, standalone 표시와 정적 앱 셸 캐시를 포함한 PWA 설치 가능 여부 확인
-- [ ] 오프라인 배너, 네트워크 의존 action 차단, 재접속 후 재시도 상태 확인. MVP는 오프라인 편집·동기화를 보장하지 않음
+- [ ] Android API 24 이상 emulator와 최소 한 대 실기기 QA
+- [ ] portrait 우선 작은 handset, 가로 회전, 글자 확대와 키보드 inset QA
+- [ ] adaptive icon, splash, 앱 이름과 package ID 확인
+- [ ] system back, deep link/App Link 경계와 Android share sheet 확인
+- [ ] Firestore 캐시, pending write, 동기화 완료·실패와 재접속 상태 확인
 - [ ] 빈 상태 문구 정리
 - [ ] 로딩 상태 정리
 - [ ] 에러 상태 정리
@@ -22,17 +25,23 @@ MVP를 데모 가능한 품질로 정리한다.
 - [ ] Anonymous Auth와 members 보안 규칙 점검
 - [ ] Google 로그인 연결 UX 점검
 - [ ] 공유 코드 만료/비활성 정책 점검
-- [ ] 네이버 API 호출량 제한 방식 정리
-- [ ] CLOVA OCR 호출량 제한 방식 정리
-- [ ] 데모 여행 데이터 준비
+- [ ] Google Maps·Places 키 제한과 호출량·예산 정책 정리
+- [ ] OCR·Translation provider 호출량·예산 정책 정리
+- [ ] 카메라·Photo Picker·네트워크 권한과 외부 전송 안내 점검
+- [ ] `tokyo-2026-11` 데모 여행과 강릉 회귀 데이터 준비
+- [ ] 개인정보처리방침·Google Play Data Safety 초안과 영수증 임시 처리 정책 점검
+- [ ] debug APK와 서명되지 않은 release build 검증. signing secret과 Play 배포는 별도 승인
+- [ ] Flutter Web은 선택적 compile/smoke만 수행하고 Android 완료를 막지 않음
 - [ ] README 작성
 - [ ] 배포 체크리스트 작성
 - [ ] 팀별 회고 및 다음 기능 정리
 
 ## 완료 기준
 
-- 팀원이 공유 링크로 데모 여행을 볼 수 있다.
-- 팀원이 공유 링크로 같은 Firebase 여행 세션을 실시간 편집할 수 있다.
+- 팀원이 설치한 Android 내부 테스트 빌드에서 공유 코드로 데모 여행을 볼 수 있다.
+- 팀원이 공유 코드로 같은 Firebase 여행 세션을 실시간 편집할 수 있다.
 - 장소, 일정, 지도, 정산, OCR 핵심 흐름이 한 번에 시연된다.
 - 알려진 제한 사항이 README에 정리되어 있다.
-- 390px 모바일, 1024px 이상 PC와 standalone PWA에서 앱 바·하단 내비게이션·바텀시트가 겹치지 않는다.
+- Android handset에서 앱 바·하단 내비게이션·modal bottom sheet와 키보드가 겹치지 않는다.
+- `flutter analyze`, `flutter test`, debug APK build와 backend/Emulator 검증이 모두 통과한다.
+- 백그라운드 위치·Health Connect 권한, 실제 유료 API와 배포 secret은 첫 MVP에 포함되지 않는다.

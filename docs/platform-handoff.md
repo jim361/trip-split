@@ -1,5 +1,9 @@
 # 플랫폼·통합 기반 인계
 
+> **[인계 01 · 플랫폼·통합 구현 현황]** 공통 계약과 도메인 담당자 연결점을 정리합니다.
+
+> **전환 전 구현 스냅샷:** 아래 `frontend/src`, React Provider와 PWA 설명은 2026-08-28 이전 목업의 실제 상태를 기록합니다. 현재 제품 계약은 Flutter Android이며 새 코드는 이 구조를 확장하지 말고 [전환 계획](flutter-android-migration.md)에 따라 포팅합니다. backend Callable, Firestore 경로·Rules와 fixture의 의미는 재사용합니다.
+
 ## 공통 계약
 
 - 도메인 타입: `frontend/src/shared/types/domain.ts`
@@ -78,7 +82,7 @@ MVP 생성 코드에는 `expiresAt`과 `maxUses`를 기록하지 않습니다. �
 
 `npm run test:emulator`가 익명 사용자 두 명의 생성·참여, 코드 정책, 비멤버·무인증 거부와 보안 규칙을 검증합니다.
 
-## PWA와 온라인 경계
+## 전환 전 PWA와 온라인 경계
 
 - manifest: `frontend/public/manifest.webmanifest`
 - 임시 SVG 아이콘: `frontend/public/icons/`
@@ -92,7 +96,7 @@ Firestore 편집, Callable, 장소 provider와 OCR 요청은 오프라인 저장
 - 실제 Firebase 프로젝트와 배포
 - Firebase Console의 Auth Provider 활성화
 - Google/NAVER 지도·장소 검색 adapter와 링크 파싱 Functions
-- CLOVA OCR `parseReceipt` Function과 secret
+- provider-neutral OCR·번역 `parseReceipt` Function과 adapter secret
 - 정산·항목 배분 엔진
 - `.trip.json` 내보내기/가져오기
 - 실제 PNG 설치 아이콘과 최종 시각 디자인
@@ -100,3 +104,20 @@ Firestore 편집, Callable, 장소 provider와 OCR 요청은 오프라인 저장
 Functions 배포 런타임은 Node 22로 지정했습니다. 로컬 Firebase CLI도 Node 22 사용을 권장합니다.
 
 현재 `npm audit --omit=dev`는 `firebase-admin@13`이 사용하는 Google SDK의 `uuid@9` 경로에서 moderate 8건을 보고합니다. 자동 수정은 `firebase-admin@14`로 올리지만, 설치된 `firebase-functions@7.2.5`의 공식 peer 범위는 아직 `firebase-admin@13`까지입니다. 강제 업그레이드나 transitive override는 적용하지 않았으며, Functions가 Admin 14를 공식 지원하면 함께 올리고 Emulator 회귀 테스트를 다시 실행해야 합니다.
+
+## Flutter 포팅 연결점
+
+| React 스냅샷                 | Flutter 목표                                         |
+| ---------------------------- | ---------------------------------------------------- |
+| `PlatformServicesProvider`   | app composition에서 mock/FlutterFire repository 주입 |
+| `AuthProvider`               | Auth controller와 Android Google credential link     |
+| `TripProvider`               | repository `Stream`을 조합하는 `TripSession`         |
+| `frontend/src/shared/types`  | `frontend/lib/domain/models`의 immutable Dart 모델   |
+| callback subscribe·`Promise` | Dart `Stream` watch와 `Future` command               |
+| React route와 query          | Flutter router state, 후속 App Link/Web deep link    |
+| Vite PWA cache               | Android Firestore cache·pending write 상태           |
+
+- Android Emulator는 host Firebase Emulator에 `10.0.2.2`로 연결합니다.
+- 첫 지도 adapter는 Google Maps이며 NAVER는 후속입니다.
+- `parseReceipt` 이름과 사용자 확정 전 미반영 원칙은 유지하고 CLOVA 고정은 제거합니다.
+- 기존 React 목업이 Flutter 세로 기능 조각으로 대체되기 전에는 파일을 일괄 삭제하지 않습니다.
