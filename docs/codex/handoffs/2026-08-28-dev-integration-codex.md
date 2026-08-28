@@ -16,7 +16,7 @@
 - CI는 Ubuntu에서 Node.js 22, Java 21, 훅 자체 테스트와 Full 검증기를 실행한다.
 - `.nvmrc`와 루트 `package.json`에 Node.js 22를 필수 버전으로 고정했다.
 - 사용자가 2026-08-28에 merge commit과 `feature/codex-harness` 일반 push를 명시적으로 승인했다.
-- merge commit `6cf7b54`를 일반 push했고 원격 브랜치는 `dev`보다 0 commit 뒤·3 commit 앞이다.
+- merge commit `6cf7b54`와 이후 리뷰 보강분을 `feature/codex-harness`에 일반 push했고, push 후 로컬과 원격 브랜치 SHA가 일치함을 확인했다.
 - 사용자가 같은 날 리뷰 보강분의 commit과 `feature/codex-harness` 일반 push도 명시적으로 요청했다.
 
 ## 3. 남은 것
@@ -66,5 +66,5 @@ pwsh -NoProfile -File scripts/verify.ps1 -Mode Full
 - 의도적으로 Node.js 24에서 실행: 종료 코드 `2`, Node.js major 22 전제조건 실패
 - 의도적으로 루트 `typecheck`를 `echo ok`로 변경: 종료 코드 `1`, 루트 workspace 위임 계약 검사 실패
 - 의도적으로 `src/rogue.ts`와 `functions/src/index.ts` 생성: 각각 종료 코드 `1`, 폐기 디렉터리 검사 실패
-- 일반 push 후 GitHub 확인: 원격 브랜치는 `dev`보다 0 commit 뒤·3 commit 앞이며, `dev` 대상 Pull Request와 원격 Actions 실행은 각각 0개. CI는 일반 push가 아니라 Pull Request 또는 수동 실행에서 시작한다.
+- 일반 push 후 GitHub 확인: 로컬과 원격 브랜치 SHA가 일치하며, `dev` 대상 Pull Request와 원격 Actions 실행은 각각 0개. CI는 일반 push가 아니라 Pull Request 또는 수동 실행에서 시작한다.
 - 다음 작업자가 가장 먼저 재현할 명령: `pwsh -NoProfile -File scripts/verify.ps1 -Mode Fast`
