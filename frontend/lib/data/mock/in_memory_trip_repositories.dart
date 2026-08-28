@@ -13,6 +13,18 @@ final class InMemoryTripRepositories implements TripRepositories {
     EpochClock? now,
   }) : _fixture = seed ?? tokyoTripFixture,
        _now = now ?? (() => DateTime.now().millisecondsSinceEpoch) {
+    _trips[_fixture.trip.id] = _fixture.trip;
+    _userProfiles.addEntries(
+      _fixture.userProfiles.map((value) => MapEntry(value.uid, value)),
+    );
+    _members.addEntries(
+      _fixture.members.map(
+        (value) => MapEntry(_memberKey(value.tripId, value.uid), value),
+      ),
+    );
+    _shareCodes.addEntries(
+      _fixture.shareCodes.map((value) => MapEntry(value.code, value)),
+    );
     _participants.addEntries(
       _fixture.participants.map((value) => MapEntry(value.id, value)),
     );
@@ -31,16 +43,37 @@ final class InMemoryTripRepositories implements TripRepositories {
   final TokyoTripFixture _fixture;
   final EpochClock _now;
   final _changes = StreamController<void>.broadcast(sync: true);
+  final Map<EntityId, Trip> _trips = {};
+  final Map<String, UserProfile> _userProfiles = {};
+  final Map<String, TripMember> _members = {};
+  final Map<String, ShareCode> _shareCodes = {};
   final Map<EntityId, Participant> _participants = {};
   final Map<EntityId, Place> _places = {};
   final Map<EntityId, ItineraryItem> _itinerary = {};
   final Map<EntityId, Expense> _expenses = {};
   var _nextId = 1;
+  var _nextTripId = 1;
+  var _nextShareCode = 0;
+
+  String get actorDisplayName =>
+      _userProfiles[actorUid]?.displayName ?? '여행자 ${_shortUid(actorUid)}';
 
   @override
   Stream<Trip?> watchTrip(EntityId tripId) async* {
     yield _trip(tripId);
     yield* _changes.stream.map((_) => _trip(tripId));
+  }
+
+  @override
+  Stream<UserProfile?> watchUser(String uid) async* {
+    yield _user(uid);
+    yield* _changes.stream.map((_) => _user(uid));
+  }
+
+  @override
+  Stream<List<TripMember>> watchMembers(EntityId tripId) async* {
+    yield _membersFor(tripId);
+    yield* _changes.stream.map((_) => _membersFor(tripId));
   }
 
   @override
@@ -65,6 +98,182 @@ final class InMemoryTripRepositories implements TripRepositories {
   Stream<List<Expense>> watchExpenses(EntityId tripId) async* {
     yield _expensesFor(tripId);
     yield* _changes.stream.map((_) => _expensesFor(tripId));
+  }
+
+  Future<Trip> createTripSession({
+    required String title,
+    required String countryCode,
+    required String timeZone,
+    required String mapProvider,
+    required String defaultCurrency,
+    required LocalDate startDate,
+    required LocalDate endDate,
+    required List<String> participantNames,
+    String? displayName,
+  }) async {
+    final timestamp = _now();
+    final tripId = 'mock-trip-${_nextTripId++}';
+    final shareCode = _newShareCode();
+    final ownerName = displayName?.trim().isNotEmpty == true
+        ? displayName!.trim()
+        : actorDisplayName;
+    final trip = Trip(
+      id: tripId,
+      title: title.trim(),
+      countryCode: countryCode,
+      timeZone: timeZone,
+      mapProvider: mapProvider,
+      defaultCurrency: defaultCurrency,
+      startDate: startDate,
+      endDate: endDate,
+      ownerUid: actorUid,
+      shareCode: shareCode,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    );
+    _trips[tripId] = trip;
+    _userProfiles.putIfAbsent(
+      actorUid,
+      () => UserProfile(
+        uid: actorUid,
+        displayName: ownerName,
+        authProvider: 'anonymous',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      ),
+    );
+    _members[_memberKey(tripId, actorUid)] = TripMember(
+      uid: actorUid,
+      tripId: tripId,
+      displayName: ownerName,
+      role: 'editor',
+      joinedAt: timestamp,
+      lastActiveAt: timestamp,
+    );
+    _shareCodes[shareCode] = ShareCode(
+      code: shareCode,
+      tripId: tripId,
+      createdBy: actorUid,
+      createdAt: timestamp,
+      isActive: true,
+      useCount: 0,
+    );
+    for (var index = 0; index < participantNames.length; index++) {
+      final participant = Participant(
+        id: _id('participant'),
+        tripId: tripId,
+        name: participantNames[index].trim(),
+        linkedUid: index == 0 ? actorUid : null,
+        isActive: true,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      );
+      _participants[participant.id] = participant;
+    }
+    _changes.add(null);
+    return trip;
+  }
+
+  Future<Trip> regenerateShareCode(EntityId tripId) async {
+    final trip = _requireTrip(tripId);
+    if (!_members.containsKey(_memberKey(tripId, actorUid))) {
+      throw const AppError(
+        code: AppErrorCode.permissionDenied,
+        message: '이 여행의 멤버만 공유할 수 있습니다.',
+        retryable: false,
+      );
+    }
+
+    final timestamp = _now();
+    for (final entry in _shareCodes.entries.toList()) {
+      final code = entry.value;
+      if (code.tripId == tripId && code.isActive) {
+        _shareCodes[entry.key] = _copyShareCode(code, isActive: false);
+      }
+    }
+    final shareCode = _newShareCode();
+    final updated = _copyTrip(trip, shareCode: shareCode, updatedAt: timestamp);
+    _trips[tripId] = updated;
+    _shareCodes[shareCode] = ShareCode(
+      code: shareCode,
+      tripId: tripId,
+      createdBy: actorUid,
+      createdAt: timestamp,
+      isActive: true,
+      useCount: 0,
+    );
+    _changes.add(null);
+    return updated;
+  }
+
+  Future<Trip> joinTripSession(
+    String rawShareCode, {
+    String? displayName,
+  }) async {
+    final normalized = rawShareCode
+        .replaceAll(RegExp(r'[\s-]'), '')
+        .toUpperCase();
+    final code = _shareCodes[normalized];
+    final now = _now();
+    if (code == null ||
+        !code.isActive ||
+        (code.expiresAt != null && code.expiresAt! <= now)) {
+      throw const AppError(
+        code: AppErrorCode.notFound,
+        message: '공유 코드를 찾을 수 없습니다.',
+        retryable: false,
+      );
+    }
+    if (code.maxUses != null && code.useCount >= code.maxUses!) {
+      throw const AppError(
+        code: AppErrorCode.resourceExhausted,
+        message: '공유 코드 사용 가능 횟수를 초과했습니다.',
+        retryable: false,
+      );
+    }
+
+    final trip = _requireTrip(code.tripId);
+    final key = _memberKey(trip.id, actorUid);
+    final member = _members[key];
+    final memberName = displayName?.trim().isNotEmpty == true
+        ? displayName!.trim()
+        : actorDisplayName;
+    if (member == null) {
+      _members[key] = TripMember(
+        uid: actorUid,
+        tripId: trip.id,
+        displayName: memberName,
+        role: 'editor',
+        joinedAt: now,
+        lastActiveAt: now,
+      );
+      _shareCodes[normalized] = _copyShareCode(
+        code,
+        useCount: code.useCount + 1,
+      );
+    } else {
+      _members[key] = TripMember(
+        uid: member.uid,
+        tripId: member.tripId,
+        displayName: member.displayName,
+        photoUrl: member.photoUrl,
+        role: member.role,
+        joinedAt: member.joinedAt,
+        lastActiveAt: now,
+      );
+    }
+    _userProfiles.putIfAbsent(
+      actorUid,
+      () => UserProfile(
+        uid: actorUid,
+        displayName: memberName,
+        authProvider: 'anonymous',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+    _changes.add(null);
+    return trip;
   }
 
   @override
@@ -110,12 +319,21 @@ final class InMemoryTripRepositories implements TripRepositories {
   }
 
   @override
-  Future<void> deleteParticipant(
+  Future<void> deactivateParticipant(
     EntityId tripId,
     EntityId participantId,
   ) async {
-    _find(_participants, tripId, participantId, '참여자');
-    _participants.remove(participantId);
+    final current = _find(_participants, tripId, participantId, '참여자');
+    _participants[participantId] = Participant(
+      id: current.id,
+      tripId: current.tripId,
+      name: current.name,
+      color: current.color,
+      linkedUid: current.linkedUid,
+      isActive: false,
+      createdAt: current.createdAt,
+      updatedAt: _now(),
+    );
     _changes.add(null);
   }
 
@@ -277,11 +495,17 @@ final class InMemoryTripRepositories implements TripRepositories {
 
   Future<void> close() => _changes.close();
 
-  Trip? _trip(EntityId tripId) =>
-      _fixture.trip.id == tripId ? _fixture.trip : null;
+  Trip? _trip(EntityId tripId) => _trips[tripId];
 
-  void _requireTrip(EntityId tripId) {
-    if (_trip(tripId) == null) {
+  UserProfile? _user(String uid) => _userProfiles[uid];
+
+  List<TripMember> _membersFor(EntityId tripId) => _members.values
+      .where((value) => value.tripId == tripId)
+      .toList(growable: false);
+
+  Trip _requireTrip(EntityId tripId) {
+    final trip = _trip(tripId);
+    if (trip == null) {
       throw AppError(
         code: AppErrorCode.notFound,
         message: '여행을 찾을 수 없습니다.',
@@ -289,6 +513,7 @@ final class InMemoryTripRepositories implements TripRepositories {
         details: {'id': tripId},
       );
     }
+    return trip;
   }
 
   T _find<T>(
@@ -316,9 +541,9 @@ final class InMemoryTripRepositories implements TripRepositories {
     return value;
   }
 
-  List<Participant> _participantsFor(EntityId tripId) =>
-      _participants.values.where((value) => value.tripId == tripId).toList()
-        ..sort((a, b) => a.id.compareTo(b.id));
+  List<Participant> _participantsFor(EntityId tripId) => _participants.values
+      .where((value) => value.tripId == tripId)
+      .toList(growable: false);
 
   List<Place> _placesFor(EntityId tripId) =>
       _places.values.where((value) => value.tripId == tripId).toList()
@@ -371,4 +596,52 @@ final class InMemoryTripRepositories implements TripRepositories {
   );
 
   EntityId _id(String kind) => 'mock-$kind-${_nextId++}';
+
+  String _newShareCode() {
+    while (true) {
+      var value = _nextShareCode++;
+      var suffix = '';
+      for (var index = 0; index < 4; index++) {
+        suffix = '${2 + (value % 8)}$suffix';
+        value ~/= 8;
+      }
+      final code = 'TEST$suffix';
+      if (!_shareCodes.containsKey(code)) return code;
+    }
+  }
 }
+
+String _memberKey(EntityId tripId, String uid) => '$tripId/$uid';
+
+String _shortUid(String uid) => uid.length <= 6 ? uid : uid.substring(0, 6);
+
+Trip _copyTrip(
+  Trip trip, {
+  required String shareCode,
+  required EpochMillis updatedAt,
+}) => Trip(
+  id: trip.id,
+  title: trip.title,
+  countryCode: trip.countryCode,
+  timeZone: trip.timeZone,
+  mapProvider: trip.mapProvider,
+  defaultCurrency: trip.defaultCurrency,
+  startDate: trip.startDate,
+  endDate: trip.endDate,
+  ownerUid: trip.ownerUid,
+  shareCode: shareCode,
+  createdAt: trip.createdAt,
+  updatedAt: updatedAt,
+);
+
+ShareCode _copyShareCode(ShareCode code, {bool? isActive, int? useCount}) =>
+    ShareCode(
+      code: code.code,
+      tripId: code.tripId,
+      createdBy: code.createdBy,
+      createdAt: code.createdAt,
+      isActive: isActive ?? code.isActive,
+      useCount: useCount ?? code.useCount,
+      expiresAt: code.expiresAt,
+      maxUses: code.maxUses,
+    );

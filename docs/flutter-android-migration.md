@@ -31,9 +31,9 @@
 - [x] Android `minSdk 24`, 현재 Play 요구사항에 맞춘 `targetSdk 36`
 - [x] 앱 router, Material 앱 셸과 `일정·지도 / 준비 / 비용` 하단 내비게이션
 - [x] 고정 ID `tokyo-2026-11` fixture와 mock repository 주입
-- [ ] `dart format`, `flutter analyze`, unit/widget test, debug APK build — 로컬 앞 세 항목 통과, APK는 CI 확인 중
-- FlutterFire 설정과 Auth·Firestore·Functions Emulator 연결
-- Anonymous Auth, `TripSession`, 여행 생성·공유 코드 입장의 세로 기능 조각
+- [x] `dart format`, `flutter analyze`, unit/widget test, debug APK build — GitHub Actions 포함 통과
+- [x] FlutterFire 설정과 Auth·Firestore·Functions Emulator 연결
+- [x] Anonymous Auth, `TripSession`, 여행 생성·공유 코드 입장의 세로 기능 조각
 
 Phase A가 끝나기 전에는 실제 Google Maps·OCR·위치 권한을 추가하지 않는다.
 

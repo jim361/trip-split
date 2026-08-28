@@ -3,8 +3,9 @@ import { FieldValue, Timestamp, getFirestore } from "firebase-admin/firestore";
 import { HttpsError, type CallableRequest, onCall } from "firebase-functions/v2/https";
 
 import { FUNCTIONS_REGION } from "../shared/env";
-import { asRecord, optionalString, requireLocalDate, requireString } from "../shared/input";
+import { asRecord, optionalString, requireString } from "../shared/input";
 import { generateShareCode, isValidShareCode, normalizeShareCode } from "./shareCode";
+import { normalizeCreateTripInput } from "./tripInput";
 
 const MAX_CODE_GENERATION_ATTEMPTS = 8;
 
@@ -47,49 +48,15 @@ function isExpired(expiresAt: unknown): boolean | null {
 export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (request) => {
   const auth = requireAuth(request);
   const input = asRecord(request.data);
-  const title = requireString(input, "title", { minLength: 1, maxLength: 80 });
-  const startDate = requireLocalDate(input, "startDate");
-  const endDate = requireLocalDate(input, "endDate");
   const requestedDisplayName = optionalString(input, "displayName", 40);
-  const regionType = input.regionType ?? "domestic";
-  const currency = input.currency ?? (regionType === "international" ? "JPY" : "KRW");
-  const participantCount = input.participantCount ?? 1;
-
-  if (regionType !== "domestic" && regionType !== "international") {
-    throw new HttpsError("invalid-argument", "지원하지 않는 여행 지역 유형입니다.", {
-      field: "regionType",
-    });
-  }
-
-  if (currency !== "KRW" && currency !== "JPY") {
-    throw new HttpsError("invalid-argument", "지원하지 않는 통화입니다.", {
-      field: "currency",
-    });
-  }
-
-  if (
-    typeof participantCount !== "number" ||
-    !Number.isInteger(participantCount) ||
-    participantCount < 1 ||
-    participantCount > 20
-  ) {
-    throw new HttpsError("invalid-argument", "정산 인원은 1명부터 20명까지 설정할 수 있습니다.", {
-      field: "participantCount",
-    });
-  }
-
-  if (startDate > endDate) {
-    throw new HttpsError("invalid-argument", "종료일은 시작일보다 빠를 수 없습니다.", {
-      field: "endDate",
-    });
-  }
+  const displayName = getDisplayName(auth.token, auth.uid, requestedDisplayName);
+  const tripInput = normalizeCreateTripInput(input, displayName);
 
   const db = getFirestore();
   const tripRef = db.collection("trips").doc();
   const memberRef = tripRef.collection("members").doc(auth.uid);
   const userRef = db.collection("users").doc(auth.uid);
-  const displayName = getDisplayName(auth.token, auth.uid, requestedDisplayName);
-  const participantRefs = Array.from({ length: participantCount }, () =>
+  const participantRefs = tripInput.participantNames.map(() =>
     tripRef.collection("participants").doc(),
   );
 
@@ -110,15 +77,20 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
 
         const timestamp = FieldValue.serverTimestamp();
         transaction.create(tripRef, {
-          title,
-          regionType,
-          currency,
-          startDate,
-          endDate,
+          title: tripInput.title,
+          countryCode: tripInput.countryCode,
+          timeZone: tripInput.timeZone,
+          mapProvider: tripInput.mapProvider,
+          defaultCurrency: tripInput.defaultCurrency,
+          startDate: tripInput.startDate,
+          endDate: tripInput.endDate,
           ownerUid: auth.uid,
           shareCode: code,
           createdAt: timestamp,
           updatedAt: timestamp,
+          // React GitHub Pages 목업이 교체될 때까지만 유지하는 legacy 필드입니다.
+          regionType: tripInput.countryCode === "KR" ? "domestic" : "international",
+          currency: tripInput.defaultCurrency,
         });
         transaction.create(memberRef, {
           displayName,
@@ -137,7 +109,7 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
 
         participantRefs.forEach((participantRef, index) => {
           transaction.create(participantRef, {
-            name: index === 0 ? displayName : `동행 ${index + 1}`,
+            name: tripInput.participantNames[index],
             ...(index === 0 ? { linkedUid: auth.uid } : {}),
             isActive: true,
             createdAt: timestamp,

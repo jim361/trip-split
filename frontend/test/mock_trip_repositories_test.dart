@@ -63,4 +63,24 @@ void main() {
       ),
     );
   });
+
+  test('정산 참여자 제외는 문서를 삭제하지 않고 비활성화한다', () async {
+    final repositories = InMemoryTripRepositories(now: () => 5678);
+    addTearDown(repositories.close);
+
+    await repositories.deactivateParticipant(
+      tokyoTripId,
+      TokyoFixtureIds.participantFriend1,
+    );
+    final participants = await repositories
+        .watchParticipants(tokyoTripId)
+        .first;
+    final participant = participants.singleWhere(
+      (value) => value.id == TokyoFixtureIds.participantFriend1,
+    );
+
+    expect(participants, hasLength(3));
+    expect(participant.isActive, isFalse);
+    expect(participant.updatedAt, 5678);
+  });
 }

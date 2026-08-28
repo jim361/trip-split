@@ -21,16 +21,25 @@ abstract final class TokyoFixtureIds {
 final class TokyoTripFixture {
   TokyoTripFixture({
     required this.trip,
+    required List<UserProfile> userProfiles,
+    required List<TripMember> members,
+    required List<ShareCode> shareCodes,
     required List<Participant> participants,
     required List<Place> places,
     required List<ItineraryItem> itinerary,
     required List<Expense> expenses,
-  }) : participants = List.unmodifiable(participants),
+  }) : userProfiles = List.unmodifiable(userProfiles),
+       members = List.unmodifiable(members),
+       shareCodes = List.unmodifiable(shareCodes),
+       participants = List.unmodifiable(participants),
        places = List.unmodifiable(places),
        itinerary = List.unmodifiable(itinerary),
        expenses = List.unmodifiable(expenses);
 
   final Trip trip;
+  final List<UserProfile> userProfiles;
+  final List<TripMember> members;
+  final List<ShareCode> shareCodes;
   final List<Participant> participants;
   final List<Place> places;
   final List<ItineraryItem> itinerary;
@@ -55,6 +64,35 @@ final tokyoTripFixture = TokyoTripFixture(
     createdAt: _createdAt,
     updatedAt: _updatedAt,
   ),
+  userProfiles: [
+    UserProfile(
+      uid: tokyoOwnerUid,
+      displayName: '나',
+      authProvider: 'anonymous',
+      createdAt: _createdAt,
+      updatedAt: _updatedAt,
+    ),
+  ],
+  members: [
+    TripMember(
+      uid: tokyoOwnerUid,
+      tripId: tokyoTripId,
+      displayName: '나',
+      role: 'editor',
+      joinedAt: _createdAt,
+      lastActiveAt: _updatedAt,
+    ),
+  ],
+  shareCodes: [
+    ShareCode(
+      code: 'TOKYO26',
+      tripId: tokyoTripId,
+      createdBy: tokyoOwnerUid,
+      createdAt: _createdAt,
+      isActive: true,
+      useCount: 0,
+    ),
+  ],
   participants: [
     Participant(
       id: TokyoFixtureIds.participantMe,

@@ -2,6 +2,17 @@
 
 > **[인계 01 · 플랫폼·통합 구현 현황]** 공통 계약과 도메인 담당자 연결점을 정리합니다.
 
+## 현재 Flutter 진입점
+
+- 앱 조립: `frontend/lib/main.dart`
+- 인증 게이트와 여행 세션: `frontend/lib/app/auth_session_gate.dart`, `trip_session.dart`
+- mock/Firestore 공통 계약: `frontend/lib/domain/repositories.dart`
+- 구현체: `frontend/lib/data/mock`, `frontend/lib/data/firebase`
+- Auth와 Callable: `frontend/lib/services`
+- 실행 설정: `frontend/lib/platform/app_config.dart`, `frontend/dart_defines.example.json`
+
+앱은 기본 mock으로 시작하고 Firebase 모드에서는 Auth를 먼저 준비한 뒤 route와 Firestore 구독을 연다. Android Google Sign-In credential은 현재 익명 사용자에 `linkWithCredential`로 연결해 uid를 유지한다. `shareCodes` 컬렉션은 보안 규칙상 클라이언트가 직접 읽지 않으며 활성 코드는 `Trip.shareCode`, 생성·재생성·입장은 Callable을 사용한다.
+
 > **전환 전 구현 스냅샷:** 아래 `frontend/src`, React Provider와 PWA 설명은 2026-08-28 이전 목업의 실제 상태를 기록합니다. 현재 제품 계약은 Flutter Android이며 새 코드는 이 구조를 확장하지 말고 [전환 계획](flutter-android-migration.md)에 따라 포팅합니다. backend Callable, Firestore 경로·Rules와 fixture의 의미는 재사용합니다.
 
 ## 공통 계약
@@ -22,7 +33,7 @@
 - `mock` 기본값: 강릉·도쿄 fixture와 `MockAuthService`
 - `firebase`: Firebase Auth, Firestore repository와 Callable service
 
-`AuthProvider`는 앱 진입 시 Anonymous Auth를 자동 시작합니다. `FirebaseAuthService.linkGoogleAccount()`는 현재 익명 사용자에 `linkWithPopup`을 적용해 uid와 여행 접근 권한을 유지합니다.
+전환 전 `AuthProvider`도 앱 진입 시 Anonymous Auth를 자동 시작했습니다. 현재 Flutter 구현은 Android Google credential을 익명 사용자에 연결합니다.
 
 `TripProvider`는 URL의 `tripId`를 받아 다음 데이터를 구독합니다.
 

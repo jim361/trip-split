@@ -14,6 +14,7 @@ final class TripSessionController extends ChangeNotifier {
   final List<StreamSubscription<Object?>> _subscriptions = [];
 
   Trip? trip;
+  List<TripMember> members = const [];
   List<Participant> participants = const [];
   List<Place> places = const [];
   List<ItineraryItem> itinerary = const [];
@@ -38,6 +39,12 @@ final class TripSessionController extends ChangeNotifier {
             return;
           }
           trip = value;
+          _notify();
+        }, onError: _setError),
+      )
+      ..add(
+        repositories.watchMembers(tripId).listen((value) {
+          members = value;
           _notify();
         }, onError: _setError),
       )

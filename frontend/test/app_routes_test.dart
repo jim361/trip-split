@@ -4,6 +4,8 @@ import 'package:trip_split/app/app.dart';
 import 'package:trip_split/app/router.dart';
 import 'package:trip_split/data/mock/in_memory_trip_repositories.dart';
 import 'package:trip_split/data/mock/tokyo_trip_fixture.dart';
+import 'package:trip_split/services/mock_auth_service.dart';
+import 'package:trip_split/services/trip_share_service.dart';
 
 void main() {
   test('기본·호환 경로를 canonical 여행 위치로 해석한다', () {
@@ -29,9 +31,19 @@ void main() {
         ..resetDevicePixelRatio();
     });
     final repositories = InMemoryTripRepositories();
+    final authService = MockAuthService();
     addTearDown(repositories.close);
+    addTearDown(authService.dispose);
 
-    await tester.pumpWidget(TripSplitApp(repositories: repositories));
+    await tester.pumpWidget(
+      TripSplitApp(
+        repositories: repositories,
+        authService: authService,
+        tripShareService: MockTripShareService(repositories),
+        dataSourceLabel: 'mock',
+        initialRoute: '/trips/$tokyoTripId/itinerary',
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('2026년 11월 도쿄 여행'), findsWidgets);
@@ -56,11 +68,16 @@ void main() {
 
   testWidgets('/map 호환 경로는 확대된 지도 상태를 연다', (tester) async {
     final repositories = InMemoryTripRepositories();
+    final authService = MockAuthService();
     addTearDown(repositories.close);
+    addTearDown(authService.dispose);
 
     await tester.pumpWidget(
       TripSplitApp(
         repositories: repositories,
+        authService: authService,
+        tripShareService: MockTripShareService(repositories),
+        dataSourceLabel: 'mock',
         initialRoute: '/trips/$tokyoTripId/map',
       ),
     );

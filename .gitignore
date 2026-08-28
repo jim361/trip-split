@@ -14,5 +14,6 @@ ui-debug.log
 backend/lib/
 backend/.secret.local
 backend/.env.local
+frontend/dart_defines.local.json
 .DS_Store
 Thumbs.db

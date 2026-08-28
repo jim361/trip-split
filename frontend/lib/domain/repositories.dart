@@ -98,6 +98,14 @@ abstract interface class TripsRepository {
   Stream<Trip?> watchTrip(EntityId tripId);
 }
 
+abstract interface class UserProfilesRepository {
+  Stream<UserProfile?> watchUser(String uid);
+}
+
+abstract interface class MembersRepository {
+  Stream<List<TripMember>> watchMembers(EntityId tripId);
+}
+
 abstract interface class ParticipantsRepository {
   Stream<List<Participant>> watchParticipants(EntityId tripId);
 
@@ -112,7 +120,7 @@ abstract interface class ParticipantsRepository {
     ParticipantDraft draft,
   );
 
-  Future<void> deleteParticipant(EntityId tripId, EntityId participantId);
+  Future<void> deactivateParticipant(EntityId tripId, EntityId participantId);
 }
 
 abstract interface class PlacesRepository {
@@ -159,6 +167,8 @@ abstract interface class ExpensesRepository {
 abstract interface class TripRepositories
     implements
         TripsRepository,
+        UserProfilesRepository,
+        MembersRepository,
         ParticipantsRepository,
         PlacesRepository,
         ItineraryRepository,
