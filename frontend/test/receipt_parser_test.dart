@@ -10,25 +10,30 @@ Uint8List _jpegBytes() => Uint8List.fromList([0xff, 0xd8, 0xff, 0xd9]);
 
 void main() {
   test('bytes를 검증한 뒤 canonical parseReceipt 요청으로 변환한다', () {
-    final request = ParseReceiptRequest.fromBytes(
-      tripId: ' tokyo-2026-11 ',
-      imageBytes: _jpegBytes(),
+    final sourceBytes = _jpegBytes();
+    final image = ReceiptImageInput(
+      bytes: sourceBytes,
       mimeType: 'IMAGE/JPEG',
+      fileName: ' receipt.jpg ',
     );
+    sourceBytes[0] = 0;
+    final request = ParseReceiptRequest(
+      tripId: ' tokyo-2026-11 ',
+      image: image,
+    );
+    final json = request.toJson();
 
-    expect(request.tripId, 'tokyo-2026-11');
-    expect(request.mimeType, 'image/jpeg');
-    expect(base64Decode(request.imageBase64), _jpegBytes());
-    expect(request.toJson().keys, ['tripId', 'imageBase64', 'mimeType']);
+    expect(image.mimeType, 'image/jpeg');
+    expect(image.fileName, 'receipt.jpg');
+    expect(json['tripId'], 'tokyo-2026-11');
+    expect(base64Decode(json['imageBase64']! as String), _jpegBytes());
+    expect(json['mimeType'], 'image/jpeg');
+    expect(json.keys, ['tripId', 'imageBase64', 'mimeType']);
   });
 
   test('지원하지 않는 MIME은 외부 호출 전에 invalid-image로 거부한다', () {
     expect(
-      () => ParseReceiptRequest.fromBytes(
-        tripId: 'tokyo-2026-11',
-        imageBytes: _jpegBytes(),
-        mimeType: 'image/heic',
-      ),
+      () => ReceiptImageInput(bytes: _jpegBytes(), mimeType: 'image/heic'),
       throwsA(
         isA<AppError>()
             .having((error) => error.code, 'code', AppErrorCode.invalidImage)
@@ -37,25 +42,9 @@ void main() {
     );
   });
 
-  test('잘못된 base64와 MIME 불일치는 invalid-image로 거부한다', () {
+  test('MIME과 이미지 시그니처가 다르면 invalid-image로 거부한다', () {
     expect(
-      () => ParseReceiptRequest(
-        tripId: 'tokyo-2026-11',
-        imageBase64: 'not-base64',
-        mimeType: 'image/jpeg',
-      ),
-      throwsA(
-        isA<AppError>()
-            .having((error) => error.code, 'code', AppErrorCode.invalidImage)
-            .having((error) => error.field, 'field', 'imageBase64'),
-      ),
-    );
-    expect(
-      () => ParseReceiptRequest.fromBytes(
-        tripId: 'tokyo-2026-11',
-        imageBytes: _jpegBytes(),
-        mimeType: 'image/png',
-      ),
+      () => ReceiptImageInput(bytes: _jpegBytes(), mimeType: 'image/png'),
       throwsA(
         isA<AppError>().having(
           (error) => error.code,
@@ -68,29 +57,32 @@ void main() {
 
   test('최대 크기를 넘는 이미지는 payload-too-large로 거부한다', () {
     expect(receiptImageMaxBytes, 5 * 1024 * 1024);
+    final bytes = Uint8List(receiptImageMaxBytes + 1)
+      ..setAll(0, [0xff, 0xd8, 0xff]);
     expect(
-      () => ParseReceiptRequest.fromBytes(
-        tripId: 'tokyo-2026-11',
-        imageBytes: _jpegBytes(),
-        mimeType: 'image/jpeg',
-        maxImageBytes: 3,
-      ),
+      () => ReceiptImageInput(bytes: bytes, mimeType: 'image/jpeg'),
       throwsA(
         isA<AppError>()
             .having((error) => error.code, 'code', AppErrorCode.payloadTooLarge)
-            .having((error) => error.details['maxBytes'], 'maxBytes', 3),
+            .having(
+              (error) => error.details['maxBytes'],
+              'maxBytes',
+              receiptImageMaxBytes,
+            ),
       ),
     );
   });
 
   test('일본어 fixture를 원문·번역·JPY 항목 후보로 반환한다', () async {
-    final request = ParseReceiptRequest.fromBytes(
-      tripId: 'tokyo-2026-11',
-      imageBytes: _jpegBytes(),
+    final image = ReceiptImageInput(
+      bytes: _jpegBytes(),
       mimeType: 'image/jpeg',
     );
 
-    final result = await const MockReceiptParser().parseReceipt(request);
+    final result = await const MockReceiptParser().parseReceipt(
+      tripId: 'tokyo-2026-11',
+      image: image,
+    );
 
     expect(result.sourceLanguage, 'ja');
     expect(result.merchantNameOriginal, '浅草食堂');
@@ -105,15 +97,14 @@ void main() {
   });
 
   test('mock provider 장애와 빈 결과를 canonical OCR 오류로 매핑한다', () async {
-    final request = ParseReceiptRequest.fromBytes(
-      tripId: 'tokyo-2026-11',
-      imageBytes: _jpegBytes(),
+    final image = ReceiptImageInput(
+      bytes: _jpegBytes(),
       mimeType: 'image/jpeg',
     );
 
     await expectLater(
       const MockReceiptParser(failure: MockReceiptFailure.unavailable)
-          .parseReceipt(request),
+          .parseReceipt(tripId: 'tokyo-2026-11', image: image),
       throwsA(
         isA<AppError>()
             .having((error) => error.code, 'code', AppErrorCode.ocrUnavailable)
@@ -122,7 +113,7 @@ void main() {
     );
     await expectLater(
       const MockReceiptParser(failure: MockReceiptFailure.noResult)
-          .parseReceipt(request),
+          .parseReceipt(tripId: 'tokyo-2026-11', image: image),
       throwsA(
         isA<AppError>()
             .having((error) => error.code, 'code', AppErrorCode.ocrNoResult)

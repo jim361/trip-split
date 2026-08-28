@@ -51,7 +51,7 @@ type ParseReceiptResponse = {
 
 `ParseReceiptResponse`는 `tech.md`의 canonical `ParsedReceipt`와 같은 구조다. `items[].sourceOrder`는 초안 생성 시 `ReceiptItem.sortOrder`로 복사하고, 사용자가 행을 재정렬하면 저장 직전에 0부터 다시 정규화한다.
 
-현재 Flutter에는 stateless `ReceiptParser` 요청·응답 계약, 5MiB JPEG/PNG/WebP 사전 검증과 일본어 mock fixture가 있다. Firebase Callable 구현과 backend의 같은 크기 상수, 이미지 선택·초안 편집·지출 저장은 아래 단계에 남아 있다.
+현재 Flutter에는 `tripId`와 검증된 앱 내부 `ReceiptImageInput(bytes, mimeType, fileName?)`을 받는 stateless `ReceiptParser` 계약, 5MiB JPEG/PNG/WebP 사전 검증과 일본어 mock fixture가 있다. Base64는 검증된 입력을 Callable wire로 바꾸는 adapter 경계에서만 생성한다. Firebase Callable 구현과 backend의 같은 크기 상수, 이미지 선택·초안 편집·지출 저장은 아래 단계에 남아 있다.
 
 - `parseReceipt`는 인증이 필요한 HTTPS callable Function으로 구현한다. `tripId`의 멤버인지 확인한 뒤에만 선택된 OCR·번역 adapter를 호출한다.
 - 클라이언트와 Function은 허용 MIME type과 최대 원본 크기를 하나의 설정으로 공유하고, 허용하지 않는 파일은 외부 전송 전에 거부한다.
