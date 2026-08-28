@@ -314,6 +314,17 @@ Map<String, Object?> _normalizePayload(Object? value) {
     ],
   )..sort(_byExpenseDate);
 
+  _validateEntityIds(participants, 'participants');
+  _validateEntityIds(places, 'places');
+  _validateEntityIds(itineraryItems, 'itineraryItems');
+  _validateEntityIds(expenses, 'expenses');
+  _validateRestoreGraph(
+    participants: participants,
+    places: places,
+    itineraryItems: itineraryItems,
+    expenses: expenses,
+  );
+
   return {
     'schemaVersion': version,
     'trip': _normalizeObject(
@@ -333,6 +344,125 @@ Map<String, Object?> _normalizePayload(Object? value) {
     'itineraryItems': itineraryItems,
     'expenses': expenses,
   };
+}
+
+void _validateEntityIds(List<Map<String, Object?>> values, String path) {
+  final seen = <String>{};
+  for (var index = 0; index < values.length; index++) {
+    final id = values[index]['id']! as String;
+    if (id.trim() != id ||
+        id == '.' ||
+        id == '..' ||
+        id.contains('/') ||
+        utf8.encode(id).length > 1500 ||
+        RegExp(r'^__.*__$').hasMatch(id)) {
+      throw _invalid('$path[$index].id', '저장할 수 없는 entity ID입니다.');
+    }
+    if (!seen.add(id)) {
+      throw _invalid('$path[$index].id', '같은 entity ID를 두 번 사용할 수 없습니다.');
+    }
+  }
+}
+
+void _validateRestoreGraph({
+  required List<Map<String, Object?>> participants,
+  required List<Map<String, Object?>> places,
+  required List<Map<String, Object?>> itineraryItems,
+  required List<Map<String, Object?>> expenses,
+}) {
+  final participantIds = _ids(participants);
+  final placeIds = _ids(places);
+  final itineraryIds = _ids(itineraryItems);
+
+  for (var index = 0; index < itineraryItems.length; index++) {
+    final placeId = itineraryItems[index]['placeId'] as String?;
+    _requireReference(placeId, placeIds, 'itineraryItems[$index].placeId');
+  }
+
+  for (var index = 0; index < expenses.length; index++) {
+    final expense = expenses[index];
+    final path = 'expenses[$index]';
+    _requireReference(expense['placeId'] as String?, placeIds, '$path.placeId');
+    _requireReference(
+      expense['itineraryItemId'] as String?,
+      itineraryIds,
+      '$path.itineraryItemId',
+    );
+    final payer = (expense['payer']! as Map).cast<String, Object?>();
+    _requireReference(
+      payer['participantId']! as String,
+      participantIds,
+      '$path.payer.participantId',
+    );
+    _validateParticipantList(
+      expense['consumers']! as List,
+      participantIds,
+      '$path.consumers',
+    );
+    _validateAllocations(
+      expense['allocatedAmounts']! as List,
+      participantIds,
+      '$path.allocatedAmounts',
+    );
+
+    final receiptItems = (expense['receiptItems']! as List)
+        .map((item) => (item as Map).cast<String, Object?>())
+        .toList(growable: false);
+    _validateEntityIds(receiptItems, '$path.receiptItems');
+    for (var itemIndex = 0; itemIndex < receiptItems.length; itemIndex++) {
+      final item = receiptItems[itemIndex];
+      final itemPath = '$path.receiptItems[$itemIndex]';
+      _validateParticipantList(
+        item['consumers']! as List,
+        participantIds,
+        '$itemPath.consumers',
+      );
+      _validateAllocations(
+        item['allocatedAmounts']! as List,
+        participantIds,
+        '$itemPath.allocatedAmounts',
+      );
+    }
+  }
+}
+
+Set<String> _ids(List<Map<String, Object?>> values) => {
+  for (final value in values) value['id']! as String,
+};
+
+void _validateParticipantList(
+  List<Object?> values,
+  Set<String> participantIds,
+  String path,
+) {
+  for (var index = 0; index < values.length; index++) {
+    _requireReference(
+      values[index]! as String,
+      participantIds,
+      '$path[$index]',
+    );
+  }
+}
+
+void _validateAllocations(
+  List<Object?> values,
+  Set<String> participantIds,
+  String path,
+) {
+  for (var index = 0; index < values.length; index++) {
+    final allocation = (values[index]! as Map).cast<String, Object?>();
+    _requireReference(
+      allocation['participantId']! as String,
+      participantIds,
+      '$path[$index].participantId',
+    );
+  }
+}
+
+void _requireReference(String? value, Set<String> ids, String path) {
+  if (value != null && !ids.contains(value)) {
+    throw _invalid(path, '백업 파일 안에서 참조 대상을 찾을 수 없습니다.');
+  }
 }
 
 List<Map<String, Object?>> _collection(
