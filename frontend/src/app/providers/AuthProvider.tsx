@@ -16,6 +16,7 @@ export type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/** [TASK-02 · 인증 세션] 익명 인증을 자동 시작하고 선택적으로 Google 계정을 연결합니다. */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { auth } = usePlatformServices();
   const [user, setUser] = useState<AuthUser | null>(null);

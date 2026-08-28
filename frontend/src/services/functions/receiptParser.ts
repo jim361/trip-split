@@ -15,7 +15,7 @@ export interface ReceiptParser {
 }
 
 /**
- * CLOVA 호출 구현은 정산·영수증 담당 영역입니다. 이 어댑터는 callable 계약만 고정합니다.
+ * [TASK-07 · 영수증 OCR] 선택한 OCR·번역 provider 구현은 정산·영수증 담당 영역입니다. 이 어댑터는 Callable 계약만 고정합니다.
  */
 export class CallableReceiptParser implements ReceiptParser {
   async parseReceipt(input: ParseReceiptRequest): Promise<ParsedReceipt> {

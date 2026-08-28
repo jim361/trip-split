@@ -10,6 +10,7 @@ import type {
   UserProfile,
 } from "../../shared/types";
 
+/** [공통 계약] 도메인 담당자가 mock과 Firestore 구현에서 함께 사용하는 저장소 형식입니다. */
 export type UpdateTripInput = Partial<
   Pick<Trip, "title" | "regionType" | "currency" | "startDate" | "endDate">
 >;
