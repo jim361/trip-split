@@ -30,7 +30,7 @@ Vite + React + TypeScript 기반 웹/PWA 프로젝트를 만들고, Firebase와 
 - [ ] Firebase Auth 상태 Provider 구현
 - [ ] Auth, Firestore, Functions Emulator 설정
 - [ ] 공통 ID·timestamp·`AppError`·repository 인터페이스 정의
-- [ ] 세 도메인이 함께 쓰는 고정 ID 강릉 fixture 추가
+- [ ] 세 도메인이 함께 쓰는 고정 ID 강릉·도쿄 fixture 추가
 - [ ] Airbnb DESIGN.md 설치 또는 디자인 토큰 초안 작성
 
 ## 완료 기준

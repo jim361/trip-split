@@ -11,11 +11,11 @@
 ## 범위와 의존성
 
 - 선행: Task 1의 TypeScript·테스트 기반, Firebase Emulator, Auth/Trip Context가 준비되어야 한다.
-- 선행 계약: `TripMember`와 `Participant` 분리, 공통 ID·timestamp·오류 형식, repository 인터페이스, 강릉 fixture가 확정되어야 한다.
+- 선행 계약: `TripMember`와 `Participant` 분리, 공통 ID·timestamp·오류 형식, repository 인터페이스, 강릉·도쿄 fixture가 확정되어야 한다.
 - 병렬 가능: 순수 정산 엔진과 mock repository 기반 UI는 Firebase 연결 전에 개발할 수 있다.
 - 후행: Task 7 OCR은 이 문서의 `Expense`, `ReceiptItem`, 검증 함수와 지출 저장 흐름을 재사용한다.
-- MVP: 원화 단일 통화, 지출당 결제자 한 명, 실시간 원장 재계산, 개인 소비 조회와 송금 제안까지 포함한다.
-- 후속: 복수 결제자, 외화·환율, 송금 완료 상태, 정산 snapshot, 수정 이력, 특수 보상 규칙은 제외한다.
+- MVP: KRW·JPY 통화, 지출당 결제자 한 명, 실시간 원장 재계산, 개인 소비 조회와 송금 제안까지 포함한다.
+- 후속: 복수 결제자, 통화 간 환율, 송금 완료 상태, 정산 snapshot, 수정 이력, 특수 보상 규칙은 제외한다.
 
 ## Canonical 데이터 계약
 
@@ -24,7 +24,7 @@ type AllocationMethod = "equal" | "itemized" | "custom";
 
 type MoneyAllocation = {
   participantId: string;
-  amount: number; // KRW 원 단위 정수
+  amount: number; // KRW 원 또는 JPY 엔 단위 정수
 };
 
 type ExpensePayer = {
@@ -51,7 +51,7 @@ type Expense = {
   category: string;
   expenseDate: string;
   totalAmount: number;
-  currency: "KRW";
+  currency: "KRW" | "JPY";
   payer: ExpensePayer;
   consumers: string[];
   allocationMethod: AllocationMethod;
@@ -72,14 +72,14 @@ type Expense = {
 
 ## 계산 불변식
 
-- 모든 금액은 부동소수점이 아닌 원 단위 정수다.
+- 모든 금액은 부동소수점이 아닌 각 통화의 최소 단위 정수다.
 - `payer.amount === totalAmount`이며 MVP의 결제자는 한 명이다.
 - `sum(expense.allocatedAmounts.amount) === expense.totalAmount`다.
 - `itemized`에서는 하나 이상의 `receiptItems`가 필요하고 `sum(receiptItems.amount) === totalAmount`이며, 각 항목의 `sum(allocatedAmounts.amount) === item.amount`다.
 - 일반 항목과 봉사료는 양수, 할인은 음수, 기타 조정은 0이 아닌 양수 또는 음수다. 조정을 반영한 참여자별 최종 부담액은 음수가 될 수 없다.
 - 지출과 각 항목의 `allocatedAmounts`는 consumer마다 정확히 한 행을 가지며 `participantId` 중복을 허용하지 않는다. 0원으로 계산된 consumer도 행을 유지하고 `consumers` 집합과 배분 행의 참여자 집합이 같아야 한다.
 - 삭제되거나 비활성인 참여자 ID를 새 지출에 저장하지 않는다. `linkedUid`는 같은 여행의 멤버를 참조하고 한 여행에서 중복될 수 없다.
-- 균등 분할은 `base = Math.trunc(amount / count)`로 계산하고 남은 ±1원을 UI에 표시된 `consumers` 순서대로 배분한다. 같은 입력은 모든 클라이언트에서 같은 결과를 만든다.
+- 균등 분할은 `base = Math.trunc(amount / count)`로 계산하고 남은 ±1 최소 단위를 UI에 표시된 `consumers` 순서대로 배분한다. 같은 입력은 모든 클라이언트에서 같은 결과를 만든다.
 - 참여자 `p`의 파생값은 다음과 같다.
   - 결제액 `paid(p) = sum(expense.payer.amount where payer.participantId === p)`
   - 부담액 `owed(p) = sum(allocation.amount where allocation.participantId === p)`
@@ -92,7 +92,7 @@ type Expense = {
 
 - [ ] `Participant`, `Expense`, `ExpensePayer`, `ReceiptItem`, `MoneyAllocation`, `AllocationMethod` 타입과 runtime validator를 정의한다.
 - [ ] `TripMember`와 `Participant`를 혼용하지 않도록 지출 폼과 엔진 입력은 `participantId`만 받게 한다.
-- [ ] 예시 영수증과 숙소 지출을 포함한 공통 강릉 fixture를 만든다.
+- [ ] 예시 영수증과 숙소 지출을 포함한 공통 강릉·도쿄 fixture를 만든다.
 - [ ] 금액 정수 여부, 결제액·총액·배분액 합계, 배분 participantId 유일성, 소비자 집합, itemized 최소 한 항목, 항목 합계, 음수 부담액과 linkedUid 참조·유일성을 검사하고 필드별 오류를 반환한다.
 
 완료 조건:
@@ -104,7 +104,7 @@ type Expense = {
 - [ ] 지출 전체를 선택한 소비자에게 배분하는 `equal` 계산을 구현한다.
 - [ ] 각 메뉴·공용 메뉴·할인·봉사료·기타 조정을 항목별 소비자에게 배분하고 이를 지출 `allocatedAmounts`로 합치는 `itemized` 계산을 구현한다.
 - [ ] 참여자별 부담 금액을 직접 입력하고 합계를 검증하는 `custom` 계산을 구현한다.
-- [ ] 소비자 순서에 따른 양수·음수 1원 나머지 배분을 구현한다.
+- [ ] 소비자 순서에 따른 양수·음수 통화별 최소 단위 나머지 배분을 구현한다.
 - [ ] 계산 함수는 입력을 변경하지 않고 같은 입력에 같은 결과를 반환하게 한다.
 
 완료 조건:
@@ -143,7 +143,7 @@ type Expense = {
 - [ ] 항목별 분할에서 항목명·금액을 추가·수정·삭제하고 각 항목 소비자 또는 직접 부담액을 지정한다.
 - [ ] 공용 메뉴는 선택한 소비자끼리 균등 분할한다.
 - [ ] 할인, 봉사료, 기타 조정 행을 추가하고 소비자 또는 직접 부담액을 지정한다.
-- [ ] 총액, 항목 합계, 참여자별 배분 합계의 검증 상태와 1원 나머지 결과를 저장 전에 보여준다.
+- [ ] 총액, 항목 합계, 참여자별 배분 합계의 검증 상태와 통화별 최소 단위 나머지 결과를 저장 전에 보여준다.
 - [ ] 저장 중 중복 제출을 막고 성공 후 저장된 지출 상세로 이동한다.
 
 완료 조건:
@@ -158,7 +158,7 @@ type Expense = {
 - [ ] 카테고리별 개인 소비 합계와 날짜·장소·메뉴/지출 항목별 개인 소비 내역을 표시한다.
 - [ ] PC에서는 지출 관리와 개인/전체 정산 결과를 다중 열로 확장하되 모바일과 같은 정보 구조를 유지한다.
 - [ ] 참여자 선택, 지출 추가·수정·삭제, 원본 지출 열기, 정산 문구 복사를 구현한다.
-- [ ] 로딩·빈 상태·구독 오류·권한 오류를 구현하고 금액은 한국어 KRW 형식과 tabular numerals로 표시한다.
+- [ ] 로딩·빈 상태·구독 오류·권한 오류를 구현하고 금액은 통화별 형식과 tabular numerals로 표시한다.
 
 완료 조건:
 

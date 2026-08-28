@@ -37,8 +37,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Test dangerous-command hook
-        run: pwsh -NoProfile -File .codex/hooks/block-dangerous-command.ps1 -TestRawInput
+      - name: Test direct Git guard
+        run: pwsh -NoProfile -File .codex/hooks/block-dangerous-command.ps1 -SelfTest
 
       - name: Verify (Full)
-        run: pwsh -NoProfile -File scripts/verify.ps1 -Mode Full
+        run: npm run verify:full

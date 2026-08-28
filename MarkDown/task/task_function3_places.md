@@ -2,7 +2,7 @@
 
 ## 목표
 
-장소 보관함을 만들고 네이버 장소 검색, 장소 링크 붙여넣기, 직접 입력으로 장소를 추가한다.
+장소 보관함을 만들고 국내 NAVER 및 해외 Google provider/source(현 단계 해외는 mock) 검색, 장소 링크 붙여넣기, 직접 입력으로 장소를 추가한다.
 
 ## 담당
 
@@ -11,19 +11,19 @@
 ## 작업
 
 - [ ] `Place` 타입 정의
-- [ ] `PlaceProvider` 인터페이스와 네이버/직접 입력 응답을 `Place`로 바꾸는 정규화 함수 정의
+- [ ] `PlaceProvider` 인터페이스와 국내 NAVER·해외 Google/직접 입력 응답을 `Place`로 바꾸는 정규화 함수 정의
 - [ ] Firestore places 구조 설계
 - [ ] Place에 addedBy, createdAt, updatedAt 반영
-- [ ] 공통 강릉 fixture로 동작하는 mock place provider와 mock places repository 구현
+- [ ] 공통 강릉·도쿄 fixture로 동작하는 mock place provider와 mock places repository 구현
 - [ ] 장소 보관함 UI 구현
 - [ ] 장소 직접 입력 폼 구현
 - [ ] mock 검색 성공·빈 결과·링크 파싱 실패 상태로 장소 보관함 흐름 검증
-- [ ] 네이버 장소 검색 Cloud Function 구현
+- [ ] 국내 NAVER 장소 검색 Cloud Function과 해외 Google provider/mock 경계 구현
 - [ ] 장소 검색 결과 UI 구현
 - [ ] 검색 결과 선택 후 장소 저장 구현
-- [ ] 네이버 장소 링크 붙여넣기 UI 구현
+- [ ] 국내 NAVER·해외 Google Maps 장소 링크 붙여넣기 UI 구현
 - [ ] `naver.me` 단축 링크 리다이렉트 해석 구현
-- [ ] 네이버 장소 링크에서 장소 ID/이름/주소/좌표 추출 시도
+- [ ] 국내 NAVER 또는 해외 Google Maps 장소 링크에서 장소 ID/이름/주소/좌표 추출 시도
 - [ ] 링크 파싱 실패 시 검색 후보 표시
 - [ ] 링크 파싱 실패 시 직접 입력 fallback 구현
 - [ ] 장소 삭제 구현

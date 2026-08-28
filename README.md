@@ -53,16 +53,13 @@ npm run dev:frontend
 ## 검증 명령
 
 ```bash
-npm run typecheck
-npm run lint
-npm test
-npm run build
+npm run verify:fast
+npm run verify:full
 npm run build:pages
 npm run preview:pages
-npm run test:emulator
 ```
 
-`test:emulator`는 안전한 `demo-trip-split` 프로젝트 ID로 Auth, Firestore, Functions Emulator를 실행합니다. 실제 Firebase 프로젝트나 과금 가능한 외부 API에는 접근하지 않습니다.
+`verify:fast`는 format, lint, 두 workspace의 typecheck와 test를 실행합니다. `verify:full`은 여기에 production build와 안전한 `demo-trip-split` 프로젝트의 Auth, Firestore, Functions Emulator 테스트를 추가합니다. 실제 Firebase 프로젝트나 과금 가능한 외부 API에는 접근하지 않습니다.
 
 ## Firebase 모드
 
