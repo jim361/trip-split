@@ -12,9 +12,9 @@ Android Google 지도 위에 타임테이블 기반 번호 핀과 날짜별 직�
 
 ## 작업
 
-- [ ] 정규화된 `Place[]`와 `ItineraryItem[]`를 지도 입력 계약으로 고정
-- [ ] 저장용 `MapPlace`를 만들지 않고 입력에서 `MapPin`과 `MapRouteSegment` 화면 모델을 파생
-- [ ] `tokyo-2026-11` fixture로 핀 번호, 날짜별 색상과 직선 segment를 만드는 순수 Dart 변환 함수와 단위 테스트 구현
+- [x] 정규화된 `Place[]`와 `ItineraryItem[]`를 지도 입력 계약으로 고정
+- [x] 저장용 `MapPlace`를 만들지 않고 입력에서 `MapPin`과 `MapRouteSegment` 화면 모델을 파생
+- [x] `tokyo-2026-11` fixture로 핀 번호, 날짜별 색상과 직선 segment를 만드는 순수 Dart 변환 함수와 단위 테스트 구현
 - [ ] mock map adapter로 로딩·빈 상태·좌표 누락·일정 재정렬 화면 검증
 - [ ] `google_maps_flutter`를 감싼 Android `MapAdapter` 구현
 - [ ] Android package 제한 Maps 키와 backend Places 키의 환경 경계 분리
