@@ -15,7 +15,80 @@ final class ParticipantDraft {
 }
 
 final class PlaceDraft {
-  const PlaceDraft({
+  factory PlaceDraft({
+    required String name,
+    required String provider,
+    required String source,
+    String? address,
+    double? lat,
+    double? lng,
+    String? providerPlaceId,
+    String? sourceUrl,
+    String? memo,
+  }) {
+    final normalizedName = name.trim();
+    final normalizedProvider = provider.trim();
+    final normalizedSource = source.trim();
+    final normalizedAddress = _optionalTrim(address);
+    final normalizedProviderPlaceId = _optionalTrim(providerPlaceId);
+    final normalizedSourceUrl = _optionalTrim(sourceUrl);
+    final normalizedMemo = _optionalTrim(memo);
+
+    if (normalizedName.isEmpty || normalizedName.length > 160) {
+      throw const AppError(
+        code: AppErrorCode.invalidArgument,
+        message: '장소 이름은 1자 이상 160자 이하여야 합니다.',
+        retryable: false,
+        field: 'name',
+      );
+    }
+
+    const allowedSources = <String, Set<String>>{
+      'google': {'googleSearch', 'googleMapsUrl'},
+      'naver': {'naverSearch', 'naverLink'},
+      'manual': {'manual'},
+    };
+    if (!allowedSources.containsKey(normalizedProvider)) {
+      throw const AppError(
+        code: AppErrorCode.invalidArgument,
+        message: '지원하지 않는 장소 provider입니다.',
+        retryable: false,
+        field: 'provider',
+      );
+    }
+    if (!allowedSources[normalizedProvider]!.contains(normalizedSource)) {
+      throw const AppError(
+        code: AppErrorCode.invalidArgument,
+        message: 'provider와 장소 출처 조합을 확인해 주세요.',
+        retryable: false,
+        field: 'source',
+      );
+    }
+    if ((lat == null) != (lng == null) ||
+        (lat != null && (lat < -90 || lat > 90)) ||
+        (lng != null && (lng < -180 || lng > 180))) {
+      throw const AppError(
+        code: AppErrorCode.invalidArgument,
+        message: '장소 좌표를 확인해 주세요.',
+        retryable: false,
+        field: 'coordinates',
+      );
+    }
+
+    return PlaceDraft._(
+      name: normalizedName,
+      provider: normalizedProvider,
+      source: normalizedSource,
+      address: normalizedAddress,
+      lat: lat,
+      lng: lng,
+      providerPlaceId: normalizedProviderPlaceId,
+      sourceUrl: normalizedSourceUrl,
+      memo: normalizedMemo,
+    );
+  }
+
+  const PlaceDraft._({
     required this.name,
     required this.provider,
     required this.source,
@@ -36,6 +109,11 @@ final class PlaceDraft {
   final String? providerPlaceId;
   final String? sourceUrl;
   final String? memo;
+}
+
+String? _optionalTrim(String? value) {
+  final normalized = value?.trim();
+  return normalized == null || normalized.isEmpty ? null : normalized;
 }
 
 final class ItineraryItemDraft {

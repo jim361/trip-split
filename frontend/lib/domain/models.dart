@@ -164,6 +164,7 @@ final class Place {
     required this.name,
     required this.provider,
     required this.source,
+    required this.addedBy,
     required this.createdAt,
     required this.updatedAt,
     this.address,
@@ -171,7 +172,6 @@ final class Place {
     this.lng,
     this.providerPlaceId,
     this.sourceUrl,
-    this.addedBy,
     this.memo,
   });
 
@@ -185,7 +185,7 @@ final class Place {
   final String source;
   final String? providerPlaceId;
   final String? sourceUrl;
-  final String? addedBy;
+  final String addedBy;
   final String? memo;
   final EpochMillis createdAt;
   final EpochMillis updatedAt;

@@ -12,14 +12,14 @@
 
 ## 작업
 
-- [ ] `Place` 타입 정의
-- [ ] `PlaceProvider` 인터페이스와 Google/직접 입력 응답을 `Place`로 바꾸는 정규화 함수 정의
-- [ ] Firestore places 구조 설계
-- [ ] Place에 addedBy, createdAt, updatedAt 반영
-- [ ] 공통 `tokyo-2026-11` fixture로 동작하는 mock place provider와 mock places repository 구현
+- [x] `Place` 타입 정의
+- [x] `PlaceProvider` 인터페이스와 Google/직접 입력 응답을 `Place`로 바꾸는 정규화 함수 정의
+- [x] Firestore places 구조 설계
+- [x] Place에 addedBy, createdAt, updatedAt 반영
+- [x] 공통 `tokyo-2026-11` fixture로 동작하는 mock place provider와 mock places repository 구현
 - [ ] 장소 보관함 UI 구현
 - [ ] 장소 직접 입력 폼 구현
-- [ ] mock 검색 성공·빈 결과·링크 파싱 실패 상태로 장소 보관함 흐름 검증
+- [x] mock 검색 성공·빈 결과·링크 파싱 실패 상태로 장소 보관함 흐름 검증
 - [ ] Google Places 검색 Cloud Function 구현
 - [ ] 장소 검색 결과 UI 구현
 - [ ] 검색 결과 선택 후 장소 저장 구현

@@ -32,7 +32,7 @@ void main() {
     await Future<void>.delayed(Duration.zero);
     final created = await repositories.createPlace(
       tokyoTripId,
-      const PlaceDraft(
+      PlaceDraft(
         name: '도쿄역',
         provider: 'google',
         source: 'googleSearch',
