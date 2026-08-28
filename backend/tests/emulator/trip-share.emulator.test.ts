@@ -356,6 +356,36 @@ describe("members based firestore rules", () => {
     );
   });
 
+  it("일정 시간과 선택적 장소 ID 형식을 검증한다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const baseItem = {
+      date: "2026-11-25",
+      title: "나리타 도착",
+      order: 0,
+      updatedBy: memberUid,
+      updatedAt: serverTimestamp(),
+    };
+
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "itinerary", "invalid-time"), {
+        ...baseItem,
+        startTime: "9:30",
+      }),
+    );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "itinerary", "empty-place"), {
+        ...baseItem,
+        placeId: "",
+      }),
+    );
+    await assertSucceeds(
+      setDoc(doc(memberDb, "trips", tripId, "itinerary", "valid-item"), {
+        ...baseItem,
+        startTime: "09:30",
+      }),
+    );
+  });
+
   it("canonical 필드와 감사 필드가 올바른 지출만 허용한다", async () => {
     const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
     const expenseRef = doc(memberDb, "trips", tripId, "expenses", "expense-1");
