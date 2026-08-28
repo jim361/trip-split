@@ -43,7 +43,7 @@ pwsh -File scripts/verify.ps1 -Mode Fast
 pwsh -File scripts/verify.ps1 -Mode Full
 ```
 
-공통 전제조건은 Node.js 22와 `npm ci`이며, Full 모드는 Java 21과 Firebase Emulator를 사용한다. 검증기는 전환 전 `src/`·`functions/` 구조와 합칠 대상인 `frontend/`·`backend/` 구조를 명시적으로 판별한다. 두 구조가 섞여 있거나 필수 script가 빠지면 건너뛰지 않고 실패한다. GitHub Actions도 Full 검증기만 호출한다.
+공통 전제조건은 `.nvmrc`와 `package.json`에 고정한 Node.js 22 및 `npm ci`이며, Full 모드는 Java 21과 Firebase Emulator를 사용한다. 검증기는 `frontend/`·`backend/` workspace만 허용하고 폐기한 root `src/`·`functions/` 레이아웃의 핵심 파일이 남으면 실패한다. typecheck, test, build는 루트 위임 script와 무관하게 두 workspace에서 각각 실행한다. GitHub Actions도 훅 자체 테스트와 Full 검증기를 실행한다.
 
 `.gitattributes`가 Prettier의 `endOfLine=lf` 계약을 Windows에서도 유지한다. 이 파일이 생기기 전에 받은 기존 checkout에서 전체 파일이 CRLF라면 검증 조건을 완화하지 말고, 변경을 보존한 뒤 LF checkout에서 다시 확인한다.
 
@@ -52,7 +52,7 @@ pwsh -File scripts/verify.ps1 -Mode Full
 - 자연스러운 인계 요청에는 `.agents/skills/trip-split-handoff/SKILL.md`가 여섯 칸 인계 형식과 실행 증거를 적용한다.
 - `.codex/hooks.json`의 `PreToolUse` 훅은 강제 push, `reset --hard`, 강제 clean을 실행 전에 차단한다.
 - 프로젝트 훅은 저장소를 신뢰한 뒤 Codex의 `/hooks` 화면에서 정의를 검토하고 신뢰해야 실제 세션에 적용된다.
-- 훅은 일부 로컬 도구 경로에만 적용되는 guardrail이다. Firebase 배포나 secret 같은 외부 작업의 사람 확인을 대신하지 않는다.
+- 훅은 일부 로컬 도구 경로에만 적용되는 guardrail이며 완전한 보안·강제 경계가 아니다. Firebase 배포나 secret 같은 외부 작업의 사람 확인을 대신하지 않는다.
 
 ## 실제 프로젝트 문서 지도
 

@@ -30,7 +30,7 @@
 ## 로컬에서 직접 확인
 
 ```bash
-npm run dev -- --host 127.0.0.1 --port 4173
+npm run dev --workspace frontend -- --host 127.0.0.1 --port 4173
 ```
 
 - 생성: `http://127.0.0.1:4173/`

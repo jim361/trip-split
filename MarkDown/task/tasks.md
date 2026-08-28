@@ -2,13 +2,15 @@
 
 이 문서는 3인 협업의 작업 인덱스이자 통합 규칙이다. 실제 구현 체크리스트는 기능별 task 파일에서 관리하고, 공통 데이터 계약과 공유 파일 변경은 이 문서의 규칙을 따른다.
 
+구현 전 기능 후보의 유지·추가·제외 논의는 [기능 범위 회의 문서](../../docs/README.md)에서 진행한다. 회의에서 채택된 기능만 이 인덱스와 기능별 task의 구현 체크리스트로 옮긴다.
+
 ## 1. 역할과 소유 영역
 
-| 역할 | 주 소유 영역 | 관련 Task |
-| --- | --- | --- |
-| 플랫폼·통합 담당 | Vite/Firebase 기반, 익명 인증과 선택적 Google 연결, 여행 생성·공유·멤버, 앱 셸·라우팅·공통 UI, PWA, 보안 규칙 통합, 백업, 최종 QA·병합 | 1, 2, 8, 9 |
-| 정산·영수증 담당 | `Participant`, `Expense`, `ReceiptItem`, 분할·정산 엔진, 개인 소비 화면, 지출 UI, `parseReceipt`, CLOVA OCR, 영수증 검토·등록 | 6, 7 |
-| 장소·일정·지도 담당 | `Place` 정규화, 네이버 장소 검색·링크 파싱·직접 입력, 장소 보관함, 일정 편집, 지도 어댑터, 번호 핀·직선 동선 | 3, 4, 5 |
+| 역할 | 주 작업 경로 | 주 소유 영역 | 관련 Task |
+| --- | --- | --- | --- |
+| 플랫폼·통합 담당 | 루트, `frontend/src/app`, `backend/src/share` | npm/Firebase 기반, 인증, 여행 생성·공유·멤버, 앱 셸·PWA, 보안 규칙 통합, 백업, 최종 QA·병합 | 1, 2, 8, 9 |
+| 정산·영수증 담당 | `frontend/src/features/settlement`, `frontend/src/features/receipts`, `backend/src/ocr` | `Participant`, `Expense`, `ReceiptItem`, 분할·정산 엔진, 개인 소비 화면, 지출 UI, `parseReceipt`, OCR 검토·등록 | 6, 7 |
+| 장소·일정·지도 담당 | `frontend/src/features/places`, `frontend/src/features/itinerary`, `frontend/src/features/map`, `backend/src/places` | `Place` 정규화, 장소 검색·링크·직접 입력, 장소 보관함, 일정 편집, 지도 어댑터 | 3, 4, 5 |
 
 - 플랫폼·통합 담당이 제품 계약과 병합의 최종 책임자다. 다른 담당자는 공통 타입이나 Firestore 경로를 단독 확정하지 않고 변경 제안 PR을 올린다.
 - OCR은 정산 원장과 한 흐름으로 연결되므로 정산·영수증 담당이 소유한다.

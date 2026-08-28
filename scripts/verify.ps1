@@ -150,50 +150,35 @@ function Get-PackageEntry {
 }
 
 function Resolve-Layout {
-  $currentLayout = $false
-  $futureLayout = $false
-
-  if ((Test-Path -LiteralPath (Get-RepoPath "package.json") -PathType Leaf) -and
-      (Test-Path -LiteralPath (Get-RepoPath "functions/package.json") -PathType Leaf)) {
-    $currentLayout = $true
-  }
-
-  if ((Test-Path -LiteralPath (Get-RepoPath "frontend/package.json") -PathType Leaf) -and
-      (Test-Path -LiteralPath (Get-RepoPath "backend/package.json") -PathType Leaf)) {
-    $futureLayout = $true
-  }
-
-  if ($currentLayout -and $futureLayout) {
-    Stop-Verification "레이아웃 탐색이 모호합니다: root/functions와 frontend/backend가 모두 발견되었습니다. 하나만 유지해 주세요."
-  }
-  if (-not $currentLayout -and -not $futureLayout) {
-    Stop-Verification "지원하는 프로젝트 레이아웃을 찾을 수 없습니다. package.json 쌍(root/functions 또는 frontend/backend)이 필요합니다."
-  }
-
-  if ($currentLayout) {
-    $script:Layout = [pscustomobject]@{
-      Name                 = "root-functions"
-      FrontendRelativeRoot = "."
-      BackendRelativeRoot  = "functions"
-      FunctionsSource      = "functions"
-      HostingPublic        = "dist"
-      FirestoreRules       = "firestore.rules"
-      FirestoreIndexes     = "firestore.indexes.json"
-      FrontendPackagePath  = "package.json"
-      BackendPackagePath   = "functions/package.json"
+  foreach ($requiredPath in @("package.json", "frontend/package.json", "backend/package.json")) {
+    if (-not (Test-Path -LiteralPath (Get-RepoPath $requiredPath) -PathType Leaf)) {
+      Stop-Verification "frontend/backend workspace 레이아웃에 필요한 파일이 없습니다: $requiredPath"
     }
-  } else {
-    $script:Layout = [pscustomobject]@{
-      Name                 = "frontend-backend"
-      FrontendRelativeRoot = "frontend"
-      BackendRelativeRoot  = "backend"
-      FunctionsSource      = "backend"
-      HostingPublic        = "frontend/dist"
-      FirestoreRules       = "backend/firestore.rules"
-      FirestoreIndexes     = "backend/firestore.indexes.json"
-      FrontendPackagePath  = "frontend/package.json"
-      BackendPackagePath   = "backend/package.json"
+  }
+
+  foreach ($legacyPath in @(
+      "functions/package.json",
+      "src/app/App.tsx",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "vitest.emulator.config.ts",
+      "tests/emulator/trip-share.emulator.test.ts"
+    )) {
+    if (Test-Path -LiteralPath (Get-RepoPath $legacyPath)) {
+      Stop-Verification "폐기된 root/functions 레이아웃 파일을 허용하지 않습니다: $legacyPath"
     }
+  }
+
+  $script:Layout = [pscustomobject]@{
+    Name                 = "frontend-backend"
+    FrontendRelativeRoot = "frontend"
+    BackendRelativeRoot  = "backend"
+    FunctionsSource      = "backend"
+    HostingPublic        = "frontend/dist"
+    FirestoreRules       = "backend/firestore.rules"
+    FirestoreIndexes     = "backend/firestore.indexes.json"
+    FrontendPackagePath  = "frontend/package.json"
+    BackendPackagePath   = "backend/package.json"
   }
 
   Write-Host "[LAYOUT] $($script:Layout.Name): frontend=$($script:Layout.FrontendRelativeRoot), backend=$($script:Layout.BackendRelativeRoot)"
@@ -202,12 +187,6 @@ function Resolve-Layout {
 function Get-ExecutionPackages {
   $frontendPackage = Read-JsonFile $script:Layout.FrontendPackagePath
   $backendPackage = Read-JsonFile $script:Layout.BackendPackagePath
-
-  if ($script:Layout.Name -eq "root-functions") {
-    return @(
-      (Get-PackageEntry $script:Layout.FrontendRelativeRoot $frontendPackage)
-    )
-  }
 
   return @(
     (Get-PackageEntry $script:Layout.FrontendRelativeRoot $frontendPackage),
@@ -218,25 +197,22 @@ function Get-ExecutionPackages {
 function Get-ScriptTargets {
   param([Parameter(Mandatory = $true)][string]$ScriptName)
 
-  if ($script:Layout.Name -eq "root-functions") {
+  if ($ScriptName -in @("typecheck", "test", "build")) {
     $packages = @(Get-ExecutionPackages)
     return @($packages | Where-Object { $null -ne (Get-JsonProperty $_.Scripts $ScriptName) })
   }
 
-  # A future layout can keep root-level orchestration scripts. Prefer a root
-  # script for the requested stage when it exists; otherwise run each package
-  # that explicitly exposes that stage. This keeps Full mode from skipping a
-  # package build just because the root package only wraps core checks.
-  $rootPackagePath = Get-RepoPath "package.json"
-  if (Test-Path -LiteralPath $rootPackagePath -PathType Leaf) {
-    $rootPackage = Read-JsonFile "package.json"
-    if ($null -ne (Get-JsonProperty (Get-JsonProperty $rootPackage "scripts") $ScriptName)) {
-      return @((Get-PackageEntry "." $rootPackage))
-    }
+  if ($ScriptName -notin @("format:check", "lint", "test:emulator")) {
+    return @()
   }
 
-  $packages = @(Get-ExecutionPackages)
-  return @($packages | Where-Object { $null -ne (Get-JsonProperty $_.Scripts $ScriptName) })
+  $rootPackage = Read-JsonFile "package.json"
+  $rootTarget = Get-PackageEntry "." $rootPackage
+  if ($null -eq (Get-JsonProperty $rootTarget.Scripts $ScriptName)) {
+    return @()
+  }
+
+  return @($rootTarget)
 }
 
 function Assert-PackageFiles {
@@ -257,75 +233,61 @@ function Invoke-StaticChecks {
 
   Write-Host "[SYNTAX] package.json, workspace, Firebase 설정, rules, 테스트 진입점을 확인합니다."
 
-  $package = Read-JsonFile $script:Layout.FrontendPackagePath
-  $functionsPackage = Read-JsonFile $script:Layout.BackendPackagePath
+  $rootPackage = Read-JsonFile "package.json"
+  $frontendPackage = Read-JsonFile $script:Layout.FrontendPackagePath
+  $backendPackage = Read-JsonFile $script:Layout.BackendPackagePath
   $firebase = Read-JsonFile "firebase.json"
   $firebaseRc = Read-JsonFile ".firebaserc"
   $null = Read-JsonFile ".prettierrc.json"
   $null = Read-JsonFile $script:Layout.FirestoreIndexes
 
-  if ($script:Layout.Name -eq "root-functions") {
-    if ((Get-JsonProperty $package "name") -ne "trip-split") {
-      Stop-Verification "$($script:Layout.FrontendPackagePath)의 name이 trip-split이 아닙니다."
+  if ((Get-JsonProperty $rootPackage "name") -ne "trip-split") {
+    Stop-Verification "package.json의 name이 trip-split이 아닙니다."
+  }
+  if ((Get-JsonProperty $frontendPackage "name") -ne "trip-split-frontend") {
+    Stop-Verification "$($script:Layout.FrontendPackagePath)의 name이 trip-split-frontend가 아닙니다."
+  }
+  if ((Get-JsonProperty $backendPackage "name") -ne "trip-split-backend") {
+    Stop-Verification "$($script:Layout.BackendPackagePath)의 name이 trip-split-backend가 아닙니다."
+  }
+
+  $workspaces = @(Get-JsonProperty $rootPackage "workspaces")
+  if ($workspaces.Count -ne 2 -or $workspaces -notcontains "frontend" -or $workspaces -notcontains "backend") {
+    Stop-Verification "package.json의 workspace는 frontend와 backend 두 개만 허용합니다."
+  }
+
+  $rootEngines = Get-JsonProperty $rootPackage "engines"
+  if ((Get-JsonProperty $rootEngines "node") -ne "22") {
+    Stop-Verification "package.json의 Node engine은 22여야 합니다."
+  }
+
+  $rootScripts = Get-JsonProperty $rootPackage "scripts"
+  foreach ($scriptName in @("format:check", "lint", "test:emulator")) {
+    if ($null -eq (Get-JsonProperty $rootScripts $scriptName)) {
+      Stop-Verification "package.json에 루트 전용 필수 script가 없습니다: $scriptName"
     }
-    $workspaces = Get-JsonProperty $package "workspaces"
-    if ($null -eq $workspaces -or $workspaces -notcontains "functions") {
-      Stop-Verification "package.json에 functions workspace가 없습니다."
-    }
-  } else {
-    if ((Get-JsonProperty $package "name") -ne "trip-split-frontend") {
-      Stop-Verification "$($script:Layout.FrontendPackagePath)의 name이 trip-split-frontend가 아닙니다."
-    }
-    $rootPackagePath = Get-RepoPath "package.json"
-    if (-not (Test-Path -LiteralPath $rootPackagePath -PathType Leaf)) {
-      Stop-Verification "frontend/backend 레이아웃에는 root package.json(workspaces)이 필요합니다."
-    }
-    $rootPackage = Read-JsonFile "package.json"
-    if ((Get-JsonProperty $rootPackage "name") -ne "trip-split") {
-      Stop-Verification "package.json의 name이 trip-split이 아닙니다."
-    }
-    $workspaces = Get-JsonProperty $rootPackage "workspaces"
-    if ($null -eq $workspaces -or $workspaces -notcontains "frontend" -or $workspaces -notcontains "backend") {
-      Stop-Verification "package.json에 frontend와 backend workspace가 모두 필요합니다."
-    }
-    $rootScripts = Get-JsonProperty $rootPackage "scripts"
-    foreach ($scriptName in @("format:check", "lint", "typecheck", "test", "build", "test:emulator")) {
-      if ($null -eq (Get-JsonProperty $rootScripts $scriptName)) {
-        Stop-Verification "package.json에 필수 script가 없습니다: $scriptName"
+  }
+
+  foreach ($packageEntry in @(
+      @{ Path = $script:Layout.FrontendPackagePath; Package = $frontendPackage },
+      @{ Path = $script:Layout.BackendPackagePath; Package = $backendPackage }
+    )) {
+    $packageScripts = Get-JsonProperty $packageEntry.Package "scripts"
+    foreach ($scriptName in @("build", "typecheck", "test")) {
+      if ($null -eq (Get-JsonProperty $packageScripts $scriptName)) {
+        Stop-Verification "$($packageEntry.Path)에 workspace 필수 script가 없습니다: $scriptName"
       }
     }
   }
 
-  $frontendScripts = Get-JsonProperty $package "scripts"
-  $backendScripts = Get-JsonProperty $functionsPackage "scripts"
-  $requiredScriptNames = @("format:check", "lint", "typecheck", "test", "build", "test:emulator")
-  foreach ($scriptName in $requiredScriptNames) {
+  $backendEngines = Get-JsonProperty $backendPackage "engines"
+  if ((Get-JsonProperty $backendEngines "node") -ne "22") {
+    Stop-Verification "backend/package.json의 Node engine은 22여야 합니다."
+  }
+
+  foreach ($scriptName in @("format:check", "lint", "typecheck", "test", "build", "test:emulator")) {
     if (@(Get-ScriptTargets $scriptName).Count -eq 0) {
-      Stop-Verification "지원하는 실행 패키지에 필수 script가 없습니다: $scriptName"
-    }
-  }
-
-  if ($script:Layout.Name -eq "root-functions") {
-    foreach ($scriptName in @("format:check", "lint", "typecheck", "test", "build", "test:emulator")) {
-      if ($null -eq (Get-JsonProperty $frontendScripts $scriptName)) {
-        Stop-Verification "package.json에 필수 script가 없습니다: $scriptName"
-      }
-    }
-  }
-
-  $expectedBackendName = if ($script:Layout.Name -eq "root-functions") { "trip-split-functions" } else { "trip-split-backend" }
-  if ((Get-JsonProperty $functionsPackage "name") -ne $expectedBackendName) {
-    Stop-Verification "$($script:Layout.BackendPackagePath)의 name이 올바르지 않습니다."
-  }
-
-  $functionEngines = Get-JsonProperty $functionsPackage "engines"
-  if ((Get-JsonProperty $functionEngines "node") -ne "22") {
-    Stop-Verification "Functions의 Node engine이 22가 아닙니다."
-  }
-
-  foreach ($scriptName in @("build", "typecheck", "test")) {
-    if ($null -eq (Get-JsonProperty $backendScripts $scriptName)) {
-      Stop-Verification "$($script:Layout.BackendPackagePath)에 필수 script가 없습니다: $scriptName"
+      Stop-Verification "필수 검증 script를 실행할 수 없습니다: $scriptName"
     }
   }
 
@@ -367,78 +329,40 @@ function Invoke-StaticChecks {
     Stop-Verification ".firebaserc의 기본 프로젝트가 demo-trip-split이 아닙니다."
   }
 
-  $lockCandidates = @("package-lock.json")
-  if ($script:Layout.Name -eq "frontend-backend") {
-    $lockCandidates += @("frontend/package-lock.json", "backend/package-lock.json")
-  }
-  $lockFiles = @($lockCandidates | Where-Object { Test-Path -LiteralPath (Get-RepoPath $_) -PathType Leaf })
-  if ($lockFiles.Count -eq 0) {
-    Stop-Verification "npm ci에 사용할 package-lock.json을 찾을 수 없습니다."
-  }
-  foreach ($lockFile in $lockFiles) {
-    $lockContent = Get-Content -LiteralPath (Get-RepoPath $lockFile) -Raw
-    if ($lockContent -notmatch '"lockfileVersion"\s*:\s*3') {
-      Stop-Verification "$lockFile 이 lockfileVersion 3이 아닙니다."
-    }
+  Assert-File "package-lock.json"
+  $lockContent = Get-Content -LiteralPath (Get-RepoPath "package-lock.json") -Raw
+  if ($lockContent -notmatch '"lockfileVersion"\s*:\s*3') {
+    Stop-Verification "루트 package-lock.json이 lockfileVersion 3이 아닙니다."
   }
 
-  if ($script:Layout.Name -eq "root-functions") {
-    Assert-PackageFiles "." @(
-      "tsconfig.json",
-      "tsconfig.app.json",
-      "tsconfig.node.json",
-      "vite.config.ts",
-      "eslint.config.js",
-      "src/test/setup.ts"
-    )
-    Assert-PackageFiles "functions" @(
-      "tsconfig.json",
-      "vitest.config.ts"
-    )
-    Assert-File "scripts/prepare-pages.mjs"
-    $null = Assert-OneFile @("vitest.emulator.config.ts") "Emulator Vitest 설정"
-    $null = Assert-OneFile @("tests/emulator/trip-share.emulator.test.ts") "Emulator 테스트"
-    foreach ($configPath in @("tsconfig.json", "tsconfig.app.json", "tsconfig.node.json", "functions/tsconfig.json")) {
-      $null = Read-JsonFile $configPath
-    }
-  } else {
-    Assert-PackageFiles $script:Layout.FrontendRelativeRoot @(
-      "tsconfig.json",
-      "tsconfig.app.json",
-      "tsconfig.node.json",
-      "vite.config.ts",
-      "src/test/setup.ts"
-    )
-    Assert-PackageFiles $script:Layout.BackendRelativeRoot @(
-      "tsconfig.json",
-      "vitest.config.ts"
-    )
-    $null = Assert-OneFile @(
-      "scripts/prepare-pages.mjs",
-      "frontend/scripts/prepare-pages.mjs"
-    ) "Pages 준비 스크립트"
-    $null = Assert-OneFile @(
-      "eslint.config.js",
-      "frontend/eslint.config.js"
-    ) "ESLint 설정"
-    $null = Assert-OneFile @(
-      "vitest.emulator.config.ts",
-      "frontend/vitest.emulator.config.ts",
-      "backend/vitest.emulator.config.ts"
-    ) "Emulator Vitest 설정"
-    $null = Assert-OneFile @(
-      "tests/emulator/trip-share.emulator.test.ts",
-      "frontend/tests/emulator/trip-share.emulator.test.ts",
-      "backend/tests/emulator/trip-share.emulator.test.ts"
-    ) "Emulator 테스트"
-    foreach ($configPath in @(
-        "frontend/tsconfig.json",
-        "frontend/tsconfig.app.json",
-        "frontend/tsconfig.node.json",
-        "backend/tsconfig.json"
-      )) {
-      $null = Read-JsonFile $configPath
-    }
+  Assert-PackageFiles $script:Layout.FrontendRelativeRoot @(
+    "tsconfig.json",
+    "tsconfig.app.json",
+    "tsconfig.node.json",
+    "vite.config.ts",
+    "src/test/setup.ts",
+    "scripts/prepare-pages.mjs"
+  )
+  Assert-PackageFiles $script:Layout.BackendRelativeRoot @(
+    "tsconfig.json",
+    "vitest.config.ts",
+    "vitest.emulator.config.ts",
+    "tests/emulator/trip-share.emulator.test.ts"
+  )
+  Assert-File "eslint.config.js"
+  Assert-File ".nvmrc"
+  foreach ($configPath in @(
+      "frontend/tsconfig.json",
+      "frontend/tsconfig.app.json",
+      "frontend/tsconfig.node.json",
+      "backend/tsconfig.json"
+    )) {
+    $null = Read-JsonFile $configPath
+  }
+
+  $nvmVersion = (Get-Content -LiteralPath (Get-RepoPath ".nvmrc") -Raw).Trim()
+  if ($nvmVersion -ne "22") {
+    Stop-Verification ".nvmrc는 필수 Node.js major 22를 고정해야 합니다."
   }
 
   Assert-TextContains $script:Layout.FirestoreRules "rules_version = '2';" "rules_version 2"
@@ -517,19 +441,40 @@ function Invoke-Preconditions {
   if ($null -eq $nodeCommand) {
     $reasons += "Node.js가 PATH에 없습니다. Node.js 22를 설치해 주세요."
   } else {
-    $nodeVersion = (& node --version 2>&1 | Out-String).Trim()
+    $nodePath = if ($null -ne $nodeCommand.PSObject.Properties["Path"]) { $nodeCommand.Path } else { $nodeCommand.Source }
+    $nodeVersion = (& $nodePath --version 2>&1 | Out-String).Trim()
     if ($LASTEXITCODE -ne 0) {
       $reasons += "Node.js 버전을 읽지 못했습니다."
-    } elseif ($nodeVersion -notmatch '^v22\.') {
-      $reasons += "Node.js 22가 필요하지만 $nodeVersion 를 사용 중입니다."
+    } else {
+      $nodeMatch = [regex]::Match($nodeVersion, '^v(?<major>\d+)(?:\.|$)')
+      if (-not $nodeMatch.Success) {
+        $reasons += "Node.js 버전 형식을 해석하지 못했습니다: $nodeVersion"
+      } elseif ([int]$nodeMatch.Groups["major"].Value -ne 22) {
+        $reasons += "Node.js major 22가 필요하지만 $nodeVersion 를 사용 중입니다."
+      }
     }
   }
 
-  $npmCommand = Get-Command npm -ErrorAction SilentlyContinue
+  $isWindowsPlatform = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+  $npmCandidates = if ($isWindowsPlatform) { @("npm.cmd", "npm.exe", "npm") } else { @("npm") }
+  $npmCommand = $null
+  foreach ($candidate in $npmCandidates) {
+    $npmCommand = Get-Command $candidate -ErrorAction SilentlyContinue
+    if ($null -ne $npmCommand) {
+      break
+    }
+  }
   if ($null -eq $npmCommand) {
     $reasons += "npm이 PATH에 없습니다. Node.js 22 설치를 확인해 주세요."
   } else {
-    $script:NpmCommand = if (-not [string]::IsNullOrWhiteSpace($npmCommand.Source)) { $npmCommand.Source } else { $npmCommand.Name }
+    $script:NpmCommand = if ($null -ne $npmCommand.PSObject.Properties["Path"] -and
+        -not [string]::IsNullOrWhiteSpace($npmCommand.Path)) {
+      $npmCommand.Path
+    } elseif (-not [string]::IsNullOrWhiteSpace($npmCommand.Source)) {
+      $npmCommand.Source
+    } else {
+      $npmCommand.Name
+    }
     & $script:NpmCommand --version 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
       $reasons += "npm 실행 상태를 확인하지 못했습니다."
@@ -565,9 +510,24 @@ function Invoke-Preconditions {
     if ($null -eq $javaCommand) {
       $reasons += "Full 모드의 Firebase Emulator에 필요한 Java가 PATH에 없습니다."
     } else {
-      & java -version 2>&1 | Out-Null
-      if ($LASTEXITCODE -ne 0) {
+      $javaPath = if ($null -ne $javaCommand.PSObject.Properties["Path"]) { $javaCommand.Path } else { $javaCommand.Source }
+      $previousErrorActionPreference = $ErrorActionPreference
+      $ErrorActionPreference = "Continue"
+      try {
+        $javaOutput = (& $javaPath -version 2>&1 | Out-String).Trim()
+        $javaExitCode = $LASTEXITCODE
+      } finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+      }
+      if ($javaExitCode -ne 0) {
         $reasons += "Java 실행 상태를 확인하지 못했습니다."
+      } else {
+        $javaMatch = [regex]::Match($javaOutput, '(?m)(?:version\s+["'']?|openjdk\s+)(?<major>\d+)')
+        if (-not $javaMatch.Success) {
+          $reasons += "Java 버전 형식을 해석하지 못했습니다: $javaOutput"
+        } elseif ([int]$javaMatch.Groups["major"].Value -ne 21) {
+          $reasons += "Java major 21이 필요하지만 다음 버전을 사용 중입니다: $javaOutput"
+        }
       }
     }
   }

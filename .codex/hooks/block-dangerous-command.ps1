@@ -18,30 +18,49 @@ function Get-DangerousCommandReason {
         return $null
     }
 
+    # Keep a queue of tokenized commands. Wrapper payloads are parsed as text;
+    # they are never evaluated or passed to a shell.
+    $segments = [System.Collections.Generic.List[object]]::new()
     foreach ($segment in (Split-ShellCommandSegments -Command $Command)) {
+        [void]$segments.Add($segment)
+    }
+
+    $segmentIndex = 0
+    while ($segmentIndex -lt $segments.Count) {
+        $segment = $segments[$segmentIndex]
+        $segmentIndex++
+
         $invocation = Get-GitInvocation -Tokens $segment.Tokens
-        if ($null -eq $invocation) {
-            continue
+        if ($null -ne $invocation) {
+            $verb = $invocation.Verb
+            $args = $invocation.Arguments
+
+            switch ($verb) {
+                'push' {
+                    if (Test-GitPushForce -Arguments $args) {
+                        return 'Blocked destructive Git command: git push with force or mirror.'
+                    }
+                }
+                'reset' {
+                    if (Test-GitResetHard -Arguments $args) {
+                        return 'Blocked destructive Git command: git reset --hard.'
+                    }
+                }
+                'clean' {
+                    if (Test-GitCleanDestructive -Arguments $args) {
+                        return 'Blocked destructive Git command: git clean with a force flag.'
+                    }
+                }
+            }
         }
 
-        $verb = $invocation.Verb
-        $args = $invocation.Arguments
+        foreach ($payload in @(Get-ShellCommandPayload -Tokens $segment.Tokens)) {
+            if ([string]::IsNullOrWhiteSpace($payload)) {
+                continue
+            }
 
-        switch ($verb) {
-            'push' {
-                if (Test-GitPushForce -Arguments $args) {
-                    return 'Blocked destructive Git command: forced git push.'
-                }
-            }
-            'reset' {
-                if ($args -contains '--hard') {
-                    return 'Blocked destructive Git command: git reset --hard.'
-                }
-            }
-            'clean' {
-                if (Test-GitCleanDestructive -Arguments $args) {
-                    return 'Blocked destructive Git command: git clean with a force flag.'
-                }
+            foreach ($nestedSegment in (Split-ShellCommandSegments -Command $payload)) {
+                [void]$segments.Add($nestedSegment)
             }
         }
     }
@@ -178,6 +197,221 @@ function Split-ShellCommandSegments {
     return $segments.ToArray()
 }
 
+function Get-GitLongOptions {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Verb
+    )
+
+    # Keep these lists in sync with the command-specific options exposed by
+    # Git. Git accepts a long-option abbreviation only when it identifies one
+    # option uniquely; resolving against a command-specific list prevents an
+    # ambiguous prefix such as `git push --for` from being treated as force.
+    switch ($Verb.ToLowerInvariant()) {
+        'push' {
+            return [string[]]@(
+                'verbose', 'quiet', 'repo', 'all', 'branches', 'mirror',
+                'delete', 'tags', 'dry-run', 'porcelain', 'force',
+                'force-with-lease', 'force-if-includes', 'recurse-submodules',
+                'thin', 'receive-pack', 'exec', 'set-upstream', 'progress',
+                'prune', 'verify', 'no-verify', 'follow-tags', 'signed',
+                'atomic', 'push-option', 'ipv4', 'ipv6'
+            )
+        }
+        'reset' {
+            return [string[]]@(
+                'no-refresh', 'refresh', 'mixed', 'soft', 'hard', 'merge',
+                'keep', 'recurse-submodules', 'patch', 'unified',
+                'inter-hunk-context', 'intent-to-add', 'pathspec-from-file',
+                'pathspec-file-nul', 'stdin'
+            )
+        }
+        'clean' {
+            return [string[]]@('quiet', 'dry-run', 'force', 'interactive', 'exclude')
+        }
+        default {
+            return [string[]]@()
+        }
+    }
+}
+
+function Resolve-GitLongOption {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Argument,
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyCollection()]
+        [string[]]$ValidOptions
+    )
+
+    if (-not $Argument.StartsWith('--') -or $Argument.Length -le 2) {
+        return $null
+    }
+
+    $body = $Argument.Substring(2)
+    $equalsIndex = $body.IndexOf('=')
+    if ($equalsIndex -ge 0) {
+        $name = $body.Substring(0, $equalsIndex)
+    }
+    else {
+        $name = $body
+    }
+
+    if ([string]::IsNullOrWhiteSpace($name)) {
+        return $null
+    }
+
+    $negated = $false
+    $hasValue = $equalsIndex -ge 0
+    if ($name.StartsWith('no-', [System.StringComparison]::Ordinal)) {
+        $negated = $true
+        $name = $name.Substring(3)
+    }
+
+    # Git's --no- form is only meaningful for options that support negation;
+    # the dangerous options below all do, and non-dangerous options remain
+    # harmless even if an invalid --no-* spelling is supplied.
+    $exact = @($ValidOptions | Where-Object {
+            $_.Equals($name, [System.StringComparison]::Ordinal)
+        })
+    if ($exact.Count -eq 1) {
+        return [pscustomobject]@{
+            Canonical = $exact[0]
+            Negated   = $negated
+            HasValue  = $hasValue
+        }
+    }
+
+    $candidates = @($ValidOptions | Where-Object {
+            $_.StartsWith($name, [System.StringComparison]::Ordinal)
+        })
+    if ($candidates.Count -ne 1) {
+        return $null
+    }
+
+    [pscustomobject]@{
+        Canonical = $candidates[0]
+        Negated   = $negated
+        HasValue  = $hasValue
+    }
+}
+
+function Get-ShellWrapperStartIndex {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Tokens
+    )
+
+    $index = 0
+    while ($index -lt $Tokens.Count -and (Test-EnvironmentAssignment -Token $Tokens[$index])) {
+        $index++
+    }
+
+    # Match the same transparent wrappers accepted by Get-GitInvocation. This
+    # only finds a command head; words later in an echo/string are untouched.
+    while ($index -lt $Tokens.Count) {
+        $wrapper = $Tokens[$index].ToLowerInvariant()
+        if ($wrapper -eq 'command' -or $wrapper -eq 'exec') {
+            $index++
+            continue
+        }
+        if ($wrapper -eq 'env') {
+            $index++
+            while ($index -lt $Tokens.Count -and (Test-EnvironmentAssignment -Token $Tokens[$index])) {
+                $index++
+            }
+            while ($index -lt $Tokens.Count -and $Tokens[$index].StartsWith('-')) {
+                if ($Tokens[$index] -eq '--') {
+                    $index++
+                    break
+                }
+                if ($Tokens[$index] -eq '-u' -or $Tokens[$index] -eq '--unset' -or $Tokens[$index] -eq '-C' -or $Tokens[$index] -eq '--chdir' -or $Tokens[$index] -eq '-S' -or $Tokens[$index] -eq '--split-string') {
+                    $index += 2
+                }
+                else {
+                    $index++
+                }
+            }
+            while ($index -lt $Tokens.Count -and (Test-EnvironmentAssignment -Token $Tokens[$index])) {
+                $index++
+            }
+            continue
+        }
+        if ($wrapper -eq 'sudo') {
+            $index++
+            while ($index -lt $Tokens.Count -and $Tokens[$index].StartsWith('-')) {
+                if ($Tokens[$index] -eq '-u' -or $Tokens[$index] -eq '--user' -or $Tokens[$index] -eq '-g' -or $Tokens[$index] -eq '--group') {
+                    $index += 2
+                }
+                else {
+                    $index++
+                }
+            }
+            continue
+        }
+        break
+    }
+
+    return $index
+}
+
+function Get-ShellCommandPayload {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Tokens
+    )
+
+    $index = Get-ShellWrapperStartIndex -Tokens $Tokens
+    if ($index -ge $Tokens.Count) {
+        return @()
+    }
+
+    $shell = ($Tokens[$index] -split '[\\/]')[-1].ToLowerInvariant()
+    if ($shell.EndsWith('.exe') -or $shell.EndsWith('.cmd')) {
+        $shell = $shell.Substring(0, $shell.Length - 4)
+    }
+
+    $shellKind = $null
+    if ($shell -eq 'sh' -or $shell -eq 'bash' -or $shell -eq 'dash' -or $shell -eq 'zsh' -or $shell -eq 'ksh' -or $shell -eq 'ash' -or $shell -eq 'fish') {
+        $shellKind = 'posix'
+    }
+    elseif ($shell -eq 'pwsh' -or $shell -eq 'powershell') {
+        $shellKind = 'powershell'
+    }
+    elseif ($shell -eq 'cmd') {
+        $shellKind = 'cmd'
+    }
+    else {
+        return @()
+    }
+
+    $switchIndex = -1
+    for ($optionIndex = $index + 1; $optionIndex -lt $Tokens.Count; $optionIndex++) {
+        $option = $Tokens[$optionIndex]
+        if (($shellKind -eq 'posix' -and $option -eq '-c') -or
+            ($shellKind -eq 'powershell' -and ($option -eq '-c' -or $option -ieq '-command')) -or
+            ($shellKind -eq 'cmd' -and $option -ieq '/c')) {
+            $switchIndex = $optionIndex
+            break
+        }
+    }
+
+    if ($switchIndex -lt 0 -or ($switchIndex + 1) -ge $Tokens.Count) {
+        return @()
+    }
+
+    if ($shellKind -eq 'posix') {
+        # `sh -c` consumes exactly one command-string argument; any following
+        # argument is the shell's $0 and is not part of that command string.
+        return [string[]]@($Tokens[$switchIndex + 1])
+    }
+
+    # PowerShell -Command and cmd /c consume the remainder when the payload
+    # was not quoted as one token. Joining here reconstructs that command as
+    # text for the tokenizer without executing it.
+    return [string[]]@($Tokens[($switchIndex + 1)..($Tokens.Count - 1)] -join ' ')
+}
+
 function Test-EnvironmentAssignment {
     param([string]$Token)
 
@@ -305,11 +539,13 @@ function Get-GitInvocation {
 function Test-GitPushForce {
     param([string[]]$Arguments)
 
+    $validOptions = Get-GitLongOptions -Verb 'push'
     foreach ($argument in $Arguments) {
-        if ($argument -match '^(?i)--(?:force|force-with-lease|force-if-includes)(?:=.*)?$') {
+        $resolved = Resolve-GitLongOption -Argument $argument -ValidOptions $validOptions
+        if ($null -ne $resolved -and -not $resolved.Negated -and ($resolved.Canonical -eq 'force' -or $resolved.Canonical -eq 'force-with-lease' -or $resolved.Canonical -eq 'force-if-includes' -or $resolved.Canonical -eq 'mirror')) {
             return $true
         }
-        if ($argument -match '^(?i)-[^-]*f[^-]*$') {
+        if ($argument -cmatch '^-[^-]*f[^-]*$') {
             return $true
         }
         if ($argument -match '^\+.+$') {
@@ -319,17 +555,32 @@ function Test-GitPushForce {
     return $false
 }
 
+function Test-GitResetHard {
+    param([string[]]$Arguments)
+
+    $validOptions = Get-GitLongOptions -Verb 'reset'
+    foreach ($argument in $Arguments) {
+        $resolved = Resolve-GitLongOption -Argument $argument -ValidOptions $validOptions
+        if ($null -ne $resolved -and -not $resolved.Negated -and $resolved.Canonical -eq 'hard') {
+            return $true
+        }
+    }
+    return $false
+}
+
 function Test-GitCleanDestructive {
     param([string[]]$Arguments)
 
+    $validOptions = Get-GitLongOptions -Verb 'clean'
     $force = $false
     $dryRun = $false
     foreach ($argument in $Arguments) {
-        if ($argument -eq '-n' -or $argument -eq '--dry-run' -or $argument -match '^(?i)-[^-]*n[^-]*$') {
+        $resolved = Resolve-GitLongOption -Argument $argument -ValidOptions $validOptions
+        if ($argument -eq '-n' -or ($null -ne $resolved -and -not $resolved.Negated -and $resolved.Canonical -eq 'dry-run') -or $argument -cmatch '^-[^-]*n[^-]*$') {
             $dryRun = $true
             continue
         }
-        if ($argument -match '^(?i)--force(?:=.*)?$' -or $argument -match '^(?i)-[^-]*f[^-]*$') {
+        if (($null -ne $resolved -and -not $resolved.Negated -and $resolved.Canonical -eq 'force') -or $argument -cmatch '^-[^-]*f[^-]*$') {
             $force = $true
         }
     }
@@ -391,21 +642,43 @@ if ($TestRawInput) {
         @{ Command = 'git push -f origin main'; ExpectedBlocked = $true }
         @{ Command = 'git push --force-with-lease'; ExpectedBlocked = $true }
         @{ Command = 'git push --force-if-includes'; ExpectedBlocked = $true }
+        @{ Command = 'git push --force-w origin main'; ExpectedBlocked = $true }
+        @{ Command = 'git push --force-i origin main'; ExpectedBlocked = $true }
+        @{ Command = 'git push --for origin main'; ExpectedBlocked = $false }
+        @{ Command = 'git push --force-z origin main'; ExpectedBlocked = $false }
+        @{ Command = 'git push --mirror origin'; ExpectedBlocked = $true }
+        @{ Command = 'git push --mir origin'; ExpectedBlocked = $true }
+        @{ Command = 'git push --no-mirror origin'; ExpectedBlocked = $false }
         @{ Command = 'git push origin +HEAD:main'; ExpectedBlocked = $true }
         @{ Command = "git status`ngit push origin +HEAD:main"; ExpectedBlocked = $true }
         @{ Command = 'git push --no-force origin main'; ExpectedBlocked = $false }
         @{ Command = 'git -C "path with spaces" --no-pager -c core.foo=bar reset --hard HEAD~1'; ExpectedBlocked = $true }
         @{ Command = 'git.exe -C "path;with spaces" reset --hard'; ExpectedBlocked = $true }
+        @{ Command = 'git reset --har HEAD~1'; ExpectedBlocked = $true }
+        @{ Command = 'git reset --ha HEAD~1'; ExpectedBlocked = $true }
+        @{ Command = 'git reset --hardx HEAD~1'; ExpectedBlocked = $false }
         @{ Command = 'git reset --hard HEAD~1; git status'; ExpectedBlocked = $true }
         @{ Command = 'git clean -fd'; ExpectedBlocked = $true }
         @{ Command = 'git clean -dfx'; ExpectedBlocked = $true }
         @{ Command = 'git clean -f -d'; ExpectedBlocked = $true }
         @{ Command = 'git clean --force'; ExpectedBlocked = $true }
+        @{ Command = 'git clean --for -d'; ExpectedBlocked = $true }
+        @{ Command = 'git clean --fo -d'; ExpectedBlocked = $true }
+        @{ Command = 'git clean --f -d'; ExpectedBlocked = $true }
+        @{ Command = 'git clean --forcex -d'; ExpectedBlocked = $false }
+        @{ Command = 'git clean --dr -d'; ExpectedBlocked = $false }
         @{ Command = 'git clean -fdn'; ExpectedBlocked = $false }
         @{ Command = 'git checkout --theirs conflict.txt'; ExpectedBlocked = $false }
         @{ Command = 'git checkout feature'; ExpectedBlocked = $false }
         @{ Command = 'git restore --staged file'; ExpectedBlocked = $false }
         @{ Command = 'echo "git push --force"'; ExpectedBlocked = $false }
+        @{ Command = "sh -c 'git reset --hard'"; ExpectedBlocked = $true }
+        @{ Command = 'powershell -NoProfile -Command "git push --force-w origin main"'; ExpectedBlocked = $true }
+        @{ Command = 'pwsh -Command "git clean --for -d"'; ExpectedBlocked = $true }
+        @{ Command = 'cmd /d /c "git push --mirror origin"'; ExpectedBlocked = $true }
+        @{ Command = "sh -c 'echo git reset --hard'"; ExpectedBlocked = $false }
+        @{ Command = 'powershell -Command "Write-Output ''git push --force''"'; ExpectedBlocked = $false }
+        @{ Command = 'cmd /c "echo git clean --force -d"'; ExpectedBlocked = $false }
         @{ Command = 'git clean -n'; ExpectedBlocked = $false }
     )
 
