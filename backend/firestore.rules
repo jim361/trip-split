@@ -184,10 +184,22 @@ service cloud.firestore {
             && optionalString(data, 'address')
             && optionalNumber(data, 'lat')
             && optionalNumber(data, 'lng')
+            && (('lat' in data) == ('lng' in data))
+            && (!('lat' in data) || (
+              data.lat >= -90 && data.lat <= 90
+              && data.lng >= -180 && data.lng <= 180
+            ))
             && data.provider in ['google', 'naver', 'manual']
             && data.source in [
               'googleSearch', 'googleMapsUrl', 'naverSearch', 'naverLink', 'manual'
             ]
+            && (
+              (data.provider == 'google'
+                && data.source in ['googleSearch', 'googleMapsUrl'])
+              || (data.provider == 'naver'
+                && data.source in ['naverSearch', 'naverLink'])
+              || (data.provider == 'manual' && data.source == 'manual')
+            )
             && optionalString(data, 'providerPlaceId')
             && optionalString(data, 'sourceUrl')
             && data.addedBy is string

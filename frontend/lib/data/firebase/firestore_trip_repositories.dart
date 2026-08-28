@@ -501,7 +501,7 @@ Place _place(String tripId, String id, Map<String, dynamic> data) => Place(
   source: _text(data, 'source'),
   providerPlaceId: _optionalText(data['providerPlaceId']),
   sourceUrl: _optionalText(data['sourceUrl']),
-  addedBy: _optionalText(data['addedBy']),
+  addedBy: _text(data, 'addedBy'),
   memo: _optionalText(data['memo']),
   createdAt: _epoch(data['createdAt']),
   updatedAt: _epoch(data['updatedAt']),

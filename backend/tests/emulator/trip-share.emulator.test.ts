@@ -317,6 +317,45 @@ describe("members based firestore rules", () => {
     }
   });
 
+  it("장소 좌표와 provider/source 조합을 검증한다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const basePlace = {
+      name: "도쿄 타워",
+      provider: "google",
+      source: "googleSearch",
+      addedBy: memberUid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
+
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "missing-lng"), {
+        ...basePlace,
+        lat: 35.6586,
+      }),
+    );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "invalid-lat"), {
+        ...basePlace,
+        lat: 91,
+        lng: 139.7454,
+      }),
+    );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "mismatched-source"), {
+        ...basePlace,
+        provider: "manual",
+      }),
+    );
+    await assertSucceeds(
+      setDoc(doc(memberDb, "trips", tripId, "places", "manual-place"), {
+        ...basePlace,
+        provider: "manual",
+        source: "manual",
+      }),
+    );
+  });
+
   it("canonical 필드와 감사 필드가 올바른 지출만 허용한다", async () => {
     const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
     const expenseRef = doc(memberDb, "trips", tripId, "expenses", "expense-1");
