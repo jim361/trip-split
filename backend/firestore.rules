@@ -68,18 +68,27 @@ service cloud.firestore {
     match /trips/{tripId} {
       function validTrip(data) {
         return data.keys().hasAll([
-          'title', 'regionType', 'currency', 'startDate', 'endDate', 'ownerUid',
-          'shareCode', 'createdAt', 'updatedAt'
+          'title', 'countryCode', 'timeZone', 'mapProvider', 'defaultCurrency',
+          'startDate', 'endDate', 'ownerUid', 'shareCode', 'createdAt', 'updatedAt'
         ])
           && data.keys().hasOnly([
-            'title', 'regionType', 'currency', 'startDate', 'endDate', 'ownerUid',
-            'shareCode', 'createdAt', 'updatedAt'
+            'title', 'countryCode', 'timeZone', 'mapProvider', 'defaultCurrency',
+            'startDate', 'endDate', 'ownerUid', 'shareCode', 'createdAt', 'updatedAt',
+            'regionType', 'currency'
           ])
           && data.title is string
           && data.title.size() > 0
           && data.title.size() <= 80
-          && data.regionType in ['domestic', 'international']
-          && data.currency in ['KRW', 'JPY']
+          && data.countryCode is string
+          && data.countryCode.matches('^[A-Z]{2}$')
+          && data.timeZone is string
+          && data.timeZone.size() > 0
+          && data.timeZone.size() <= 80
+          && data.mapProvider in ['google', 'naver']
+          && data.defaultCurrency is string
+          && data.defaultCurrency.matches('^[A-Z]{3}$')
+          && (!('regionType' in data) || data.regionType in ['domestic', 'international'])
+          && (!('currency' in data) || data.currency == data.defaultCurrency)
           && validDate(data.startDate)
           && validDate(data.endDate)
           && data.ownerUid is string
@@ -93,8 +102,10 @@ service cloud.firestore {
       allow update: if isTripMember(tripId)
         && validTrip(request.resource.data)
         && request.resource.data.ownerUid == resource.data.ownerUid
-        && request.resource.data.currency == resource.data.currency
-        && request.resource.data.regionType == resource.data.regionType
+        && request.resource.data.countryCode == resource.data.countryCode
+        && request.resource.data.timeZone == resource.data.timeZone
+        && request.resource.data.mapProvider == resource.data.mapProvider
+        && request.resource.data.defaultCurrency == resource.data.defaultCurrency
         && request.resource.data.shareCode == resource.data.shareCode
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time

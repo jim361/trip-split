@@ -94,9 +94,11 @@ describe("trip share callable functions", () => {
         title: string;
         startDate: string;
         endDate: string;
-        regionType: "international";
-        currency: "JPY";
-        participantCount: number;
+        countryCode: string;
+        timeZone: string;
+        mapProvider: "google";
+        defaultCurrency: string;
+        participantNames: string[];
       },
       CreateTripResult
     >(owner.functions, "createTrip");
@@ -105,9 +107,11 @@ describe("trip share callable functions", () => {
       title: "도쿄 가을 여행",
       startDate: "2026-08-01",
       endDate: "2026-08-03",
-      regionType: "international",
-      currency: "JPY",
-      participantCount: 3,
+      countryCode: "JP",
+      timeZone: "Asia/Tokyo",
+      mapProvider: "google",
+      defaultCurrency: "JPY",
+      participantNames: ["지민", "서연", "민수"],
     });
 
     await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
@@ -153,7 +157,14 @@ describe("trip share callable functions", () => {
       const participantData = participants.docs.map((snapshot) => snapshot.data());
       expect(members.size).toBe(2);
       expect(participants.size).toBe(3);
-      expect(trip.data()).toMatchObject({ regionType: "international", currency: "JPY" });
+      expect(trip.data()).toMatchObject({
+        countryCode: "JP",
+        timeZone: "Asia/Tokyo",
+        mapProvider: "google",
+        defaultCurrency: "JPY",
+        regionType: "international",
+        currency: "JPY",
+      });
       expect(participantData).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -165,7 +176,7 @@ describe("trip share callable functions", () => {
       expect(participantData.filter((participant) => participant.isActive)).toHaveLength(3);
       expect(participantData.filter((participant) => participant.linkedUid)).toHaveLength(1);
       expect(participantData.map((participant) => participant.name)).toEqual(
-        expect.arrayContaining(["동행 2", "동행 3"]),
+        expect.arrayContaining(["지민", "서연", "민수"]),
       );
       expect(code.data()?.useCount).toBe(1);
     });
@@ -249,6 +260,10 @@ describe("members based firestore rules", () => {
       await setDoc(doc(firestore, "trips", tripId), {
         title: "규칙 테스트 해외여행",
         ownerUid: memberUid,
+        countryCode: "JP",
+        timeZone: "Asia/Tokyo",
+        mapProvider: "google",
+        defaultCurrency: "JPY",
         regionType: "international",
         currency: "JPY",
         shareCode: "RULES123",
@@ -349,6 +364,7 @@ describe("members based firestore rules", () => {
       updateDoc(tripRef, { title: "수정한 제목", updatedAt: serverTimestamp() }),
     );
     await assertFails(updateDoc(tripRef, { ownerUid: outsiderUid, updatedAt: serverTimestamp() }));
+    await assertFails(updateDoc(tripRef, { countryCode: "KR", updatedAt: serverTimestamp() }));
     await assertFails(updateDoc(memberRef, { role: "owner", lastActiveAt: serverTimestamp() }));
     await assertFails(
       setDoc(doc(memberDb, "trips", tripId, "members", "new-member"), {
