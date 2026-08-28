@@ -347,6 +347,13 @@ describe("members based firestore rules", () => {
         provider: "manual",
       }),
     );
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "places", "wrong-trip-provider"), {
+        ...basePlace,
+        provider: "naver",
+        source: "naverSearch",
+      }),
+    );
     await assertSucceeds(
       setDoc(doc(memberDb, "trips", tripId, "places", "manual-place"), {
         ...basePlace,
@@ -386,7 +393,7 @@ describe("members based firestore rules", () => {
     );
   });
 
-  it("canonical 필드와 감사 필드가 올바른 지출만 허용한다", async () => {
+  it("정산 validator 서버 경계 전에는 클라이언트 지출 쓰기를 거부한다", async () => {
     const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
     const expenseRef = doc(memberDb, "trips", tripId, "expenses", "expense-1");
 
@@ -410,7 +417,7 @@ describe("members based firestore rules", () => {
         updatedAt: serverTimestamp(),
       }),
     );
-    await assertSucceeds(
+    await assertFails(
       setDoc(expenseRef, {
         title: "점심",
         category: "식비",
@@ -426,6 +433,61 @@ describe("members based firestore rules", () => {
         createdBy: memberUid,
         updatedBy: memberUid,
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
+      const timestamp = new Date("2026-07-01T00:00:00.000Z");
+      await setDoc(doc(context.firestore(), "trips", tripId, "expenses", "expense-seeded"), {
+        title: "서버에서 검증한 점심",
+        category: "식비",
+        expenseDate: "2026-07-01",
+        totalAmount: 12_000,
+        currency: "JPY",
+        payer: { participantId: "participant-1", amount: 12_000 },
+        consumers: ["participant-1"],
+        allocationMethod: "equal",
+        allocatedAmounts: [{ participantId: "participant-1", amount: 12_000 }],
+        receiptItems: [],
+        source: "manual",
+        createdBy: memberUid,
+        updatedBy: memberUid,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+    });
+    const seededExpenseRef = doc(memberDb, "trips", tripId, "expenses", "expense-seeded");
+    await assertFails(
+      updateDoc(seededExpenseRef, {
+        memo: "클라이언트 수정",
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(deleteDoc(seededExpenseRef));
+  });
+
+  it("linkedUid는 일반 클라이언트가 생성하거나 변경할 수 없다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const timestamp = serverTimestamp();
+
+    await assertFails(
+      setDoc(doc(memberDb, "trips", tripId, "participants", "linked-client"), {
+        name: "직접 연결",
+        linkedUid: memberUid,
+        isActive: true,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }),
+    );
+    await assertFails(
+      updateDoc(doc(memberDb, "trips", tripId, "participants", "participant-1"), {
+        linkedUid: outsiderUid,
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(doc(memberDb, "trips", tripId, "participants", "participant-1"), {
+        name: "이름만 수정",
         updatedAt: serverTimestamp(),
       }),
     );

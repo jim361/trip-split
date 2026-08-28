@@ -52,6 +52,11 @@ void main() {
     expect(find.text('준비'), findsOneWidget);
     expect(find.text('비용'), findsOneWidget);
     expect(find.text('나리타 공항 도착'), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('map-pin-${TokyoFixtureIds.arrival}')),
+      findsOneWidget,
+    );
+    expect(find.text('Google 지도 연동 예정 · 동선 2구간'), findsOneWidget);
 
     await tester.tap(find.text('준비'));
     await tester.pumpAndSettle();

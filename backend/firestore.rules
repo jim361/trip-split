@@ -164,14 +164,17 @@ service cloud.firestore {
         allow read: if isTripMember(tripId);
         allow create: if isTripMember(tripId)
           && validParticipant(request.resource.data)
+          && !('linkedUid' in request.resource.data)
           && request.resource.data.createdAt == request.time
           && request.resource.data.updatedAt == request.time;
         allow update: if isTripMember(tripId)
           && validParticipant(request.resource.data)
+          && request.resource.data.get('linkedUid', null)
+            == resource.data.get('linkedUid', null)
           && request.resource.data.createdAt == resource.data.createdAt
           && request.resource.data.updatedAt == request.time
           && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['name', 'color', 'linkedUid', 'isActive', 'updatedAt']);
+            .hasOnly(['name', 'color', 'isActive', 'updatedAt']);
         allow delete: if false;
       }
 
@@ -206,6 +209,10 @@ service cloud.firestore {
                 && data.source in ['naverSearch', 'naverLink'])
               || (data.provider == 'manual' && data.source == 'manual')
             )
+            && (data.provider == 'manual'
+              || data.provider == get(
+                /databases/$(database)/documents/trips/$(tripId)
+              ).data.mapProvider)
             && optionalString(data, 'providerPlaceId')
             && optionalString(data, 'sourceUrl')
             && data.addedBy is string
@@ -263,60 +270,10 @@ service cloud.firestore {
       }
 
       match /expenses/{expenseId} {
-        function validExpense(data) {
-          return data.keys().hasAll([
-            'title', 'category', 'expenseDate', 'totalAmount', 'currency', 'payer',
-            'consumers', 'allocationMethod', 'allocatedAmounts', 'receiptItems', 'source',
-            'createdBy', 'updatedBy', 'createdAt', 'updatedAt'
-          ])
-            && data.keys().hasOnly([
-              'title', 'category', 'expenseDate', 'totalAmount', 'currency', 'payer',
-              'consumers', 'allocationMethod', 'allocatedAmounts', 'receiptItems', 'source',
-              'placeId', 'itineraryItemId', 'memo', 'createdBy', 'updatedBy',
-              'createdAt', 'updatedAt'
-            ])
-            && data.title is string
-            && data.title.size() > 0
-            && data.category is string
-            && validDate(data.expenseDate)
-            && data.totalAmount is int
-            && data.totalAmount >= 0
-            && data.currency in ['KRW', 'JPY']
-            && data.payer is map
-            && data.payer.keys().hasAll(['participantId', 'amount'])
-            && data.payer.keys().hasOnly(['participantId', 'amount'])
-            && data.payer.participantId is string
-            && data.payer.amount is int
-            && data.payer.amount == data.totalAmount
-            && data.consumers is list
-            && data.consumers.size() > 0
-            && data.allocationMethod in ['equal', 'itemized', 'custom']
-            && data.allocatedAmounts is list
-            && data.receiptItems is list
-            && data.source in ['manual', 'ocr']
-            && optionalString(data, 'placeId')
-            && optionalString(data, 'itineraryItemId')
-            && optionalString(data, 'memo')
-            && data.createdBy is string
-            && data.updatedBy is string
-            && data.createdAt is timestamp
-            && data.updatedAt is timestamp;
-        }
-
         allow read: if isTripMember(tripId);
-        allow create: if isTripMember(tripId)
-          && validExpense(request.resource.data)
-          && request.resource.data.createdBy == request.auth.uid
-          && request.resource.data.updatedBy == request.auth.uid
-          && request.resource.data.createdAt == request.time
-          && request.resource.data.updatedAt == request.time;
-        allow update: if isTripMember(tripId)
-          && validExpense(request.resource.data)
-          && request.resource.data.createdBy == resource.data.createdBy
-          && request.resource.data.createdAt == resource.data.createdAt
-          && request.resource.data.updatedBy == request.auth.uid
-          && request.resource.data.updatedAt == request.time;
-        allow delete: if isTripMember(tripId);
+        // TASK-06 runtime validator와 서버 저장 경계가 완성될 때까지
+        // 중첩 배분 데이터를 클라이언트가 직접 쓰지 못하게 한다.
+        allow create, update, delete: if false;
       }
     }
   }

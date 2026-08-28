@@ -8,7 +8,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 
 핵심 원칙은 다음과 같다.
 
-- `frontend`는 `pubspec.yaml`을 가진 Flutter workspace, `backend`는 `package.json`을 가진 npm workspace다. 루트 명령은 두 도구를 위임할 뿐 하나의 npm workspace로 가장하지 않는다.
+- 제품 앱은 `frontend/pubspec.yaml`을 사용하는 Flutter workspace이고 backend는 `backend/package.json`을 사용하는 Node.js workspace다. 전환 기간에는 GitHub Pages React 목업 검증을 위해 `frontend/package.json`도 루트 npm workspaces에 임시로 남긴다. Flutter 공유본으로 대체한 뒤 React workspace를 제거한다.
 - 두 프로젝트는 같은 `dev`와 `main` 트리에 유지하고 영역별 작업 브랜치에서 `dev`로 통합한다.
 - 화면은 사용 흐름 중심으로 구성한다.
 - 지도, 정산, OCR, Firebase 호출은 UI와 분리한다.
@@ -29,7 +29,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 - Flutter Android 프로젝트, router와 Material 앱 셸 구성
 - 공통 `TripSession` 상태, 디자인 토큰과 공통 Widget 관리
 - Firebase 클라이언트, Emulator Suite, Anonymous Auth와 선택적 Google 계정 연결
-- 여행 생성, 공유 코드·초대 링크 참여, 멤버와 권한 관리
+- 여행 생성, 공유 코드 참여, 멤버와 권한 관리. Android App Links는 후속
 - Firestore 보안 규칙과 실시간 세션의 통합 검증
 - `.trip.json` 백업·복원·데모 데이터 흐름 관리
 - 공통 타입, Firestore 경로, `pubspec.lock`과 backend lockfile 변경의 최종 승인
@@ -82,7 +82,8 @@ trip-split/
   frontend/
     pubspec.yaml
     pubspec.lock
-    .env.example
+    dart_defines.example.json
+    .env.example          # 전환 전 React Pages 목업 전용
     lib/
       app/
         app.dart
@@ -130,8 +131,8 @@ trip-split/
   MarkDown/
   .github/workflows/
   firebase.json
-  package.json           # backend/공통 명령 위임용
-  package-lock.json      # backend Node dependency용
+  package.json           # backend와 임시 React Pages 목업 검증 위임용
+  package-lock.json      # backend·임시 React dependency용
 ```
 
 ## 4. 앱 셸과 라우트 계약

@@ -42,14 +42,14 @@
 
 ## 2026-08-28 반영 상태
 
-| 결정                                          | 상태                                    |
-| --------------------------------------------- | --------------------------------------- |
-| Flutter Android 우선, Flutter Web·iOS 후속    | 계약 반영 완료; 코드 scaffold는 미착수  |
-| 도쿄·Google·JPY 우선, 국내 NAVER 후속         | 계약 반영 완료                          |
-| `일정·지도 / 준비 / 비용`, 영수증은 비용 하위 | 계약 반영 완료                          |
-| Node.js·TypeScript Firebase backend 유지      | 계약 반영 완료                          |
-| OCR은 provider-neutral 원문·한국어 번역 검토  | 계약 반영 완료; provider benchmark 필요 |
-| 걸음·거리·경로 기록                           | P2 경계만 기록, 권한·구현 미착수        |
+| 결정                                          | 상태                                                       |
+| --------------------------------------------- | ---------------------------------------------------------- |
+| Flutter Android 우선, Flutter Web·iOS 후속    | scaffold·mock 앱·FlutterFire 경계 완료; 실기기 통합 미검증 |
+| 도쿄·Google·JPY 우선, 국내 NAVER 후속         | 계약 반영 완료                                             |
+| `일정·지도 / 준비 / 비용`, 영수증은 비용 하위 | 계약 반영 완료                                             |
+| Node.js·TypeScript Firebase backend 유지      | 계약 반영 완료                                             |
+| OCR은 provider-neutral 원문·한국어 번역 검토  | 계약 반영 완료; provider benchmark 필요                    |
+| 걸음·거리·경로 기록                           | P2 경계만 기록, 권한·구현 미착수                           |
 
 ## 회의 결과 기록 양식
 

@@ -29,7 +29,7 @@ Flutter stable·Dart 기반 Android 프로젝트를 만들고 mock과 FlutterFir
 - [x] API 키와 환경변수 관리 방식 정리
 - [x] Flutter router에 일정·지도, 준비, 비용 route와 receipts 하위 route 구성
 - [x] 기존 `/trips/:tripId/map` deep link를 확대 일정·지도 상태로 연결할 호환 규칙 정의
-- [x] Android `NavigationBar`, `SafeArea`, system back과 키보드 inset을 처리하는 `TripShell` 구현
+- [ ] Android `NavigationBar`, `SafeArea`, system back과 키보드 inset을 처리하는 `TripShell` 구현. 내비게이션·SafeArea는 완료했고 system back·키보드 실기기 검증은 남음
 - [x] Firebase Auth 상태와 여행 세션을 분리한 `TripSession` controller/provider 구현
 - [x] Auth, Firestore, Functions Emulator 설정
 - [ ] Android Emulator에서 host 주소 `10.0.2.2` 연결 검증

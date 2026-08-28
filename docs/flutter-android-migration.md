@@ -12,14 +12,14 @@
 
 ## 2. 현재와 목표 상태
 
-| 영역        | 현재 저장소                                            | 목표                                                                          |
-| ----------- | ------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| 사용자 앱   | Flutter Android scaffold·mock 앱 셸과 임시 React 목업  | `frontend/`의 Flutter·Dart Android 앱                                         |
-| 웹 공유본   | React 빌드를 GitHub Pages에 배포                       | Flutter Web을 별도 수용 기준으로 검증한 뒤 재개                               |
-| 백엔드      | `backend/` Node.js·TypeScript Functions와 Rules 테스트 | 그대로 유지하고 Dart 클라이언트 계약만 연결                                   |
-| 지도        | Google 스타일 mock과 provider 경계                     | Android `google_maps_flutter`, Places는 서버 또는 제한된 API 경계             |
-| 인증·데이터 | Firebase Web SDK                                       | FlutterFire Auth·Firestore·Functions                                          |
-| OCR         | CLOVA 전제와 callable placeholder                      | provider-neutral `parseReceipt`; Document AI/OCR·번역 후보를 backend에서 비교 |
+| 영역        | 현재 저장소                                                      | 목표                                                                          |
+| ----------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 사용자 앱   | Flutter Android scaffold·mock 앱 셸과 임시 React 목업            | `frontend/`의 Flutter·Dart Android 앱                                         |
+| 웹 공유본   | React 빌드를 GitHub Pages에 배포                                 | Flutter Web을 별도 수용 기준으로 검증한 뒤 재개                               |
+| 백엔드      | `backend/` Node.js·TypeScript Functions와 Rules 테스트           | 그대로 유지하고 Dart 클라이언트 계약만 연결                                   |
+| 지도        | Google 스타일 mock과 provider 경계                               | Android `google_maps_flutter`, Places는 서버 또는 제한된 API 경계             |
+| 인증·데이터 | FlutterFire client·repository 경계와 임시 React Firebase Web SDK | Android Emulator 수직 검증을 마친 FlutterFire Auth·Firestore·Functions        |
+| OCR         | CLOVA 전제와 callable placeholder                                | provider-neutral `parseReceipt`; Document AI/OCR·번역 후보를 backend에서 비교 |
 
 기존 React 목업은 Flutter 화면을 검증할 때 참고할 UX 자료다. Flutter 세로 기능 조각이 대체되기 전까지 삭제하지 않으며 React와 Flutter를 장기 이중 제품으로 운영하지 않는다.
 
@@ -32,8 +32,8 @@
 - [x] 앱 router, Material 앱 셸과 `일정·지도 / 준비 / 비용` 하단 내비게이션
 - [x] 고정 ID `tokyo-2026-11` fixture와 mock repository 주입
 - [x] `dart format`, `flutter analyze`, unit/widget test, debug APK build — GitHub Actions 포함 통과
-- [x] FlutterFire 설정과 Auth·Firestore·Functions Emulator 연결
-- [x] Anonymous Auth, `TripSession`, 여행 생성·공유 코드 입장의 세로 기능 조각
+- [x] FlutterFire 설정, Auth·Firestore·Functions service/repository와 Emulator 주소 구성
+- [ ] Anonymous Auth, `TripSession`, 여행 생성·공유 코드 입장의 Android Emulator 수직 검증. mock Widget·service 계약은 완료
 
 Phase A가 끝나기 전에는 실제 Google Maps·OCR·위치 권한을 추가하지 않는다.
 

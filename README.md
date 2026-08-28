@@ -101,6 +101,7 @@ npm run dev:frontend
 ## 검증 명령
 
 ```bash
+npm run format:check
 npm run typecheck
 npm run lint
 npm test
@@ -153,12 +154,12 @@ Functions 일반 환경변수와 secret 구조는 `backend/.env.example`에 있�
 - Flutter Widget은 Firebase나 외부 API SDK를 직접 호출하지 않습니다.
 - 전환 후 앱 조립 계층이 mock 또는 FlutterFire 구현을 선택해 주입합니다.
 - Auth controller가 익명 세션을 자동 시작하고 Android Google credential의 선택 연결을 제공합니다.
-- `TripSession`이 route의 `tripId`로 여행·멤버·참여자·장소·일정·준비·지출 Stream을 결합합니다.
+- `TripSession`이 route의 `tripId`로 여행·멤버·참여자·장소·일정·지출 Stream을 결합합니다. 준비 데이터 repository는 후속입니다.
 - `createTrip`, `createShareCode`, `joinTrip`은 인증된 HTTPS Callable Function입니다. `createTrip`은 입력한 초기 정산 인원만큼 `Participant`를 함께 생성합니다.
 - 최초 공유 코드는 무기한·무제한이며, 재생성하면 기존 활성 코드를 모두 비활성화합니다.
 - 모든 MVP 여행 멤버는 `editor`입니다.
 - Android Firestore 캐시와 pending write 상태를 구분합니다. Google 장소·OCR 호출은 온라인 전용입니다.
 
-현재 Flutter 기반에는 FlutterFire 인증·실시간 repository와 여행 생성·공유·입장 경계가 있습니다. 아직 없는 범위는 완성된 정산 엔진, OCR·번역 provider, 실제 Google Maps SDK, Flutter 클라이언트의 Android Emulator 수직 통합 테스트와 Android `.trip.json` 처리입니다. 도쿄 mock은 API 키와 과금 없이 정보 구조와 개발 경계를 검토하는 자료입니다.
+현재 Flutter 기반에는 FlutterFire 인증·실시간 repository와 여행 생성·공유·입장 경계가 있습니다. expense는 완성된 runtime validator와 서버 저장 경계가 생길 때까지 Firestore Rules에서 직접 쓰기를 막습니다. 아직 없는 범위는 완성된 정산 엔진, Participant 계정 연결 Callable, OCR·번역 provider, 실제 Google Maps SDK, Flutter 클라이언트의 Android Emulator 수직 통합 테스트와 Android `.trip.json` 처리입니다. 도쿄 mock은 API 키와 과금 없이 정보 구조와 개발 경계를 검토하는 자료입니다.
 
 화면 검토는 [일정·지도 통합 목업 리뷰](docs/mockup-review.md), 자세한 경로와 인계 사항은 [플랫폼 인계 문서](docs/platform-handoff.md)를 참고하세요.

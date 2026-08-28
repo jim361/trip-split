@@ -220,7 +220,7 @@ Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로
 2. Firebase Anonymous Auth로 uid를 발급받는다.
 3. 사용자가 여행 생성 폼을 제출하고 `createTrip`을 호출한다.
 4. Function이 여행, 생성자의 member 문서와 첫 공유 코드를 원자적으로 만든다.
-5. 친구가 공유 코드 또는 초대 링크로 접근한다.
+5. 친구가 공유 코드로 접근한다. Android App Links 초대는 후속이다.
 6. `joinTrip`이 코드를 검증하고 친구의 uid를 `trips/{tripId}/members/{uid}`에 등록한다.
 7. FlutterFire repository가 여행 하위 컬렉션의 snapshot을 `Stream`으로 노출한다.
 ```
@@ -312,11 +312,11 @@ Flutter repository는 다음 Firestore snapshot을 Dart `Stream`으로 노출한
 
 ## 11. 공유 방식
 
-기본 공유 방식은 Firebase 기반 공유 코드 또는 초대 링크다.
+Android MVP의 기본 공유 방식은 Firebase 기반 공유 코드다. App Links 초대는 공유 코드 흐름 안정화 뒤 추가한다.
 
 - 여행장이 여행 생성
-- 공유 코드 또는 초대 링크 생성
-- 참여자가 코드 입력 또는 링크 접속
+- 공유 코드 생성
+- 참여자가 코드 입력
 - Anonymous Auth uid 발급
 - Cloud Function이 코드 검증
 - Firestore members에 등록
@@ -359,7 +359,7 @@ Web을 추가할 때는 `MapCapabilities`, 로그인, 파일·카메라와 공�
 
 | 영역 | MVP | 후속 또는 실험 |
 | --- | --- | --- |
-| 계정/공유 | 익명 인증, 선택 Google 연결, 공유 코드·초대 링크, 멤버 기반 접근 | 세부 역할, 링크별 권한, 활동 이력 |
+| 계정/공유 | 익명 인증, 선택 Google 연결, 공유 코드, 멤버 기반 접근 | App Links 초대, 세부 역할, 링크별 권한, 활동 이력 |
 | 플랫폼 | Flutter Android 앱, API 24 이상, mock과 FlutterFire repository | Flutter Web, iOS, tablet 최적화 |
 | 지도 | Google 장소 검색·URL·직접 입력, 번호 핀, 날짜별 색상, 직선 동선 | 실제 경로·이동 시간, 국내 NAVER adapter |
 | 준비 | 단순 예약과 체크리스트 | 알림, 첨부, 민감 문서 보관 |
@@ -387,7 +387,7 @@ Web을 추가할 때는 `MapCapabilities`, 로그인, 파일·카메라와 공�
 - 배포: 로컬 debug APK와 승인된 내부 배포. Flutter Web Hosting은 후속
 - 인증: Anonymous Auth 기본, Google 로그인 선택 연결
 - 백엔드: Node.js 22·TypeScript Cloud Functions, Firestore와 Rules 테스트. 영수증용 영구 Storage는 MVP 제외
-- 공유: Cloud Function 기반 공유 코드와 초대 링크 우선
+- 공유: Cloud Function 기반 공유 코드 우선, Android App Links는 후속
 - 세션: `trips/{tripId}/members/{uid}` 기반 멤버 관리
 - 지도: Google 장소 검색·URL·직접 입력, 지도 표시, 번호 핀과 직선 동선 우선
 - 정산: 확정 지출 원장을 기준으로 결제액, 부담액, 정산 결과와 개인 소비 내역 파생

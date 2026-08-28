@@ -61,6 +61,7 @@ final class FirestoreTripRepositories implements TripRepositories {
     EntityId tripId,
     ParticipantDraft draft,
   ) => _guard(() async {
+    _rejectDirectParticipantLink(draft);
     final reference = _tripCollection(tripId, 'participants').doc();
     final now = DateTime.now().millisecondsSinceEpoch;
     await reference.set({
@@ -73,7 +74,7 @@ final class FirestoreTripRepositories implements TripRepositories {
       tripId: tripId,
       name: draft.name,
       color: draft.color,
-      linkedUid: draft.linkedUid,
+      linkedUid: null,
       isActive: draft.isActive,
       createdAt: now,
       updatedAt: now,
@@ -85,12 +86,13 @@ final class FirestoreTripRepositories implements TripRepositories {
     EntityId tripId,
     EntityId participantId,
     ParticipantDraft draft,
-  ) => _guard(
-    () => _tripCollection(tripId, 'participants').doc(participantId).update({
+  ) => _guard(() {
+    _rejectDirectParticipantLink(draft);
+    return _tripCollection(tripId, 'participants').doc(participantId).update({
       ..._participantDraft(draft, deleteNulls: true),
       'updatedAt': FieldValue.serverTimestamp(),
-    }),
-  );
+    });
+  });
 
   @override
   Future<void> deactivateParticipant(EntityId tripId, EntityId participantId) =>
@@ -216,10 +218,17 @@ final class FirestoreTripRepositories implements TripRepositories {
       );
 
   @override
-  Stream<List<Expense>> watchExpenses(EntityId tripId) => _watchCollection(
-    _tripCollection(tripId, 'expenses'),
-    (snapshot) => _expense(tripId, snapshot.id, snapshot.data()),
-  );
+  Stream<List<Expense>> watchExpenses(EntityId tripId) =>
+      _watchCollection(
+        _tripCollection(tripId, 'expenses'),
+        (snapshot) => _expense(tripId, snapshot.id, snapshot.data()),
+      ).map(
+        (expenses) => [...expenses]
+          ..sort((left, right) {
+            final byDate = left.expenseDate.compareTo(right.expenseDate);
+            return byDate != 0 ? byDate : left.id.compareTo(right.id);
+          }),
+      );
 
   @override
   Future<Expense> createExpense(EntityId tripId, ExpenseDraft draft) =>
@@ -327,12 +336,18 @@ Map<String, Object?> _participantDraft(
     'color': draft.color
   else if (deleteNulls)
     'color': FieldValue.delete(),
-  if (draft.linkedUid != null)
-    'linkedUid': draft.linkedUid
-  else if (deleteNulls)
-    'linkedUid': FieldValue.delete(),
   'isActive': draft.isActive,
 };
+
+void _rejectDirectParticipantLink(ParticipantDraft draft) {
+  if (draft.linkedUid == null) return;
+  throw const AppError(
+    code: AppErrorCode.invalidArgument,
+    message: '계정과 정산 인원 연결은 전용 서버 작업으로 처리해야 합니다.',
+    retryable: false,
+    field: 'linkedUid',
+  );
+}
 
 Map<String, Object?> _placeDraft(
   PlaceDraft draft, {

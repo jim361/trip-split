@@ -95,7 +95,8 @@ type Expense = {
 
 ### 6.1 타입, fixture와 검증기
 
-- [ ] `Participant`, `Expense`, `ExpensePayer`, `ReceiptItem`, `MoneyAllocation`, `AllocationMethod` 타입과 runtime validator를 정의한다.
+- [x] `Participant`, `Expense`, `ExpensePayer`, `ReceiptItem`, `MoneyAllocation`, `AllocationMethod` 타입을 정의한다.
+- [ ] 저장·가져오기·서버 명령이 공유할 runtime validator를 정의한다.
 - [ ] `TripMember`와 `Participant`를 혼용하지 않도록 지출 폼과 엔진 입력은 `participantId`만 받게 한다.
 - [ ] JPY 예시 영수증과 예약비를 포함한 `tokyo-2026-11` fixture를 만들고 강릉 KRW fixture는 회귀용으로 보존한다.
 - [ ] 금액 정수 여부, 결제액·총액·배분액 합계, 배분 participantId 유일성, 소비자 집합, itemized 최소 한 항목, 항목 합계, 음수 부담액과 linkedUid 참조·유일성을 검사하고 필드별 오류를 반환한다.
@@ -109,7 +110,7 @@ type Expense = {
 - [x] 지출 전체를 선택한 소비자에게 배분하는 `equal` 계산을 구현한다.
 - [ ] 각 메뉴·공용 메뉴·할인·봉사료·기타 조정을 항목별 소비자에게 배분하고 이를 지출 `allocatedAmounts`로 합치는 `itemized` 계산을 구현한다.
 - [ ] 참여자별 부담 금액을 직접 입력하고 합계를 검증하는 `custom` 계산을 구현한다.
-- [x] 소비자 순서에 따른 양수·음수 1원 나머지 배분을 구현한다.
+- [x] `Expense.consumers`에 저장된 순서에 따른 양수·음수 1원 나머지 배분을 구현한다. Firestore 참여자 조회 순서에는 의존하지 않는다.
 - [x] 계산 함수는 입력을 변경하지 않고 같은 입력에 같은 결과를 반환하게 한다.
 
 완료 조건:
@@ -131,7 +132,8 @@ type Expense = {
 
 ### 6.4 repository와 실시간 원장
 
-- [x] `trips/{tripId}/participants/{participantId}`와 `trips/{tripId}/expenses/{expenseId}`의 CRUD·구독 인터페이스를 구현한다.
+- [x] `trips/{tripId}/participants/{participantId}`와 `trips/{tripId}/expenses/{expenseId}`의 mock CRUD·공통 구독 인터페이스를 구현한다.
+- [ ] runtime validator를 공유하는 서버 저장 경계를 만든 뒤 Firestore expense 생성·수정·삭제를 연다. 그전에는 Rules에서 클라이언트 직접 쓰기를 거부한다.
 - [x] 생성 시 `createdBy/createdAt`, 수정 시 `updatedBy/updatedAt`을 Auth uid와 server timestamp로 기록한다.
 - [ ] 저장 직전에 동일한 validator를 실행하고 Firestore converter에서도 형식을 검증한다.
 - [ ] FlutterFire repository `Stream`을 정산 엔진에 전달해 지출이나 참여자 변경 시 파생 결과만 다시 계산한다. 별도 settlement snapshot은 저장하지 않는다.

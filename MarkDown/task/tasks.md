@@ -38,7 +38,7 @@
    - 앱 셸, 라우팅, 공통 UI, Firebase 클라이언트·에뮬레이터, 테스트 기반
 
 2. [`TASK-02 · 인증·여행·공유`](task_function2_trip_share.md)
-   - 익명 인증, 선택적 Google 계정 연결, 여행 생성, 공유 코드·초대 링크, 멤버 세션
+   - 익명 인증, 선택적 Google 계정 연결, 여행 생성, 공유 코드, 멤버 세션
 
 3. [`TASK-03 · 장소 보관함·검색`](task_function3_places.md)
    - 장소 보관함, Google 장소 검색, Maps URL, 직접 입력과 `Place` 정규화

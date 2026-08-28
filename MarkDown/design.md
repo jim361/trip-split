@@ -24,7 +24,7 @@ getdesign.md 기준 Airbnb는 "Travel marketplace. Warm coral accent, photograph
 - 전체 제품 톤
 - 장소 카드
 - 여행 생성 화면
-- 공유 코드/초대 링크 화면
+- 공유 코드 화면. Android App Links 초대 화면은 후속
 - Google 계정 연결 안내
 - 지도 핀 컬러 일부
 
@@ -71,7 +71,7 @@ Android 휴대폰 portrait에서 모든 핵심 흐름이 완결되어야 한다.
 ### 홈
 
 - 여행 만들기
-- 공유 코드 또는 초대 링크로 입장
+- 공유 코드로 입장
 - 최근 여행 목록
 - 익명 세션 상태와 선택적 Google 계정 연결 안내
 - `.trip.json` 백업 복원과 데모 데이터 진입은 보조 메뉴로 제공

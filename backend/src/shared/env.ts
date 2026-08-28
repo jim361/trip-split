@@ -11,7 +11,3 @@ export function getShareCodeLength(): number {
 
   return parsed;
 }
-
-export const functionSecretNames = {
-  clovaOcr: "CLOVA_OCR_SECRET",
-} as const;
