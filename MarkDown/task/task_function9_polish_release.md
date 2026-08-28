@@ -21,19 +21,19 @@ MVP를 데모 가능한 품질로 정리한다.
 - [ ] 로딩 상태 정리
 - [ ] 에러 상태 정리
 - [ ] 저장 중/저장 완료 상태 정리
-- [ ] Firebase 보안 규칙 점검
-- [ ] Anonymous Auth와 members 보안 규칙 점검
+- [x] Firebase 보안 규칙 점검
+- [x] Anonymous Auth와 members 보안 규칙 점검
 - [ ] Google 로그인 연결 UX 점검
-- [ ] 공유 코드 만료/비활성 정책 점검
+- [x] 공유 코드 만료/비활성 정책 점검
 - [ ] Google Maps·Places 키 제한과 호출량·예산 정책 정리
 - [ ] OCR·Translation provider 호출량·예산 정책 정리
 - [ ] 카메라·Photo Picker·네트워크 권한과 외부 전송 안내 점검
-- [ ] `tokyo-2026-11` 데모 여행과 강릉 회귀 데이터 준비
+- [x] `tokyo-2026-11` 데모 여행과 강릉 회귀 데이터 준비
 - [ ] 개인정보처리방침·Google Play Data Safety 초안과 영수증 임시 처리 정책 점검
 - [ ] debug APK와 서명되지 않은 release build 검증. signing secret과 Play 배포는 별도 승인
 - [ ] Flutter Web은 선택적 compile/smoke만 수행하고 Android 완료를 막지 않음
-- [ ] README 작성
-- [ ] 배포 체크리스트 작성
+- [x] README 작성
+- [x] 배포 체크리스트 작성
 - [ ] 팀별 회고 및 다음 기능 정리
 
 ## 완료 기준
