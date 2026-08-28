@@ -51,6 +51,8 @@ type ParseReceiptResponse = {
 
 `ParseReceiptResponse`는 `tech.md`의 canonical `ParsedReceipt`와 같은 구조다. `items[].sourceOrder`는 초안 생성 시 `ReceiptItem.sortOrder`로 복사하고, 사용자가 행을 재정렬하면 저장 직전에 0부터 다시 정규화한다.
 
+현재 Flutter에는 `tripId`와 검증된 앱 내부 `ReceiptImageInput(bytes, mimeType, fileName?)`을 받는 stateless `ReceiptParser` 계약, 5MiB JPEG/PNG/WebP 사전 검증과 일본어 mock fixture가 있다. Base64는 검증된 입력을 Callable wire로 바꾸는 adapter 경계에서만 생성한다. Firebase Callable 구현과 backend의 같은 크기 상수, 이미지 선택·초안 편집·지출 저장은 아래 단계에 남아 있다.
+
 - `parseReceipt`는 인증이 필요한 HTTPS callable Function으로 구현한다. `tripId`의 멤버인지 확인한 뒤에만 선택된 OCR·번역 adapter를 호출한다.
 - 클라이언트와 Function은 허용 MIME type과 최대 원본 크기를 하나의 설정으로 공유하고, 허용하지 않는 파일은 외부 전송 전에 거부한다.
 - 선택한 이미지는 검토가 끝날 때까지 앱 cache와 메모리에만 유지한다. 전송된 이미지 바이트는 Function 요청 처리 중에만 메모리에 두며 Storage·Firestore·로그·분석 이벤트에 이미지나 전체 OCR 원문을 남기지 않는다.
@@ -144,7 +146,7 @@ type ParseReceiptResponse = {
 
 ## 단위 테스트
 
-- [ ] 일본어 fixture의 원문·한국어 번역·통화·총액·항목 후보가 `ParseReceiptResponse`로 정규화된다.
+- [x] 일본어 fixture의 원문·한국어 번역·통화·총액·항목 후보가 `ParseReceiptResponse`로 정규화된다.
 - [ ] 금액이 없는 항목, 중복 행, 총액 후보 여러 개, 항목 없는 응답이 경고와 편집 가능한 초안으로 변환된다.
 - [ ] `순두부 12,000원: 나`, `커피 6,000원: 지연`, `감자전 15,000원: 나·민수·지연 균등`이 각각 `12,000 / 6,000 / 5,000·5,000·5,000원`으로 배분된다.
 - [ ] 누락 항목 수동 추가와 할인·봉사료·기타 조정 후 항목 합계가 총액과 정확히 일치해야 저장 가능하다.
