@@ -146,6 +146,9 @@ export function normalizeCreateTripInput(
     defaultCurrencyFallback ?? "",
     /^[A-Z]{3}$/,
   );
+  if (defaultCurrency !== "KRW" && defaultCurrency !== "JPY") {
+    return invalid("defaultCurrency", "MVP에서는 KRW와 JPY 통화만 지원합니다.");
+  }
 
   return {
     title,

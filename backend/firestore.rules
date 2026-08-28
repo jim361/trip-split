@@ -86,7 +86,7 @@ service cloud.firestore {
           && data.timeZone.size() <= 80
           && data.mapProvider in ['google', 'naver']
           && data.defaultCurrency is string
-          && data.defaultCurrency.matches('^[A-Z]{3}$')
+          && data.defaultCurrency in ['KRW', 'JPY']
           && (!('regionType' in data) || data.regionType in ['domestic', 'international'])
           && (!('currency' in data) || data.currency == data.defaultCurrency)
           && validDate(data.startDate)
@@ -166,7 +166,7 @@ service cloud.firestore {
           && request.resource.data.updatedAt == request.time
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['name', 'color', 'linkedUid', 'isActive', 'updatedAt']);
-        allow delete: if isTripMember(tripId);
+        allow delete: if false;
       }
 
       match /places/{placeId} {

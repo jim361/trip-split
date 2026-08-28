@@ -58,6 +58,7 @@ describe("normalizeCreateTripInput", () => {
     [{ ...dates, countryCode: "US" }, "timeZone"],
     [{ ...dates, timeZone: "Mars/Olympus" }, "timeZone"],
     [{ ...dates, mapProvider: "unknown" }, "mapProvider"],
+    [{ ...dates, defaultCurrency: "USD" }, "defaultCurrency"],
     [{ ...dates, defaultCurrency: "YEN".repeat(30) }, "defaultCurrency"],
     [{ ...dates, participantNames: [] }, "participantNames"],
     [{ ...dates, participantNames: [" "] }, "participantNames"],

@@ -278,6 +278,13 @@ describe("members based firestore rules", () => {
         joinedAt: timestamp,
         lastActiveAt: timestamp,
       });
+      await setDoc(doc(firestore, "trips", tripId, "participants", "participant-1"), {
+        name: "멤버",
+        linkedUid: memberUid,
+        isActive: true,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
       await setDoc(doc(firestore, "shareCodes", "RULES123"), {
         tripId,
         isActive: true,
@@ -375,6 +382,7 @@ describe("members based firestore rules", () => {
       }),
     );
     await assertFails(deleteDoc(memberRef));
+    await assertFails(deleteDoc(doc(memberDb, "trips", tripId, "participants", "participant-1")));
   });
 
   it("사용자는 자기 프로필만 canonical 형식으로 쓸 수 있다", async () => {
