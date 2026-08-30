@@ -91,7 +91,7 @@ equal 외 custom/itemized·runtime validator·paid/owed/net은 아직 없습니�
 
 첫 Android 여행은 Google provider를 사용합니다. 실제 Google 응답은 `PlaceCandidate`로 정규화한 뒤 repository에 저장하며 manual을 제외한 place provider는 부모 trip의 provider와 같아야 합니다. NAVER adapter는 후속입니다.
 
-일정과 지도는 `/trips/:tripId/itinerary` 한 화면에서 지도 미리보기 → 일정 순서로 표시합니다. `?map=expanded`는 확대 상태를 공유하는 canonical query이며, 기존 `/trips/:tripId/map`은 이 URL로 redirect합니다. 실제 지도 adapter를 연결할 때 컨테이너 크기 전환 뒤 지도 SDK의 resize/recenter를 호출해야 합니다.
+일정과 지도는 `/trips/:tripId/itinerary` 한 화면에서 일차 tab → 선택 날짜 지도 → 순서형 일정 목록으로 표시합니다. `?map=expanded&day=YYYY-MM-DD`는 확대 상태와 선택 날짜를 공유하는 canonical query이며, 기존 `/trips/:tripId/map`은 확대 화면으로 redirect합니다. 실제 지도 adapter를 연결할 때 컨테이너 크기 전환 뒤 지도 SDK의 resize/recenter를 호출해야 합니다.
 
 ## Callable Functions
 

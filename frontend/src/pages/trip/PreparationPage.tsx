@@ -30,19 +30,19 @@ const domesticReservations = [
 
 /** [TASK-04 · 준비 목업] 예약과 체크리스트를 검토하는 현재 화면 진입점입니다. */
 export function PreparationPage() {
-  const { trip, itinerary, places, isLoading, error, dataSource } = useTripContext();
+  const { itinerary, places, isLoading, error, dataSource } = useTripContext();
   const scheduledPlaceIds = new Set(
     itinerary.flatMap((item) => (item.placeId ? [item.placeId] : [])),
   );
   const candidates = places.filter((place) => !scheduledPlaceIds.has(place.id));
-  const isInternational = trip?.regionType === "international";
-  const mapProviderLabel = isInternational ? "Google Maps" : "지도";
-  const checklist = isInternational ? internationalChecklist : domesticChecklist;
-  const reservations = isInternational ? internationalReservations : domesticReservations;
+  const usesGoogleMaps = places.some((place) => place.provider === "google");
+  const mapProviderLabel = usesGoogleMaps ? "Google Maps" : "지도";
+  const checklist = usesGoogleMaps ? internationalChecklist : domesticChecklist;
+  const reservations = usesGoogleMaps ? internationalReservations : domesticReservations;
 
   return (
     <FeaturePlaceholder
-      eyebrow={isInternational ? "출발 전 준비" : "여행 준비"}
+      eyebrow="02 / PREPARATION"
       title="준비"
       description="가고 싶은 장소, 예약, 짐과 출발 전 할 일을 여행 전에 한곳에서 정리해요."
       statusLabel={

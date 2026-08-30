@@ -26,7 +26,7 @@ final class AppConfig {
     this.firestoreEmulatorPort = 8080,
     this.functionsEmulatorPort = 5001,
     this.functionsRegion = 'asia-northeast3',
-    this.firebaseApiKey = 'demo-api-key',
+    this.firebaseApiKey = 'AIza00000000000000000000000000000000000',
     this.firebaseAppId = '1:000000000000:android:demo',
     this.firebaseMessagingSenderId = '000000000000',
     this.firebaseProjectId = 'demo-trip-split',
@@ -60,7 +60,7 @@ final class AppConfig {
     ),
     firebaseApiKey: const String.fromEnvironment(
       'FIREBASE_API_KEY',
-      defaultValue: 'demo-api-key',
+      defaultValue: 'AIza00000000000000000000000000000000000',
     ),
     firebaseAppId: const String.fromEnvironment(
       'FIREBASE_APP_ID',

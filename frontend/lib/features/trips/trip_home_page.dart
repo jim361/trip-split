@@ -3,17 +3,25 @@ import 'package:flutter/material.dart';
 import '../../app/auth_session_gate.dart';
 import '../../domain/models.dart';
 import '../../services/trip_share_service.dart';
+import '../../shared/theme/app_theme.dart';
+import '../itinerary/trip_timetable.dart';
 
 /// [TASK-02 · 여행 시작] 도쿄 기본값으로 여행 생성과 공유 코드 입장을 제공합니다.
 final class TripHomePage extends StatefulWidget {
   const TripHomePage({
     required this.tripShareService,
     required this.dataSourceLabel,
+    required this.joinFirst,
+    required this.featuredTrip,
+    required this.featuredItinerary,
     super.key,
   });
 
   final TripShareService tripShareService;
   final String dataSourceLabel;
+  final bool joinFirst;
+  final Trip? featuredTrip;
+  final List<ItineraryItem> featuredItinerary;
 
   @override
   State<TripHomePage> createState() => _TripHomePageState();
@@ -51,96 +59,206 @@ final class _TripHomePageState extends State<TripHomePage> {
     final auth = AuthSessionScope.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Trip Split'),
+        leadingWidth: 64,
+        leading: const Icon(Icons.menu, size: 20, semanticLabel: '메뉴'),
+        centerTitle: true,
+        title: Text(
+          'TRIP SPLIT / MY TRIPS',
+          style: Theme.of(context).textTheme.labelSmall
+              ?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.6),
+        ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Center(child: Chip(label: Text(widget.dataSourceLabel))),
+            padding: const EdgeInsets.only(right: 14),
+            child: IconButton(
+              key: const Key('trip-account-action'),
+              tooltip: auth.user.isAnonymous
+                  ? 'Google 계정 연결'
+                  : auth.user.displayName,
+              onPressed: auth.user.isAnonymous && !_linking
+                  ? () => _linkGoogle(auth)
+                  : null,
+              style: IconButton.styleFrom(
+                fixedSize: const Size.square(AppTheme.minimumTouchTarget),
+                minimumSize: const Size.square(AppTheme.minimumTouchTarget),
+                padding: EdgeInsets.zero,
+                shape: const RoundedRectangleBorder(),
+              ),
+              icon: Container(
+                width: 36,
+                height: 36,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                child: _linking
+                    ? const SizedBox.square(
+                        dimension: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        auth.user.isAnonymous
+                            ? Icons.person_outline
+                            : Icons.person,
+                        size: 20,
+                      ),
+              ),
+            ),
           ),
         ],
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            Text(
-              '여행을 한곳에서 준비해요',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text('일정·지도, 준비, 비용을 같은 여행 세션에서 관리합니다.'),
-            const SizedBox(height: 16),
-            Card(
-              child: ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-                title: Text(auth.user.displayName),
-                subtitle: Text('uid ${auth.user.uid}'),
-                trailing: auth.user.isAnonymous
-                    ? TextButton(
-                        key: const Key('link-google'),
-                        onPressed: _linking ? null : () => _linkGoogle(auth),
-                        child: Text(_linking ? '연결 중' : 'Google 연결'),
-                      )
-                    : const Chip(label: Text('Google 연결됨')),
-              ),
-            ),
-            const SizedBox(height: 12),
-            _CreateTripCard(
-              formKey: _createFormKey,
-              title: _title,
-              startDate: _startDate,
-              endDate: _endDate,
-              participants: _participants,
-              busy: _busy,
-              onAddParticipant: _addParticipant,
-              onRemoveParticipant: _removeParticipant,
-              onCreate: _createTrip,
-            ),
-            const SizedBox(height: 12),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      '공유 코드로 참여',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      key: const Key('share-code'),
-                      controller: _shareCode,
-                      textCapitalization: TextCapitalization.characters,
-                      decoration: const InputDecoration(
-                        labelText: '공유 코드',
-                        border: OutlineInputBorder(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final selector = _TripSelector(
+              trip: widget.featuredTrip,
+              onOpen: widget.featuredTrip == null
+                  ? null
+                  : () => _openTrip(widget.featuredTrip!.id),
+            );
+            final workspace = _TripWorkspace(
+              trip: widget.featuredTrip,
+              itinerary: widget.featuredItinerary,
+              onOpen: widget.featuredTrip == null
+                  ? null
+                  : () => _openTrip(widget.featuredTrip!.id),
+            );
+
+            if (constraints.maxWidth >= AppTheme.expandedBreakpoint) {
+              final controls = _controlWidgets(
+                context,
+                auth,
+                joinFirst: widget.joinFirst,
+              );
+              return Row(
+                key: const Key('trip-home-expanded'),
+                children: [
+                  SizedBox(
+                    width: 360,
+                    child: ColoredBox(
+                      color: Theme.of(context).colorScheme.surface,
+                      child: ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          selector,
+                          const SizedBox(height: 20),
+                          ...controls,
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      key: const Key('join-trip'),
-                      onPressed: _busy ? null : _joinTrip,
-                      icon: const Icon(Icons.group_add_outlined),
-                      label: const Text('여행 참여'),
+                  ),
+                  const VerticalDivider(width: 1),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(32, 24, 32, 48),
+                      children: [workspace],
                     ),
-                  ],
+                  ),
+                ],
+              );
+            }
+
+            final controls = _controlWidgets(
+              context,
+              auth,
+              includeJoin: !widget.joinFirst,
+              includeError: !widget.joinFirst,
+            );
+
+            return ListView(
+              key: const Key('trip-home-compact'),
+              padding: EdgeInsets.zero,
+              children: [
+                selector,
+                if (widget.joinFirst) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                    child: _JoinTripCard(
+                      shareCode: _shareCode,
+                      busy: _busy,
+                      onJoin: _joinTrip,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: _errorWidgets(context),
+                    ),
+                  ),
+                ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                  child: workspace,
                 ),
-              ),
-            ),
-            if (_error case final error?) ...[
-              const SizedBox(height: 12),
-              Text(
-                error.message,
-                key: const Key('trip-action-error'),
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-            ],
-          ],
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: controls,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
+
+  List<Widget> _controlWidgets(
+    BuildContext context,
+    AuthSessionScope auth, {
+    bool includeJoin = true,
+    bool includeError = true,
+    bool joinFirst = false,
+  }) {
+    final account = _AccountPanel(
+      displayName: auth.user.displayName,
+      uid: auth.user.uid,
+      anonymous: auth.user.isAnonymous,
+      linking: _linking,
+      onLink: () => _linkGoogle(auth),
+    );
+    final create = _CreateTripCard(
+      formKey: _createFormKey,
+      title: _title,
+      startDate: _startDate,
+      endDate: _endDate,
+      participants: _participants,
+      busy: _busy,
+      onAddParticipant: _addParticipant,
+      onRemoveParticipant: _removeParticipant,
+      onCreate: _createTrip,
+    );
+    final join = _JoinTripCard(
+      shareCode: _shareCode,
+      busy: _busy,
+      onJoin: _joinTrip,
+    );
+    return [
+      account,
+      const SizedBox(height: 16),
+      if (includeJoin && joinFirst) ...[join, const SizedBox(height: 16)],
+      create,
+      if (includeJoin && !joinFirst) ...[const SizedBox(height: 16), join],
+      if (includeError) ..._errorWidgets(context),
+    ];
+  }
+
+  List<Widget> _errorWidgets(BuildContext context) => [
+    if (_error case final error?) ...[
+      const SizedBox(height: 12),
+      Text(
+        error.message,
+        key: const Key('trip-action-error'),
+        style: TextStyle(color: Theme.of(context).colorScheme.error),
+      ),
+    ],
+  ];
 
   Future<void> _createTrip() async {
     if (!_createFormKey.currentState!.validate()) return;
@@ -227,6 +345,278 @@ final class _TripHomePageState extends State<TripHomePage> {
     if (_participants.length == 1) return;
     setState(() => _participants.removeAt(index).dispose());
   }
+}
+
+final class _AccountPanel extends StatelessWidget {
+  const _AccountPanel({
+    required this.displayName,
+    required this.uid,
+    required this.anonymous,
+    required this.linking,
+    required this.onLink,
+  });
+
+  final String displayName;
+  final String uid;
+  final bool anonymous;
+  final bool linking;
+  final VoidCallback onLink;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          color: Theme.of(context).colorScheme.primaryContainer,
+          child: const Icon(Icons.person_outline),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(displayName, maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(
+                'uid $uid',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        if (anonymous)
+          TextButton(
+            key: const Key('link-google'),
+            onPressed: linking ? null : onLink,
+            child: Text(linking ? '연결 중' : 'Google 연결'),
+          )
+        else
+          const Icon(Icons.verified_outlined, semanticLabel: 'Google 연결됨'),
+      ],
+    ),
+  );
+}
+
+final class _TripSelector extends StatelessWidget {
+  const _TripSelector({required this.trip, required this.onOpen});
+
+  final Trip? trip;
+  final VoidCallback? onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final value = trip;
+    if (value == null) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            bottom: BorderSide(
+              color: theme.colorScheme.onSurface,
+              width: AppTheme.sectionStroke,
+            ),
+          ),
+        ),
+        child: const Text('여행을 만들거나 공유 코드로 참여해 주세요.'),
+      );
+    }
+
+    return InkWell(
+      key: ValueKey('trip-tile-${value.id}'),
+      onTap: onOpen,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          border: Border(
+            bottom: BorderSide(
+              color: theme.colorScheme.onSurface,
+              width: AppTheme.sectionStroke,
+            ),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    _tripPeriod(value),
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainer,
+                border: Border.all(color: theme.colorScheme.onSurface),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.sync, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    '동기화됨',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+final class _TripWorkspace extends StatelessWidget {
+  const _TripWorkspace({
+    required this.trip,
+    required this.itinerary,
+    required this.onOpen,
+  });
+
+  final Trip? trip;
+  final List<ItineraryItem> itinerary;
+  final VoidCallback? onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final value = trip;
+    if (value == null) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        child: const Text('선택된 여행이 없습니다.'),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                '전체 일정표',
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            Text(
+              '${_tripDayCount(value).toString().padLeft(2, '0')} DAYS',
+              style: Theme.of(context).textTheme.labelLarge,
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        TripTimetable(trip: value, itinerary: itinerary),
+        const SizedBox(height: 16),
+        FilledButton.icon(
+          key: const Key('featured-trip-open'),
+          onPressed: onOpen,
+          icon: const Icon(Icons.arrow_forward),
+          label: const Text('여행 열기'),
+        ),
+      ],
+    );
+  }
+}
+
+final class _JoinTripCard extends StatelessWidget {
+  const _JoinTripCard({
+    required this.shareCode,
+    required this.busy,
+    required this.onJoin,
+  });
+
+  final TextEditingController shareCode;
+  final bool busy;
+  final VoidCallback onJoin;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text('공유 코드로 참여', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          TextField(
+            key: const Key('share-code'),
+            controller: shareCode,
+            textCapitalization: TextCapitalization.characters,
+            decoration: const InputDecoration(
+              labelText: '공유 코드',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            key: const Key('join-trip'),
+            onPressed: busy ? null : onJoin,
+            icon: const Icon(Icons.group_add_outlined),
+            label: const Text('여행 참여'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+int _tripDayCount(Trip trip) {
+  final start = DateTime.tryParse(trip.startDate);
+  final end = DateTime.tryParse(trip.endDate);
+  if (start == null || end == null || end.isBefore(start)) return 0;
+  return end.difference(start).inDays + 1;
+}
+
+String _tripPeriod(Trip trip) =>
+    '${_monthDay(trip.startDate)} — ${_monthDay(trip.endDate)}';
+
+String _monthDay(String value) {
+  final date = DateTime.tryParse(value);
+  if (date == null) return value;
+  return '${date.month.toString().padLeft(2, '0')}.'
+      '${date.day.toString().padLeft(2, '0')}';
 }
 
 final class _CreateTripCard extends StatelessWidget {

@@ -121,6 +121,8 @@ final class ItineraryItemDraft {
     required LocalDate date,
     required String title,
     required int order,
+    String planId = 'A',
+    String category = 'other',
     String? startTime,
     String? endTime,
     EntityId? placeId,
@@ -140,11 +142,19 @@ final class ItineraryItemDraft {
     if (order < 0) {
       throw _invalidItinerary('order', '일정 순서는 0 이상이어야 합니다.');
     }
+    if (!itineraryPlanIds.contains(planId)) {
+      throw _invalidItinerary('planId', '일정 계획은 A안 또는 B안이어야 합니다.');
+    }
+    if (!itineraryCategories.contains(category)) {
+      throw _invalidItinerary('category', '지원하지 않는 일정 유형입니다.');
+    }
 
     return ItineraryItemDraft._(
       date: normalizedDate,
       title: normalizedTitle,
       order: order,
+      planId: planId,
+      category: category,
       startTime: normalizedStartTime,
       endTime: normalizedEndTime,
       placeId: _optionalTrim(placeId),
@@ -156,6 +166,8 @@ final class ItineraryItemDraft {
     required this.date,
     required this.title,
     required this.order,
+    required this.planId,
+    required this.category,
     this.startTime,
     this.endTime,
     this.placeId,
@@ -163,6 +175,8 @@ final class ItineraryItemDraft {
   });
 
   final LocalDate date;
+  final String planId;
+  final String category;
   final String? startTime;
   final String? endTime;
   final EntityId? placeId;

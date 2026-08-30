@@ -11,9 +11,7 @@ import type {
 } from "../../shared/types";
 
 /** [공통 계약] 도메인 담당자가 mock과 Firestore 구현에서 함께 사용하는 저장소 형식입니다. */
-export type UpdateTripInput = Partial<
-  Pick<Trip, "title" | "regionType" | "currency" | "startDate" | "endDate">
->;
+export type UpdateTripInput = Partial<Pick<Trip, "title" | "startDate" | "endDate">>;
 
 export type UpsertUserProfileInput = Omit<UserProfile, "uid" | "createdAt" | "updatedAt">;
 
@@ -27,7 +25,14 @@ export type CreateItineraryItemInput = Omit<
   ItineraryItem,
   "id" | "tripId" | "updatedBy" | "updatedAt"
 >;
-export type UpdateItineraryItemInput = Partial<CreateItineraryItemInput>;
+export type UpdateItineraryItemInput = Partial<
+  Omit<CreateItineraryItemInput, "startTime" | "endTime" | "placeId" | "memo">
+> & {
+  startTime?: string | null;
+  endTime?: string | null;
+  placeId?: EntityId | null;
+  memo?: string | null;
+};
 
 export type CreateExpenseInput = Omit<
   Expense,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../domain/models.dart';
 import '../services/auth_service.dart';
+import '../shared/theme/app_theme.dart';
 
 final class AuthSessionScope extends InheritedWidget {
   const AuthSessionScope({
@@ -65,6 +66,7 @@ final class _AuthSessionGateState extends State<AuthSessionGate> {
     if (_error case final error?) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
         home: Scaffold(
           body: Center(
             child: Padding(
@@ -87,9 +89,10 @@ final class _AuthSessionGateState extends State<AuthSessionGate> {
 
     final user = _user;
     if (user == null) {
-      return const MaterialApp(
+      return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+        theme: AppTheme.light,
+        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
 

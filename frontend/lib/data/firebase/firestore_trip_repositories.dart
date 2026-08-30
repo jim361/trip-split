@@ -158,9 +158,12 @@ final class FirestoreTripRepositories implements TripRepositories {
   Stream<List<ItineraryItem>> watchItinerary(EntityId tripId) =>
       _watchCollection(
         _tripCollection(tripId, 'itinerary'),
-        (snapshot) => _itineraryItem(tripId, snapshot.id, snapshot.data()),
+        (snapshot) =>
+            itineraryItemFromFirestore(tripId, snapshot.id, snapshot.data()),
       ).map((items) {
         items.sort((left, right) {
+          final plan = left.planId.compareTo(right.planId);
+          if (plan != 0) return plan;
           final date = left.date.compareTo(right.date);
           if (date != 0) return date;
           final order = left.order.compareTo(right.order);
@@ -186,6 +189,8 @@ final class FirestoreTripRepositories implements TripRepositories {
       id: reference.id,
       tripId: tripId,
       date: draft.date,
+      planId: draft.planId,
+      category: draft.category,
       startTime: draft.startTime,
       endTime: draft.endTime,
       placeId: draft.placeId,
@@ -387,6 +392,8 @@ Map<String, Object?> _itineraryDraft(
   bool deleteNulls = false,
 }) => {
   'date': draft.date,
+  'planId': draft.planId,
+  'category': draft.category,
   if (draft.startTime != null)
     'startTime': draft.startTime
   else if (deleteNulls)
@@ -523,7 +530,7 @@ Place _place(String tripId, String id, Map<String, dynamic> data) => Place(
   updatedAt: _epoch(data['updatedAt']),
 );
 
-ItineraryItem _itineraryItem(
+ItineraryItem itineraryItemFromFirestore(
   String tripId,
   String id,
   Map<String, dynamic> data,
@@ -531,6 +538,8 @@ ItineraryItem _itineraryItem(
   id: id,
   tripId: tripId,
   date: _text(data, 'date'),
+  planId: _optionalEnum(data, 'planId', itineraryPlanIds, 'A'),
+  category: _optionalEnum(data, 'category', itineraryCategories, 'other'),
   startTime: _optionalText(data['startTime']),
   endTime: _optionalText(data['endTime']),
   placeId: _optionalText(data['placeId']),
@@ -605,6 +614,23 @@ String _text(Map<String, dynamic> data, String key) {
 }
 
 String? _optionalText(Object? value) => value is String ? value : null;
+
+String _optionalEnum(
+  Map<String, dynamic> data,
+  String key,
+  List<String> allowed,
+  String fallback,
+) {
+  if (!data.containsKey(key)) return fallback;
+  final value = _text(data, key);
+  if (allowed.contains(value)) return value;
+  throw AppError(
+    code: AppErrorCode.unknown,
+    message: 'Firestore $key 필드 값이 올바르지 않습니다.',
+    retryable: false,
+    field: key,
+  );
+}
 
 int _integer(Object? value) {
   if (value is int) return value;

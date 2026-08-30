@@ -4,6 +4,8 @@ export type LocalDate = string;
 export type KrwAmount = number;
 export type CurrencyCode = "KRW" | "JPY";
 export type AllocationMethod = "equal" | "itemized" | "custom";
+export type ItineraryPlanId = "A" | "B";
+export type ItineraryCategory = "flight" | "transport" | "meal" | "activity" | "stay" | "other";
 
 export type MoneyAllocation = {
   participantId: ParticipantId;
@@ -18,8 +20,10 @@ export type ExpensePayer = {
 export type Trip = {
   id: EntityId;
   title: string;
-  regionType: "domestic" | "international";
-  currency: CurrencyCode;
+  countryCode: string;
+  timeZone: string;
+  mapProvider: "google" | "naver";
+  defaultCurrency: CurrencyCode;
   startDate: LocalDate;
   endDate: LocalDate;
   ownerUid: string;
@@ -80,6 +84,8 @@ export type ItineraryItem = {
   id: EntityId;
   tripId: EntityId;
   date: LocalDate;
+  planId?: ItineraryPlanId;
+  category?: ItineraryCategory;
   startTime?: string;
   endTime?: string;
   placeId?: EntityId;

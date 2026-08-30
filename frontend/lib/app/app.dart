@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../data/mock/tokyo_trip_fixture.dart';
 import '../domain/repositories.dart';
+import '../features/auth/account_entry_page.dart';
 import '../features/trips/trip_home_page.dart';
 import '../services/auth_service.dart';
 import '../services/trip_share_service.dart';
+import '../shared/theme/app_theme.dart';
 import 'auth_session_gate.dart';
 import 'router.dart';
 import 'trip_shell.dart';
@@ -30,14 +33,7 @@ final class TripSplitApp extends StatelessWidget {
     child: MaterialApp(
       title: 'Trip Split',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xff176b5b),
-          brightness: Brightness.light,
-        ),
-        scaffoldBackgroundColor: const Color(0xfff6f7f3),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
       initialRoute: initialRoute,
       onGenerateInitialRoutes: (name) => [_routeFor(RouteSettings(name: name))],
       onGenerateRoute: _routeFor,
@@ -48,9 +44,22 @@ final class TripSplitApp extends StatelessWidget {
     if (settings.name == null || settings.name == '/') {
       return MaterialPageRoute<void>(
         settings: const RouteSettings(name: '/'),
+        builder: (_) => const AccountEntryPage(),
+      );
+    }
+    final uri = Uri.tryParse(settings.name ?? '');
+    if (uri?.path == '/trips') {
+      final useMockPreview = dataSourceLabel == 'mock';
+      return MaterialPageRoute<void>(
+        settings: settings,
         builder: (_) => TripHomePage(
           tripShareService: tripShareService,
           dataSourceLabel: dataSourceLabel,
+          joinFirst: uri?.queryParameters['join'] == 'true',
+          featuredTrip: useMockPreview ? tokyoTripFixture.trip : null,
+          featuredItinerary: useMockPreview
+              ? tokyoTripFixture.itinerary
+              : const [],
         ),
       );
     }

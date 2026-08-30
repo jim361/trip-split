@@ -102,8 +102,8 @@ trips/{tripId}/participants/{participantId}
 
 trips/{tripId}/places/{placeId}
 trips/{tripId}/itinerary/{itemId}
-trips/{tripId}/reservations/{reservationId}
-trips/{tripId}/checklistItems/{checklistItemId}
+trips/{tripId}/reservations/{reservationId}       # 목표 계약; 현재 미구현
+trips/{tripId}/checklistItems/{checklistItemId}   # 목표 계약; 현재 미구현
 
 trips/{tripId}/expenses/{expenseId}
   title
@@ -203,11 +203,11 @@ Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로
 
 ### Callable Function과 담당
 
-| 담당 | Callable Function | 책임 |
-| --- | --- | --- |
-| 플랫폼·통합 | `createTrip`, `createShareCode`, `joinTrip` | 여행·생성자 멤버 원자적 생성, 공유 코드 생성·검증, 참여 멤버 등록 |
-| 정산·영수증 | `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` | 지출 runtime 검증·감사 필드 기록, 이미지 검증, OCR·번역 provider 호출과 `ParsedReceipt` 정규화 |
-| 장소·일정·지도 | `searchPlaces`, `parsePlaceLink` | Google 장소 검색·URL 해석, `Place` 후보 정규화 |
+| 담당 | Callable Function | 책임 | 2026-08-30 구현 상태 |
+| --- | --- | --- | --- |
+| 플랫폼·통합 | `createTrip`, `createShareCode`, `joinTrip` | 여행·생성자 멤버 원자적 생성, 공유 코드 생성·검증, 참여 멤버 등록 | 구현·Emulator 테스트 |
+| 정산·영수증 | `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` | 지출 runtime 검증·감사 필드 기록, 이미지 검증, OCR·번역 provider 호출과 `ParsedReceipt` 정규화 | 이름·client/mock 경계만 존재; backend 미구현 |
+| 장소·일정·지도 | `searchPlaces`, `parsePlaceLink` | Google 장소 검색·URL 해석, `Place` 후보 정규화 | provider mock만 존재; backend 미구현 |
 
 플랫폼·통합 담당은 Firebase 초기화, Functions 진입점, 보안 규칙, 공통 라우트, dependency와 lockfile을 최종 확인한다. 도메인 담당은 자신의 `features`, repository, Function 모듈과 테스트를 소유한다. 공통 타입이나 Firestore 경로 변경은 `dev`에 푸시하기 전에 세 담당자가 함께 검토한다.
 
@@ -291,16 +291,16 @@ ParsedReceipt
 
 ## 10. 실시간 동기화 방식
 
-Flutter repository는 다음 Firestore snapshot을 Dart `Stream`으로 노출한다.
+Flutter repository는 현재 다음 Firestore snapshot을 Dart `Stream`으로 노출한다.
 
 - trip 기본 정보
 - members
 - participants
 - places
 - itinerary
-- reservations
-- checklistItems
 - expenses
+
+`reservations`와 `checklistItems`는 목표 Firestore 경로만 정해졌고 Dart 모델, repository와 Rules는 아직 없다. 화면별 실제 연결 상태와 전환기 React 불일치는 [`docs/firebase-api-contract.md`](../docs/firebase-api-contract.md)에서 관리한다.
 
 지출 변경 시 정산 엔진은 클라이언트에서 다음 값을 순수 함수로 재계산한다.
 
@@ -360,7 +360,7 @@ abstract interface class ReceiptParser {
 }
 ```
 
-Android의 첫 구현체는 Google place provider와 `google_maps_flutter` adapter다. NAVER는 국내 여행을 시작할 때 별도 adapter로 추가한다. 실제 경로 계산이 채택되기 전에는 `getRoute`를 repository 계약에 미리 넣지 않고 외부 Google Maps 링크만 만든다.
+Android의 첫 목표 구현체는 Google place provider와 `google_maps_flutter` adapter다. 현재는 두 경계 모두 mock이며 실제 SDK와 Callable은 아직 연결되지 않았다. NAVER는 국내 여행을 시작할 때 별도 adapter로 추가한다. 실제 경로 계산이 채택되기 전에는 `getRoute`를 repository 계약에 미리 넣지 않고 외부 Google Maps 링크만 만든다.
 
 `ReceiptImageInput`의 앱 내부 값은 `Uint8List bytes`, `mimeType`과 선택적 파일명이다. Callable wire에서는 제한된 base64 또는 승인된 임시 업로드 방식으로 변환하고 backend가 다시 bytes로 검증한다. OCR provider SDK는 Node.js backend 안에만 존재한다.
 

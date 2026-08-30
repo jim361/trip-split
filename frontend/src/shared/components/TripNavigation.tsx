@@ -54,7 +54,11 @@ export function TripNavigation({ tripId }: TripNavigationProps) {
   const { pathname } = useLocation();
 
   return (
-    <nav className="trip-navigation" aria-label="여행 주요 메뉴">
+    <nav id="trip-navigation" className="trip-navigation" aria-label="여행 주요 메뉴">
+      <Link className="trip-navigation__brand" to="/trips" aria-label="내 여행 목록으로 이동">
+        <strong>TRIP SPLIT</strong>
+        <span>TRAVEL WORKSPACE / 01</span>
+      </Link>
       <ul className="trip-navigation__list">
         {navigationItems.map((item) => {
           const Icon = item.icon;
@@ -66,6 +70,7 @@ export function TripNavigation({ tripId }: TripNavigationProps) {
               <Link
                 className={`trip-navigation__link${isActive ? " is-active" : ""}`}
                 to={`/trips/${encodeURIComponent(tripId)}/${item.key}`}
+                aria-label={item.label}
                 aria-current={isActive ? "page" : undefined}
               >
                 <Icon className="trip-navigation__icon" aria-hidden="true" />

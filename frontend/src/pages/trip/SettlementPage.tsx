@@ -32,7 +32,7 @@ export function SettlementPage() {
   );
   const activeParticipants = orderedParticipants.filter((participant) => participant.isActive);
   const inactiveParticipants = orderedParticipants.filter((participant) => !participant.isActive);
-  const currency = trip?.currency ?? "KRW";
+  const currency = trip?.defaultCurrency ?? "KRW";
   const totalsByCurrency = expenses.reduce<Map<CurrencyCode, number>>((totals, expense) => {
     totals.set(expense.currency, (totals.get(expense.currency) ?? 0) + expense.totalAmount);
     return totals;
@@ -79,7 +79,7 @@ export function SettlementPage() {
 
   return (
     <FeaturePlaceholder
-      eyebrow={trip?.regionType === "international" ? `해외여행 비용 · ${currency}` : "여행 비용"}
+      eyebrow="03 / EXPENSES"
       title="비용"
       description="예상 인원으로 시작하고, 실제 정산에서는 사람을 포함하거나 제외할 수 있어요."
       statusLabel={

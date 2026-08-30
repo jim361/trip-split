@@ -191,6 +191,16 @@ final class Place {
   final EpochMillis updatedAt;
 }
 
+const itineraryPlanIds = ['A', 'B'];
+const itineraryCategories = [
+  'flight',
+  'transport',
+  'meal',
+  'activity',
+  'stay',
+  'other',
+];
+
 final class ItineraryItem {
   const ItineraryItem({
     required this.id,
@@ -199,6 +209,8 @@ final class ItineraryItem {
     required this.title,
     required this.order,
     required this.updatedAt,
+    this.planId = 'A',
+    this.category = 'other',
     this.startTime,
     this.endTime,
     this.placeId,
@@ -209,6 +221,8 @@ final class ItineraryItem {
   final EntityId id;
   final EntityId tripId;
   final LocalDate date;
+  final String planId;
+  final String category;
   final String? startTime;
   final String? endTime;
   final EntityId? placeId;

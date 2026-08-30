@@ -393,6 +393,55 @@ describe("members based firestore rules", () => {
     );
   });
 
+  it("legacy 일정은 허용하고 A/B안 및 일정 유형 enum을 검증한다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const baseItem = {
+      date: "2026-07-01",
+      title: "일정 계획",
+      order: 0,
+      updatedBy: memberUid,
+      updatedAt: serverTimestamp(),
+    };
+    const legacyRef = doc(memberDb, "trips", tripId, "itinerary", "legacy-plan");
+    await assertSucceeds(setDoc(legacyRef, baseItem));
+    await assertSucceeds(
+      updateDoc(legacyRef, { title: "기존 일정 수정", updatedAt: serverTimestamp() }),
+    );
+
+    for (const planId of ["A", "B"]) {
+      for (const category of ["flight", "transport", "meal", "activity", "stay", "other"]) {
+        await assertSucceeds(
+          setDoc(doc(memberDb, "trips", tripId, "itinerary", `${planId}-${category}`), {
+            ...baseItem,
+            planId,
+            category,
+          }),
+        );
+      }
+    }
+    for (const fields of [
+      { planId: "C" },
+      { planId: null },
+      { category: "food" },
+      { category: null },
+    ]) {
+      await assertFails(
+        setDoc(doc(memberDb, "trips", tripId, "itinerary", "invalid-plan"), {
+          ...baseItem,
+          ...fields,
+        }),
+      );
+      await assertFails(updateDoc(legacyRef, { ...fields, updatedAt: serverTimestamp() }));
+    }
+    await assertSucceeds(
+      updateDoc(legacyRef, { planId: "B", category: "activity", updatedAt: serverTimestamp() }),
+    );
+    expect((await getDoc(legacyRef)).data()).toMatchObject({
+      planId: "B",
+      category: "activity",
+    });
+  });
+
   it("정산 validator 서버 경계 전에는 클라이언트 지출 쓰기를 거부한다", async () => {
     const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
     const expenseRef = doc(memberDb, "trips", tripId, "expenses", "expense-1");

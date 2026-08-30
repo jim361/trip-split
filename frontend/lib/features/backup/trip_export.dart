@@ -127,6 +127,8 @@ Map<String, Object?> _placeJson(Place place) => {
 Map<String, Object?> _itineraryJson(ItineraryItem item) => {
   'id': item.id,
   'date': item.date,
+  'planId': item.planId,
+  'category': item.category,
   'startTime': item.startTime,
   'endTime': item.endTime,
   'placeId': item.placeId,
@@ -221,6 +223,8 @@ const _placeSchema = {
 const _itinerarySchema = {
   'id': _FieldKind.string,
   'date': _FieldKind.string,
+  'planId': _FieldKind.string,
+  'category': _FieldKind.string,
   'startTime': _FieldKind.nullableString,
   'endTime': _FieldKind.nullableString,
   'placeId': _FieldKind.nullableString,
@@ -296,11 +300,28 @@ Map<String, Object?> _normalizePayload(Object? value) {
     forbidden: const ['tripId', 'addedBy', 'createdAt', 'updatedAt'],
   )..sort(_byId);
   final itineraryItems = _collection(
-    root['itineraryItems'],
+    _list(root['itineraryItems'], 'itineraryItems').indexed.map((entry) {
+      final raw = _object(entry.$2, 'itineraryItems[${entry.$1}]');
+      return {
+        ...raw,
+        if (!raw.containsKey('planId')) 'planId': 'A',
+        if (!raw.containsKey('category')) 'category': 'other',
+      };
+    }).toList(),
     _itinerarySchema,
     'itineraryItems',
     forbidden: const ['tripId', 'updatedBy', 'updatedAt'],
-  )..sort(_byItineraryOrder);
+  );
+  for (final entry in itineraryItems.indexed) {
+    final item = entry.$2;
+    if (!itineraryPlanIds.contains(item['planId'])) {
+      throw _invalid('itineraryItems[${entry.$1}].planId', '일정 계획을 확인해 주세요.');
+    }
+    if (!itineraryCategories.contains(item['category'])) {
+      throw _invalid('itineraryItems[${entry.$1}].category', '일정 유형을 확인해 주세요.');
+    }
+  }
+  itineraryItems.sort(_byItineraryOrder);
   final expenses = _collection(
     root['expenses'],
     _expenseSchema,
@@ -590,6 +611,10 @@ int _byId(Map<String, Object?> left, Map<String, Object?> right) {
 }
 
 int _byItineraryOrder(Map<String, Object?> left, Map<String, Object?> right) {
+  final plan = (left['planId']! as String).compareTo(
+    right['planId']! as String,
+  );
+  if (plan != 0) return plan;
   final date = (left['date']! as String).compareTo(right['date']! as String);
   if (date != 0) return date;
   final order = (left['order']! as int).compareTo(right['order']! as int);

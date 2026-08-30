@@ -405,6 +405,8 @@ final class InMemoryTripRepositories implements TripRepositories {
       id: _id('itinerary'),
       tripId: tripId,
       date: draft.date,
+      planId: draft.planId,
+      category: draft.category,
       startTime: draft.startTime,
       endTime: draft.endTime,
       placeId: draft.placeId,
@@ -430,6 +432,8 @@ final class InMemoryTripRepositories implements TripRepositories {
       id: current.id,
       tripId: current.tripId,
       date: draft.date,
+      planId: draft.planId,
+      category: draft.category,
       startTime: draft.startTime,
       endTime: draft.endTime,
       placeId: draft.placeId,
@@ -552,6 +556,8 @@ final class InMemoryTripRepositories implements TripRepositories {
   List<ItineraryItem> _itineraryFor(EntityId tripId) =>
       _itinerary.values.where((value) => value.tripId == tripId).toList()
         ..sort((a, b) {
+          final plan = a.planId.compareTo(b.planId);
+          if (plan != 0) return plan;
           final date = a.date.compareTo(b.date);
           if (date != 0) return date;
           final order = a.order.compareTo(b.order);

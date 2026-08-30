@@ -35,9 +35,54 @@ void main() {
       'google-place-1',
     );
     expect((itinerary.single as Map<String, dynamic>)['placeId'], 'place-1');
+    expect(itinerary.single['planId'], 'A');
+    expect(itinerary.single['category'], 'other');
     expect(payer['participantId'], 'p1');
     expect((receiptItems.single as Map<String, dynamic>)['amount'], 3000);
     expect(decoded.encode(), encoded);
+  });
+
+  test('일정 계획·유형을 왕복하고 기존 백업은 A안·기타로 복원한다', () {
+    final root = _encodedFixture();
+    final item = (root['itineraryItems']! as List<dynamic>).first;
+    item['planId'] = 'B';
+    item['category'] = 'flight';
+    final restored = TripExportPayload.decode(jsonEncode(root)).toJson();
+    final itinerary = restored['itineraryItems']! as List<dynamic>;
+    expect(itinerary.single['planId'], 'B');
+    expect(itinerary.single['category'], 'flight');
+
+    item.remove('planId');
+    item.remove('category');
+    final legacy = TripExportPayload.decode(jsonEncode(root)).toJson();
+    final legacyItinerary = legacy['itineraryItems']! as List<dynamic>;
+    expect(legacyItinerary.single['planId'], 'A');
+    expect(legacyItinerary.single['category'], 'other');
+
+    item['planId'] = 'C';
+    expect(
+      () => TripExportPayload.decode(jsonEncode(root)),
+      throwsA(isA<AppError>()),
+    );
+  });
+
+  test('백업에 존재하는 잘못된 계획·유형을 기본값으로 숨기지 않는다', () {
+    for (final field in ['planId', 'category']) {
+      for (final value in [null, 1, false, 'C', '']) {
+        final root = _encodedFixture();
+        (root['itineraryItems']! as List<dynamic>).first[field] = value;
+        expect(
+          () => TripExportPayload.decode(jsonEncode(root)),
+          throwsA(
+            isA<AppError>().having(
+              (error) => error.field,
+              'field',
+              'itineraryItems[0].$field',
+            ),
+          ),
+        );
+      }
+    }
   });
 
   test('계정·공유 코드와 audit uid/timestamp를 export하지 않는다', () {

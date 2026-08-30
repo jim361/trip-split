@@ -11,6 +11,7 @@ import 'services/auth_service.dart';
 import 'services/firebase_auth_service.dart';
 import 'services/mock_auth_service.dart';
 import 'services/trip_share_service.dart';
+import 'shared/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,6 +76,7 @@ final class _StartupErrorApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     debugShowCheckedModeBanner: false,
+    theme: AppTheme.light,
     home: Scaffold(
       body: Center(
         child: Padding(

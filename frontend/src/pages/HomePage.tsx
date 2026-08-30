@@ -22,8 +22,10 @@ export function HomePage() {
         title: String(form.get("title") ?? ""),
         startDate: String(form.get("startDate") ?? ""),
         endDate: String(form.get("endDate") ?? ""),
-        regionType: "international",
-        currency: "JPY",
+        countryCode: "JP",
+        timeZone: "Asia/Tokyo",
+        mapProvider: "google",
+        defaultCurrency: "JPY",
         participantCount: Number(form.get("participantCount") ?? 1),
       });
       navigate(`/trips/${result.tripId}/itinerary`);

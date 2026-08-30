@@ -11,6 +11,8 @@ void main() {
         date: item.date,
         title: item.title,
         order: item.order,
+        planId: item.planId,
+        category: item.category,
         startTime: item.startTime,
         endTime: item.endTime,
         placeId: item.placeId,
@@ -18,6 +20,7 @@ void main() {
       );
       expect(draft.date, item.date);
       expect(draft.startTime, item.startTime);
+      expect(draft.category, item.category);
     }
 
     final normalized = normalizeItineraryOrders(
@@ -67,6 +70,35 @@ void main() {
     expect(draft.startTime, '09:05');
     expect(draft.endTime, isNull);
     expect(draft.placeId, isNull);
+    expect(draft.planId, 'A');
+    expect(draft.category, 'other');
+  });
+
+  test('A/B안 날짜별 순서를 독립적으로 정규화하고 유형을 보존한다', () {
+    final normalized = normalizeItineraryOrders([
+      _item(id: 'b2', date: '2026-11-25', order: 8, planId: 'B'),
+      _item(id: 'a1', date: '2026-11-25', order: 4, category: 'flight'),
+      _item(
+        id: 'b1',
+        date: '2026-11-25',
+        order: 2,
+        planId: 'B',
+        category: 'meal',
+      ),
+    ]);
+    expect(normalized.map((item) => item.id), ['a1', 'b1', 'b2']);
+    expect(normalized.map((item) => item.order), [0, 0, 1]);
+    expect(normalized.map((item) => item.planId), ['A', 'B', 'B']);
+    expect(normalized.map((item) => item.category), [
+      'flight',
+      'meal',
+      'other',
+    ]);
+  });
+
+  test('허용되지 않은 계획과 유형을 거부한다', () {
+    _expectInvalid(() => _draft(planId: 'C'), 'planId');
+    _expectInvalid(() => _draft(category: 'food'), 'category');
   });
 
   test('잘못된 날짜, 제목, order와 시간 형식을 거부한다', () {
@@ -98,12 +130,16 @@ ItineraryItemDraft _draft({
   String date = '2026-11-25',
   String title = '일정',
   int order = 0,
+  String planId = 'A',
+  String category = 'other',
   String? startTime,
   String? endTime,
 }) => ItineraryItemDraft(
   date: date,
   title: title,
   order: order,
+  planId: planId,
+  category: category,
   startTime: startTime,
   endTime: endTime,
 );
@@ -112,11 +148,15 @@ ItineraryItem _item({
   required String id,
   required LocalDate date,
   required int order,
+  String planId = 'A',
+  String category = 'other',
 }) => ItineraryItem(
   id: id,
   tripId: 'trip',
   date: date,
   title: id,
   order: order,
+  planId: planId,
+  category: category,
   updatedAt: 0,
 );

@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteField,
   deleteDoc,
   doc,
   getDoc,
@@ -45,6 +46,7 @@ import type {
   UpdatePlaceInput,
   UpdateTripInput,
 } from "../repositories";
+import { readItineraryPlanFields } from "../repositories/itineraryFields";
 
 type FirestoreRecord = Record<string, unknown>;
 
@@ -214,13 +216,63 @@ function receiptItemsField(data: FirestoreRecord): ReceiptItem[] {
   return value.map(parseReceiptItem);
 }
 
+export function readTripContractFields(
+  data: Record<string, unknown>,
+): Pick<Trip, "countryCode" | "timeZone" | "mapProvider" | "defaultCurrency"> {
+  const legacyRegionType = optionalStringField(data, "regionType");
+  if (
+    legacyRegionType !== undefined &&
+    legacyRegionType !== "domestic" &&
+    legacyRegionType !== "international"
+  ) {
+    throw invalidDocument("regionType");
+  }
+
+  const countryCode =
+    optionalStringField(data, "countryCode") ??
+    (legacyRegionType === "domestic"
+      ? "KR"
+      : legacyRegionType === "international"
+        ? "JP"
+        : undefined);
+  if (!countryCode || !/^[A-Z]{2}$/.test(countryCode)) {
+    throw invalidDocument("countryCode");
+  }
+
+  const legacyCurrency = optionalStringField(data, "currency");
+  if (legacyCurrency !== undefined && legacyCurrency !== "KRW" && legacyCurrency !== "JPY") {
+    throw invalidDocument("currency");
+  }
+  const defaultCurrency = optionalStringField(data, "defaultCurrency") ?? legacyCurrency;
+  if (defaultCurrency !== "KRW" && defaultCurrency !== "JPY") {
+    throw invalidDocument("defaultCurrency");
+  }
+  if (legacyCurrency !== undefined && legacyCurrency !== defaultCurrency) {
+    throw invalidDocument("currency");
+  }
+
+  const mapProvider =
+    optionalStringField(data, "mapProvider") ?? (countryCode === "KR" ? "naver" : "google");
+  if (mapProvider !== "google" && mapProvider !== "naver") {
+    throw invalidDocument("mapProvider");
+  }
+
+  const timeZone =
+    optionalStringField(data, "timeZone") ??
+    (countryCode === "KR" ? "Asia/Seoul" : countryCode === "JP" ? "Asia/Tokyo" : undefined);
+  if (!timeZone) {
+    throw invalidDocument("timeZone");
+  }
+
+  return { countryCode, timeZone, mapProvider, defaultCurrency };
+}
+
 function parseTrip(snapshot: DocumentSnapshot<DocumentData>, pendingFallback: number): Trip {
   const data = dataFrom(snapshot);
   return {
     id: snapshot.id,
     title: stringField(data, "title"),
-    regionType: literalField(data, "regionType", ["domestic", "international"] as const),
-    currency: literalField(data, "currency", ["KRW", "JPY"] as const),
+    ...readTripContractFields(data),
     startDate: stringField(data, "startDate"),
     endDate: stringField(data, "endDate"),
     ownerUid: stringField(data, "ownerUid"),
@@ -338,6 +390,7 @@ function parseItineraryItem(
     id: snapshot.id,
     tripId,
     date: stringField(data, "date"),
+    ...readItineraryPlanFields(data),
     ...(startTime === undefined ? {} : { startTime }),
     ...(endTime === undefined ? {} : { endTime }),
     ...(placeId === undefined ? {} : { placeId }),
@@ -498,6 +551,15 @@ async function runCommand<T>(work: () => Promise<T>): Promise<T> {
 
 function writeData(value: unknown): DocumentData {
   return removeUndefined(value) as DocumentData;
+}
+
+export function toFirestoreItineraryUpdateData(input: UpdateItineraryItemInput): DocumentData {
+  readItineraryPlanFields(input);
+  const data = writeData(input);
+  for (const key of ["startTime", "endTime", "placeId", "memo"] as const) {
+    if (input[key] === null) data[key] = deleteField();
+  }
+  return data;
 }
 
 export function createFirestoreTripRepositories(
@@ -815,6 +877,7 @@ export function createFirestoreTripRepositories(
       createItineraryItem(tripId, input: CreateItineraryItemInput) {
         return runCommand(async () => {
           const actorUid = requireActorUid();
+          const planFields = readItineraryPlanFields(input);
           const reference = doc(collection(db, ...firestorePaths.itinerary(tripId)));
           const localTimestamp = now();
           await setDoc(
@@ -829,6 +892,7 @@ export function createFirestoreTripRepositories(
             id: reference.id,
             tripId,
             ...input,
+            ...planFields,
             updatedBy: actorUid,
             updatedAt: localTimestamp,
           };
@@ -837,10 +901,11 @@ export function createFirestoreTripRepositories(
       updateItineraryItem(tripId, id, input: UpdateItineraryItemInput) {
         return runCommand(async () => {
           const actorUid = requireActorUid();
+          const changes = toFirestoreItineraryUpdateData(input);
           await updateDoc(
             doc(db, ...firestorePaths.itinerary(tripId), id),
             writeData({
-              ...input,
+              ...changes,
               updatedBy: actorUid,
               updatedAt: serverTimestamp(),
             }),

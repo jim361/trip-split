@@ -10,6 +10,7 @@ void main() {
 
     expect(config.emulatorHost, '10.0.2.2');
     expect(config.firebaseProjectId, 'demo-trip-split');
+    expect(config.firebaseApiKey, matches(RegExp(r'^A[\w-]{38}$')));
     expect(config.usesDemoFirebaseProject, isTrue);
   });
 

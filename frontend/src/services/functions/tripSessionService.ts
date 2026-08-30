@@ -1,7 +1,7 @@
 import { httpsCallable } from "firebase/functions";
 
 import type { AppError } from "../../shared/contracts";
-import type { CurrencyCode } from "../../shared/types";
+import type { CurrencyCode, Trip } from "../../shared/types";
 import { gangneungTripFixture } from "../../test/fixtures/gangneungTrip";
 import { TOKYO_TRIP_ID, tokyoTripFixture } from "../../test/fixtures/tokyoTrip";
 import { getFirebaseClient } from "../firebase/client";
@@ -12,9 +12,11 @@ export type CreateTripCommand = {
   title: string;
   startDate: string;
   endDate: string;
+  countryCode: string;
+  timeZone: string;
+  mapProvider: Trip["mapProvider"];
+  defaultCurrency: CurrencyCode;
   displayName?: string;
-  regionType?: "domestic" | "international";
-  currency?: CurrencyCode;
   participantCount?: number;
 };
 
@@ -26,6 +28,14 @@ export type CreateTripResult = {
 export type JoinTripResult = CreateTripResult & {
   title: string;
 };
+
+export function toFirebaseCreateTripPayload(input: CreateTripCommand) {
+  return {
+    ...input,
+    regionType: input.countryCode === "KR" ? ("domestic" as const) : ("international" as const),
+    currency: input.defaultCurrency,
+  };
+}
 
 /** [TASK-02 · 여행 생성·공유] mock과 Firebase Callable이 함께 지키는 프론트엔드 계약입니다. */
 export interface TripSessionService {
@@ -68,7 +78,10 @@ async function call<Input, Output>(name: string, input: Input): Promise<Output> 
 
 export class FirebaseTripSessionService implements TripSessionService {
   createTrip(input: CreateTripCommand) {
-    return call<CreateTripCommand, CreateTripResult>("createTrip", input);
+    return call<ReturnType<typeof toFirebaseCreateTripPayload>, CreateTripResult>(
+      "createTrip",
+      toFirebaseCreateTripPayload(input),
+    );
   }
 
   createShareCode(tripId: string) {
@@ -108,8 +121,6 @@ export class MockTripSessionService implements TripSessionService {
         title,
         startDate: input.startDate,
         endDate: input.endDate,
-        regionType: input.regionType ?? tokyoTripFixture.trip.regionType,
-        currency: input.currency ?? tokyoTripFixture.trip.currency,
       });
 
       const fixtureStartAt = parseLocalDate(tokyoTripFixture.trip.startDate, "startDate");

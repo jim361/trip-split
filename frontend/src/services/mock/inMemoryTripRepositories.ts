@@ -35,6 +35,7 @@ import type {
   UpsertUserProfileInput,
   UserProfilesRepository,
 } from "../repositories";
+import { readItineraryPlanFields } from "../repositories/itineraryFields";
 
 type MockEntityKind = "participant" | "place" | "itinerary" | "expense";
 
@@ -173,6 +174,7 @@ export class InMemoryTripRepositories implements TripRepositories {
           () =>
             this.state.itinerary
               .filter((item) => item.tripId === tripId)
+              .map((item) => ({ ...item, ...readItineraryPlanFields(item) }))
               .sort(
                 (left, right) =>
                   left.date.localeCompare(right.date) ||
@@ -492,6 +494,7 @@ export class InMemoryTripRepositories implements TripRepositories {
   ): Promise<ItineraryItem> {
     const actorUid = this.requireActorUid();
     this.requireTrip(tripId);
+    const planFields = readItineraryPlanFields(input);
     const item: ItineraryItem = {
       id: this.idFactory("itinerary"),
       tripId,
@@ -501,7 +504,7 @@ export class InMemoryTripRepositories implements TripRepositories {
     };
     this.state.itinerary.push(item);
     this.emitItinerary(tripId);
-    return clone(item);
+    return clone({ ...item, ...planFields });
   }
 
   private async updateItineraryItem(
@@ -510,12 +513,20 @@ export class InMemoryTripRepositories implements TripRepositories {
     input: UpdateItineraryItemInput,
   ): Promise<void> {
     const actorUid = this.requireActorUid();
+    readItineraryPlanFields(input);
     const item = this.state.itinerary.find((value) => value.tripId === tripId && value.id === id);
     if (item === undefined) {
       throw notFound("일정", id);
     }
 
-    Object.assign(item, clone(input), {
+    const changes = clone(input);
+    for (const key of ["startTime", "endTime", "placeId", "memo"] as const) {
+      if (changes[key] === null) {
+        delete item[key];
+        delete changes[key];
+      }
+    }
+    Object.assign(item, changes, {
       updatedBy: actorUid,
       updatedAt: this.now(),
     });
@@ -539,6 +550,7 @@ export class InMemoryTripRepositories implements TripRepositories {
     this.emit(this.itinerarySubscribers, tripId, () =>
       this.state.itinerary
         .filter((item) => item.tripId === tripId)
+        .map((item) => ({ ...item, ...readItineraryPlanFields(item) }))
         .sort(
           (left, right) =>
             left.date.localeCompare(right.date) ||

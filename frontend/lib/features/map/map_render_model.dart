@@ -1,12 +1,12 @@
 import '../../domain/models.dart';
 
 const _dateColors = [
-  '#1A73E8',
-  '#E56B6F',
-  '#2A9D8F',
-  '#F4A261',
-  '#7B61FF',
-  '#8D6E63',
+  '#1D4ED8',
+  '#171717',
+  '#6F6A52',
+  '#18794E',
+  '#A15C00',
+  '#676762',
 ];
 
 enum MapEmptyState { none, noItinerary, noMappableItems }

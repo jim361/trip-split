@@ -19,7 +19,7 @@ Android Google 지도 위에 타임테이블 기반 번호 핀과 날짜별 직�
 - [ ] `google_maps_flutter`를 감싼 Android `MapAdapter` 구현
 - [ ] Android package 제한 Maps 키와 backend Places 키의 환경 경계 분리
 - [ ] 지도 Widget과 controller lifecycle 구현
-- [ ] 독립 지도 페이지 대신 일정 화면 상단의 compact 지도와 같은 화면 내 확대 상태 구현
+- [x] 독립 지도 페이지 대신 일정 화면의 선택 날짜 주 지도와 같은 화면 내 확대 상태 구현
 - [ ] 지도 초기 중심과 줌 설정 구현
 - [ ] 장소 좌표 기반 마커 표시 구현
 - [ ] 일정 순서 번호가 들어간 커스텀 마커 구현

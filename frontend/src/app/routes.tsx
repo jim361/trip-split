@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 
+import { AccountEntryPage } from "../pages/AccountEntryPage";
 import { HomePage } from "../pages/HomePage";
 import { NotFoundPage } from "../pages/NotFoundPage";
 import { ItineraryPage } from "../pages/trip/ItineraryPage";
@@ -13,7 +14,7 @@ import { TripProvider } from "./providers";
 function TripRoute() {
   const { tripId } = useParams<{ tripId: string }>();
 
-  if (!tripId) return <Navigate to="/" replace />;
+  if (!tripId) return <Navigate to="/trips" replace />;
 
   return (
     <TripProvider key={tripId} tripId={tripId}>
@@ -29,7 +30,8 @@ function TripRoute() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<AccountEntryPage />} />
+      <Route path="/trips" element={<HomePage />} />
       <Route path="/trips/:tripId" element={<TripRoute />}>
         <Route index element={<Navigate to="itinerary" replace />} />
         <Route path="itinerary" element={<ItineraryPage />} />

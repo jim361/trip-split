@@ -1,5 +1,6 @@
 import type { TripRepositorySeed } from "../../services/repositories";
 import type {
+  Expense,
   ItineraryItem,
   Participant,
   Place,
@@ -35,7 +36,44 @@ export const tokyoFixtureIds = {
     asakusa: "tokyo-itinerary-asakusa",
     skytree: "tokyo-itinerary-skytree",
   },
+  expenses: {
+    dinner: "tokyo-expense-dinner",
+  },
   shareCode: "TKY26JP",
+} as const;
+
+/** React의 기존 stable ID와 Flutter fixture의 대응 관계입니다. */
+export const tokyoFlutterIdMap = {
+  ownerUid: {
+    react: tokyoFixtureIds.ownerUid,
+    flutter: "tokyo-owner",
+  },
+  participants: {
+    companion2: {
+      react: tokyoFixtureIds.participants.companion2,
+      flutter: "tokyo-participant-friend-1",
+    },
+    companion3: {
+      react: tokyoFixtureIds.participants.companion3,
+      flutter: "tokyo-participant-friend-2",
+    },
+  },
+  places: {
+    sensoji: {
+      react: tokyoFixtureIds.places.asakusa,
+      flutter: "tokyo-place-sensoji",
+    },
+  },
+  itinerary: {
+    arrival: {
+      react: tokyoFixtureIds.itinerary.flight,
+      flutter: "tokyo-itinerary-arrival",
+    },
+    transfer: {
+      react: tokyoFixtureIds.itinerary.ueno,
+      flutter: "tokyo-itinerary-transfer",
+    },
+  },
 } as const;
 
 const createdAt = Date.UTC(2026, 7, 27, 0, 0, 0);
@@ -44,8 +82,10 @@ const updatedAt = Date.UTC(2026, 7, 27, 9, 0, 0);
 const trip: Trip = {
   id: TOKYO_TRIP_ID,
   title: "2026년 11월 도쿄 여행",
-  regionType: "international",
-  currency: "JPY",
+  countryCode: "JP",
+  timeZone: "Asia/Tokyo",
+  mapProvider: "google",
+  defaultCurrency: "JPY",
   startDate: "2026-11-25",
   endDate: "2026-12-01",
   ownerUid: tokyoFixtureIds.ownerUid,
@@ -65,7 +105,7 @@ const members: TripMember[] = [
   },
 ];
 
-const participantColors = ["#1A73E8", "#E56B6F", "#2A9D8F"] as const;
+const participantColors = ["#1D4ED8", "#6F6A52", "#676762"] as const;
 const participants: Participant[] = [
   {
     id: tokyoFixtureIds.participants.me,
@@ -111,6 +151,7 @@ const places: Place[] = [
     lng: 140.3929,
     provider: "google",
     source: "googleSearch",
+    providerPlaceId: "mock-google-narita",
     sourceUrl: googleMapsSearchUrl("Narita International Airport"),
     addedBy: tokyoFixtureIds.ownerUid,
     createdAt,
@@ -125,6 +166,7 @@ const places: Place[] = [
     lng: 139.7773,
     provider: "google",
     source: "googleMapsUrl",
+    providerPlaceId: "mock-google-ueno",
     sourceUrl: googleMapsSearchUrl("Ueno Station Tokyo"),
     addedBy: tokyoFixtureIds.ownerUid,
     createdAt,
@@ -153,6 +195,7 @@ const places: Place[] = [
     lng: 139.7967,
     provider: "google",
     source: "googleSearch",
+    providerPlaceId: "mock-google-sensoji",
     sourceUrl: googleMapsSearchUrl("Sensoji Tokyo"),
     addedBy: tokyoFixtureIds.ownerUid,
     createdAt,
@@ -217,11 +260,11 @@ const itinerary: ItineraryItem[] = [
     id: tokyoFixtureIds.itinerary.flight,
     tripId: TOKYO_TRIP_ID,
     date: "2026-11-25",
-    startTime: "11:20",
-    endTime: "13:40",
+    startTime: "13:40",
+    endTime: "14:30",
     placeId: tokyoFixtureIds.places.narita,
-    title: "ICN → NRT",
-    memo: "도착 후 입국 심사와 교통카드 준비",
+    title: "나리타 공항 도착",
+    category: "flight",
     order: 0,
     updatedBy: tokyoFixtureIds.ownerUid,
     updatedAt,
@@ -231,8 +274,10 @@ const itinerary: ItineraryItem[] = [
     tripId: TOKYO_TRIP_ID,
     date: "2026-11-25",
     startTime: "15:10",
+    endTime: "16:00",
     placeId: tokyoFixtureIds.places.ueno,
     title: "스카이라이너로 우에노 이동",
+    category: "transport",
     order: 1,
     updatedBy: tokyoFixtureIds.ownerUid,
     updatedAt,
@@ -242,8 +287,10 @@ const itinerary: ItineraryItem[] = [
     tripId: TOKYO_TRIP_ID,
     date: "2026-11-25",
     startTime: "17:00",
+    endTime: "17:30",
     placeId: tokyoFixtureIds.places.hotel,
     title: "숙소 체크인",
+    category: "stay",
     order: 2,
     updatedBy: tokyoFixtureIds.ownerUid,
     updatedAt,
@@ -256,6 +303,7 @@ const itinerary: ItineraryItem[] = [
     placeId: tokyoFixtureIds.places.marugame,
     title: "우에노 저녁",
     order: 3,
+    category: "meal",
     updatedBy: tokyoFixtureIds.ownerUid,
     updatedAt,
   },
@@ -264,8 +312,10 @@ const itinerary: ItineraryItem[] = [
     tripId: TOKYO_TRIP_ID,
     date: "2026-11-26",
     startTime: "09:30",
+    endTime: "11:30",
     placeId: tokyoFixtureIds.places.asakusa,
     title: "아사쿠사 산책",
+    category: "activity",
     order: 0,
     updatedBy: tokyoFixtureIds.ownerUid,
     updatedAt,
@@ -277,8 +327,42 @@ const itinerary: ItineraryItem[] = [
     startTime: "13:30",
     placeId: tokyoFixtureIds.places.skytree,
     title: "도쿄 스카이트리",
+    category: "activity",
     order: 1,
     updatedBy: tokyoFixtureIds.ownerUid,
+    updatedAt,
+  },
+];
+
+const expenses: Expense[] = [
+  {
+    id: tokyoFixtureIds.expenses.dinner,
+    tripId: TOKYO_TRIP_ID,
+    title: "우에노 저녁",
+    category: "food",
+    expenseDate: "2026-11-25",
+    totalAmount: 4_500,
+    currency: "JPY",
+    payer: {
+      participantId: tokyoFixtureIds.participants.me,
+      amount: 4_500,
+    },
+    consumers: [
+      tokyoFixtureIds.participants.me,
+      tokyoFixtureIds.participants.companion2,
+      tokyoFixtureIds.participants.companion3,
+    ],
+    allocationMethod: "equal",
+    allocatedAmounts: [
+      { participantId: tokyoFixtureIds.participants.me, amount: 1_500 },
+      { participantId: tokyoFixtureIds.participants.companion2, amount: 1_500 },
+      { participantId: tokyoFixtureIds.participants.companion3, amount: 1_500 },
+    ],
+    receiptItems: [],
+    source: "manual",
+    createdBy: tokyoFixtureIds.ownerUid,
+    updatedBy: tokyoFixtureIds.ownerUid,
+    createdAt,
     updatedAt,
   },
 ];
@@ -300,7 +384,7 @@ export const tokyoTripFixture = {
   participants,
   places,
   itinerary,
-  expenses: [],
+  expenses,
   shareCodes,
 };
 
@@ -311,6 +395,6 @@ export const tokyoTripRepositorySeed: TripRepositorySeed = {
   participants,
   places,
   itinerary,
-  expenses: [],
+  expenses,
   shareCodes,
 };

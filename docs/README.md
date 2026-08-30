@@ -2,7 +2,7 @@
 
 > **[회의 00 · 기능 범위 회의 안내]** 합의 전 기능 후보와 결정 상태를 관리합니다.
 
-**논의 홈** · [Flutter Android 전환](flutter-android-migration.md) · [프로젝트 범위 사전 점검](project-scope-review.md) · [일정·지도](itinerary-map.md) · [정산·영수증](settlement-receipts.md)
+**논의 홈** · [Flutter Android 전환](flutter-android-migration.md) · [Firebase/API 계약](firebase-api-contract.md) · [프로젝트 범위 사전 점검](project-scope-review.md) · [일정·지도](itinerary-map.md) · [정산·영수증](settlement-receipts.md)
 
 이 문서는 팀이 첫 배포 범위를 회의에서 정하기 위한 인덱스다. 기능 구현 진행률을 관리하는 문서가 아니며, 회의에서 합의된 내용이 `MarkDown`의 제품·기술 계약에 반영되기 전까지는 기존 계약 문서가 기준이다.
 
@@ -69,6 +69,7 @@ MVP로 채택한 ID:
 ## 문서 역할
 
 - `docs/project-scope-review.md`: 현재 구현, 첫 사용 가능 버전, 추가 후보와 회의 우선 질문
+- `docs/firebase-api-contract.md`: 화면별 Firebase/API 계약, 모바일·웹 불일치와 실제 연결 상태
 - `docs/flutter-android-migration.md`: 확정된 플랫폼 전환과 단계별 실행 순서
 - `docs/README.md`, `docs/itinerary-map.md`, `docs/settlement-receipts.md`: 회의용 기능 후보와 결정 상태
 - `MarkDown/product.md`, `MarkDown/requirements.md`, `MarkDown/tech.md`, `MarkDown/structure.md`: 합의가 끝난 제품·기술 계약

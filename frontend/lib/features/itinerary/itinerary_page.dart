@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:trip_split/domain/models.dart';
 
+import '../../shared/theme/app_theme.dart';
 import '../map/map_render_model.dart';
+import 'itinerary_plan_controls.dart';
+import 'trip_timetable.dart' show tripDatesFor;
 
 // [TASK-04 / TASK-05 · 일정·지도] 날짜별 일정과 지도 mock의 화면 경계입니다.
-class ItineraryPage extends StatelessWidget {
+class ItineraryPage extends StatefulWidget {
   const ItineraryPage({
     super.key,
     required this.trip,
     required this.places,
     required this.itinerary,
+    required this.selectedDate,
     required this.mapExpanded,
     required this.onToggleMap,
   });
@@ -17,77 +21,455 @@ class ItineraryPage extends StatelessWidget {
   final Trip trip;
   final List<Place> places;
   final List<ItineraryItem> itinerary;
+  final String? selectedDate;
   final bool mapExpanded;
-  final VoidCallback onToggleMap;
+  final ValueChanged<String> onToggleMap;
+
+  @override
+  State<ItineraryPage> createState() => _ItineraryPageState();
+}
+
+class _ItineraryPageState extends State<ItineraryPage> {
+  String? _selectedDate;
+  String _selectedPlan = 'A';
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.selectedDate;
+  }
+
+  @override
+  void didUpdateWidget(covariant ItineraryPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedDate != oldWidget.selectedDate &&
+        widget.selectedDate != null) {
+      _selectedDate = widget.selectedDate;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final placeById = {for (final place in places) place.id: place};
-    final sortedItinerary = [...itinerary]
-      ..sort((left, right) {
-        final byDate = left.date.compareTo(right.date);
-        if (byDate != 0) return byDate;
-        final byOrder = left.order.compareTo(right.order);
-        return byOrder != 0 ? byOrder : left.id.compareTo(right.id);
-      });
-    final dates = sortedItinerary.map((item) => item.date).toSet().toList();
+    final dates = tripDatesFor(widget.trip, widget.itinerary);
+    final selectedDate = dates.contains(_selectedDate)
+        ? _selectedDate!
+        : dates.isEmpty
+        ? ''
+        : dates.first;
+    _selectedDate = selectedDate;
+    final selectedItinerary =
+        widget.itinerary
+            .where(
+              (item) =>
+                  item.planId == _selectedPlan && item.date == selectedDate,
+            )
+            .toList()
+          ..sort((left, right) {
+            final byOrder = left.order.compareTo(right.order);
+            return byOrder != 0 ? byOrder : left.id.compareTo(right.id);
+          });
     final mapModel = deriveMapRenderModel(
-      places: places,
-      itinerary: sortedItinerary,
+      places: widget.places,
+      itinerary: selectedItinerary,
     );
+    final selectedDay = dates.indexOf(selectedDate) + 1;
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-      children: [
-        Text(trip.title, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 4),
-        Text(
-          '${trip.startDate} — ${trip.endDate}',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 16),
-        _MockMap(
-          tripTitle: trip.title,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final heading = _ItineraryHeading(
+          selectedDay: selectedDay,
+          selectedDate: selectedDate,
+        );
+        final dayTabs = _DayTabs(
+          dates: dates,
+          selectedDate: selectedDate,
+          onSelected: (date) => setState(() => _selectedDate = date),
+        );
+        final planSelector = ItineraryPlanSelector(
+          selected: _selectedPlan,
+          onSelected: (plan) => setState(() => _selectedPlan = plan),
+        );
+        final map = _MockMap(
+          tripTitle: widget.trip.title,
           model: mapModel,
-          expanded: mapExpanded,
-          onToggle: onToggleMap,
-        ),
-        const SizedBox(height: 24),
-        Text('일정', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        if (dates.isEmpty)
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Text('아직 등록된 일정이 없습니다.'),
-            ),
-          )
-        else
-          for (final date in dates) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 6),
-              child: Text(date, style: Theme.of(context).textTheme.titleMedium),
-            ),
-            for (final item in sortedItinerary.where(
-              (item) => item.date == date,
-            ))
-              Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    child: Text(item.startTime?.split(':').first ?? '·'),
-                  ),
-                  title: Text(item.title),
-                  subtitle: Text(
-                    [
-                      item.startTime,
-                      placeById[item.placeId]?.name,
-                      item.memo,
-                    ].whereType<String>().join(' · '),
+          expanded: widget.mapExpanded,
+          onToggle: () => widget.onToggleMap(selectedDate),
+        );
+        final schedule = _DaySchedule(
+          date: selectedDate,
+          itinerary: selectedItinerary,
+        );
+
+        if (MediaQuery.sizeOf(context).width >= AppTheme.expandedBreakpoint) {
+          return Row(
+            key: const Key('itinerary-expanded-layout'),
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+                  children: [
+                    heading,
+                    const SizedBox(height: 16),
+                    planSelector,
+                    const SizedBox(height: 12),
+                    dayTabs,
+                    const SizedBox(height: 16),
+                    map,
+                  ],
+                ),
+              ),
+              VerticalDivider(
+                width: AppTheme.sectionStroke,
+                thickness: AppTheme.sectionStroke,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+              SizedBox(
+                width: 400,
+                child: ColoredBox(
+                  color: Theme.of(context).colorScheme.surface,
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 48),
+                    children: [
+                      Text(
+                        'DAY ${selectedDay.toString().padLeft(2, '0')} / ROUTE',
+                        style: Theme.of(context).textTheme.labelLarge,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _dateLongLabel(selectedDate),
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 20),
+                      schedule,
+                    ],
                   ),
                 ),
               ),
+            ],
+          );
+        }
+
+        return ListView(
+          key: const Key('itinerary-compact-layout'),
+          padding: const EdgeInsets.only(bottom: 96),
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
+                ),
+              ),
+              child: Column(
+                children: [
+                  heading,
+                  const SizedBox(height: 16),
+                  planSelector,
+                  const SizedBox(height: 12),
+                  dayTabs,
+                ],
+              ),
+            ),
+            map,
+            const _RoutePanelHeader(),
+            schedule,
           ],
+        );
+      },
+    );
+  }
+}
+
+class _ItineraryHeading extends StatelessWidget {
+  const _ItineraryHeading({
+    required this.selectedDay,
+    required this.selectedDate,
+  });
+
+  final int selectedDay;
+  final String selectedDate;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Expanded(
+        child: Text(
+          '${selectedDay.toString().padLeft(2, '0')} / ITINERARY MAP',
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+      ),
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(color: Theme.of(context).colorScheme.onSurface),
+        ),
+        child: Text(
+          _dateBadgeLabel(selectedDate),
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+      ),
+    ],
+  );
+}
+
+class _DayTabs extends StatelessWidget {
+  const _DayTabs({
+    required this.dates,
+    required this.selectedDate,
+    required this.onSelected,
+  });
+
+  final List<String> dates;
+  final String selectedDate;
+  final ValueChanged<String> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final frameSide = BorderSide(color: colors.onSurface);
+    return SizedBox(
+      height: AppTheme.minimumTouchTarget,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final visibleDays = dates.length.clamp(1, 3);
+          final dayWidth = constraints.maxWidth / visibleDays;
+          return ListView.builder(
+            key: const Key('itinerary-day-tabs'),
+            scrollDirection: Axis.horizontal,
+            itemExtent: dayWidth,
+            itemCount: dates.length,
+            itemBuilder: (context, index) {
+              final date = dates[index];
+              final selected = date == selectedDate;
+              return Material(
+                color: selected ? colors.onSurface : colors.surface,
+                child: InkWell(
+                  key: ValueKey('itinerary-day-$date'),
+                  onTap: () => onSelected(date),
+                  child: Semantics(
+                    selected: selected,
+                    button: true,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          left: index == 0 ? frameSide : BorderSide.none,
+                          top: frameSide,
+                          right: frameSide,
+                          bottom: frameSide,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${index + 1}일차',
+                          style: Theme.of(context).textTheme.labelLarge
+                              ?.copyWith(
+                                color: selected
+                                    ? colors.surface
+                                    : colors.onSurface,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DaySchedule extends StatelessWidget {
+  const _DaySchedule({required this.date, required this.itinerary});
+
+  final String date;
+  final List<ItineraryItem> itinerary;
+
+  @override
+  Widget build(BuildContext context) {
+    if (itinerary.isEmpty) {
+      return Container(
+        key: ValueKey('itinerary-day-empty-$date'),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border.all(
+            color: Theme.of(context).colorScheme.onSurface,
+            width: AppTheme.frameStroke,
+          ),
+        ),
+        child: const Text('이 날짜에는 아직 일정이 없습니다.'),
+      );
+    }
+
+    return Column(
+      children: [
+        for (final entry in itinerary.indexed)
+          _DayScheduleRow(
+            item: entry.$2,
+            number: entry.$1 + 1,
+            showTopBorder: entry.$1 == 0,
+          ),
       ],
+    );
+  }
+}
+
+class _DayScheduleRow extends StatelessWidget {
+  const _DayScheduleRow({
+    required this.item,
+    required this.number,
+    required this.showTopBorder,
+  });
+
+  final ItineraryItem item;
+  final int number;
+  final bool showTopBorder;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final (categoryLabel, categoryColor) = itineraryCategoryStyle(
+      item.category,
+    );
+    return Container(
+      key: ValueKey('itinerary-row-${item.id}'),
+      constraints: const BoxConstraints(minHeight: 56),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border(
+          top: showTopBorder
+              ? BorderSide(color: colors.outlineVariant)
+              : BorderSide.none,
+          bottom: BorderSide(color: colors.outlineVariant),
+        ),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 64,
+            child: Text(
+              item.startTime ?? '--:--',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+          Container(
+            width: 24,
+            height: 24,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: categoryColor,
+              border: Border.all(color: colors.onSurface),
+            ),
+            child: Text(
+              number.toString().padLeft(2, '0'),
+              style: Theme.of(context).textTheme.labelSmall,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                Text(
+                  categoryLabel,
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoutePanelHeader extends StatelessWidget {
+  const _RoutePanelHeader();
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      border: Border(
+        bottom: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+    ),
+    child: Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text('오늘의 동선', style: Theme.of(context).textTheme.labelLarge),
+        const _RouteAction(icon: Icons.bookmark_border, label: '장소 보관함'),
+        const _RouteAction(
+          icon: Icons.map_outlined,
+          label: 'Google Maps로 열기',
+          primary: true,
+        ),
+      ],
+    ),
+  );
+}
+
+class _RouteAction extends StatelessWidget {
+  const _RouteAction({
+    required this.icon,
+    required this.label,
+    this.primary = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool primary;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final foreground = primary ? colors.onPrimary : colors.onSurface;
+    return Semantics(
+      button: true,
+      label: label,
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: primary ? colors.primary : colors.surface,
+          border: Border.all(
+            color: primary ? colors.primary : colors.onSurface,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: foreground),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall
+                    ?.copyWith(color: foreground),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -114,61 +496,110 @@ class _MockMap extends StatelessWidget {
       container: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        height: expanded ? 420 : 176,
+        height: expanded ? 420 : 280,
         decoration: BoxDecoration(
           color: colors.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(20),
+          border: Border(
+            bottom: BorderSide(
+              color: colors.onSurface,
+              width: AppTheme.sectionStroke,
+            ),
+          ),
         ),
         clipBehavior: Clip.antiAlias,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _MapGridPainter(colors.outlineVariant),
-              ),
-            ),
-            for (final entry in model.pins.take(expanded ? 8 : 4).indexed)
-              Positioned(
-                left: 28 + (entry.$1 % 2) * 128,
-                top: 34 + (entry.$1 ~/ 2) * (expanded ? 140 : 58),
-                child: Tooltip(
-                  message: entry.$2.placeName,
-                  child: CircleAvatar(
-                    key: ValueKey('map-pin-${entry.$2.itineraryItemId}'),
-                    radius: 16,
-                    backgroundColor: _colorFromHex(entry.$2.colorHex),
-                    foregroundColor: colors.onPrimary,
-                    child: Text('${entry.$2.number}'),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final pins = model.pins.take(expanded ? 8 : 6).toList();
+            final points = [
+              for (var index = 0; index < pins.length; index++)
+                _mapPoint(index, constraints.biggest),
+            ];
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _MapGridPainter(
+                      roadColor: colors.outlineVariant,
+                      routeColor: colors.onSurface,
+                      routePoints: points,
+                    ),
                   ),
                 ),
-              ),
-            Center(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colors.surface.withValues(alpha: 0.9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
+                for (final entry in pins.indexed)
+                  Positioned(
+                    left: points[entry.$1].dx - 15,
+                    top: points[entry.$1].dy - 15,
+                    child: Tooltip(
+                      message: entry.$2.placeName,
+                      child: Container(
+                        key: ValueKey('map-pin-${entry.$2.itineraryItemId}'),
+                        width: 30,
+                        height: 30,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: colors.onSurface,
+                            width: AppTheme.frameStroke,
+                          ),
+                        ),
+                        child: Text(
+                          entry.$2.number.toString().padLeft(2, '0'),
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Text(_mapStatusText(model)),
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: SizedBox.square(
+                    dimension: AppTheme.minimumTouchTarget,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        border: Border.all(color: colors.onSurface),
+                      ),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        tooltip: expanded ? '지도 접기' : '지도 확대',
+                        onPressed: onToggle,
+                        icon: Icon(
+                          expanded
+                              ? Icons.close_fullscreen
+                              : Icons.open_in_full,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: FilledButton.tonalIcon(
-                onPressed: onToggle,
-                icon: Icon(
-                  expanded ? Icons.close_fullscreen : Icons.open_in_full,
+                Positioned(
+                  left: 8,
+                  bottom: 8,
+                  child: Container(
+                    constraints: BoxConstraints(
+                      maxWidth: constraints.maxWidth - 16,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.surface.withValues(alpha: 0.94),
+                      border: Border.all(color: colors.onSurface),
+                    ),
+                    child: Text(
+                      _mapStatusText(model),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
                 ),
-                label: Text(expanded ? '지도 접기' : '지도 확대'),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -183,28 +614,95 @@ String _mapStatusText(MapRenderModel model) => switch (model.emptyState) {
         '${model.missingLocations.isEmpty ? '' : ' · 지도 제외 ${model.missingLocations.length}건'}',
 };
 
-Color _colorFromHex(String value) =>
-    Color(int.parse('FF${value.replaceFirst('#', '')}', radix: 16));
+String _dateBadgeLabel(String value) {
+  final date = DateTime.tryParse(value);
+  if (date == null) return value;
+  const weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+  return '${date.month}.${date.day.toString().padLeft(2, '0')} '
+      '${weekdays[date.weekday - 1]}';
+}
+
+String _dateLongLabel(String value) {
+  final date = DateTime.tryParse(value);
+  if (date == null) return value;
+  const weekdays = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '일요일'];
+  return '${date.month}월 ${date.day}일 ${weekdays[date.weekday - 1]}';
+}
+
+Offset _mapPoint(int index, Size size) {
+  const positions = [
+    (0.20, 0.22),
+    (0.40, 0.58),
+    (0.62, 0.48),
+    (0.80, 0.76),
+    (0.72, 0.24),
+    (0.28, 0.80),
+    (0.50, 0.32),
+    (0.88, 0.48),
+  ];
+  final point = positions[index % positions.length];
+  return Offset(size.width * point.$1, size.height * point.$2);
+}
 
 class _MapGridPainter extends CustomPainter {
-  const _MapGridPainter(this.color);
+  const _MapGridPainter({
+    required this.roadColor,
+    required this.routeColor,
+    required this.routePoints,
+  });
 
-  final Color color;
+  final Color roadColor;
+  final Color routeColor;
+  final List<Offset> routePoints;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2;
-    for (var x = 24.0; x < size.width; x += 72) {
-      canvas.drawLine(Offset(x, 0), Offset(x + 48, size.height), paint);
+    canvas.drawColor(const Color(0xFFE8E9E5), BlendMode.src);
+    final road = Paint()
+      ..color = roadColor.withValues(alpha: 0.58)
+      ..strokeWidth = 1;
+    for (var x = -size.height; x < size.width; x += 48) {
+      canvas.drawLine(Offset(x, 0), Offset(x + size.height, size.height), road);
     }
-    for (var y = 28.0; y < size.height; y += 64) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y + 24), paint);
+    for (var y = 22.0; y < size.height; y += 40) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y + 34), road);
+    }
+    final arterial = Paint()
+      ..color = roadColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: Offset(size.width * 0.52, size.height * 0.48),
+        width: size.width * 0.54,
+        height: size.height * 0.68,
+      ),
+      arterial,
+    );
+
+    final route = Paint()
+      ..color = routeColor
+      ..strokeWidth = 2;
+    for (var index = 1; index < routePoints.length; index++) {
+      final start = routePoints[index - 1];
+      final end = routePoints[index];
+      final delta = end - start;
+      final distance = delta.distance;
+      if (distance == 0) continue;
+      final direction = delta / distance;
+      for (var offset = 0.0; offset < distance; offset += 10) {
+        canvas.drawLine(
+          start + direction * offset,
+          start + direction * (offset + 5).clamp(0, distance),
+          route,
+        );
+      }
     }
   }
 
   @override
   bool shouldRepaint(covariant _MapGridPainter oldDelegate) =>
-      oldDelegate.color != color;
+      oldDelegate.roadColor != roadColor ||
+      oldDelegate.routeColor != routeColor ||
+      oldDelegate.routePoints != routePoints;
 }

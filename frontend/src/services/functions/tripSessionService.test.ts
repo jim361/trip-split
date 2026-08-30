@@ -3,9 +3,30 @@ import { describe, expect, it } from "vitest";
 import { mockTripRepositorySeed } from "../../test/fixtures/mockTripSeed";
 import { TOKYO_TRIP_ID } from "../../test/fixtures/tokyoTrip";
 import { createInMemoryTripRepositories } from "../mock";
-import { MockTripSessionService } from "./tripSessionService";
+import { MockTripSessionService, toFirebaseCreateTripPayload } from "./tripSessionService";
 
 describe("MockTripSessionService", () => {
+  it("adds legacy aliases only at the Firebase write boundary", () => {
+    expect(
+      toFirebaseCreateTripPayload({
+        title: "도쿄 여행",
+        startDate: "2026-11-25",
+        endDate: "2026-12-01",
+        countryCode: "JP",
+        timeZone: "Asia/Tokyo",
+        mapProvider: "google",
+        defaultCurrency: "JPY",
+      }),
+    ).toMatchObject({
+      countryCode: "JP",
+      timeZone: "Asia/Tokyo",
+      mapProvider: "google",
+      defaultCurrency: "JPY",
+      regionType: "international",
+      currency: "JPY",
+    });
+  });
+
   it("종료일이 시작일보다 빠른 여행을 거부한다", async () => {
     const service = new MockTripSessionService();
 
@@ -14,6 +35,10 @@ describe("MockTripSessionService", () => {
         title: "잘못된 여행",
         startDate: "2026-12-02",
         endDate: "2026-12-01",
+        countryCode: "JP",
+        timeZone: "Asia/Tokyo",
+        mapProvider: "google",
+        defaultCurrency: "JPY",
       }),
     ).rejects.toMatchObject({ code: "invalid-argument", field: "endDate" });
   });
@@ -28,8 +53,10 @@ describe("MockTripSessionService", () => {
       title: "새해 도쿄 여행",
       startDate: "2027-01-03",
       endDate: "2027-01-03",
-      regionType: "international",
-      currency: "JPY",
+      countryCode: "JP",
+      timeZone: "Asia/Tokyo",
+      mapProvider: "google",
+      defaultCurrency: "JPY",
       participantCount: 2,
     });
 
@@ -42,6 +69,10 @@ describe("MockTripSessionService", () => {
 
     expect(trip).toMatchObject({
       title: "새해 도쿄 여행",
+      countryCode: "JP",
+      timeZone: "Asia/Tokyo",
+      mapProvider: "google",
+      defaultCurrency: "JPY",
       startDate: "2027-01-03",
       endDate: "2027-01-03",
     });

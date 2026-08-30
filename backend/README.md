@@ -4,6 +4,8 @@
 
 Firebase Callable Functions, Firestore 보안 규칙과 Emulator 통합 테스트를 소유하는 Node.js 22 프로젝트입니다.
 
+화면별 구현 여부, 모바일·웹 wire 차이와 실제 연결 조건은 [`docs/firebase-api-contract.md`](../docs/firebase-api-contract.md)를 기준으로 확인합니다. 현재 runtime export는 `createTrip`, `createShareCode`, `joinTrip` 세 개이며 장소·지출·OCR Callable은 아직 구현되지 않았습니다.
+
 ## 실행
 
 저장소 루트에서 한 번 `npm install`한 뒤 다음 명령을 사용합니다.

@@ -53,7 +53,7 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 담당: 장소 정규화, 일정·준비 편집, 지도 표시와 Google API 어댑터
 
 - Google 장소 검색, Google Maps URL 해석, 직접 입력 흐름
-- 장소 보관함과 날짜별 일정·세로 타임라인 UI
+- 장소 보관함, 작은 전체 일정 미리보기와 일차별 지도·순서 목록 UI
 - 앱 내부 `Place` 정규화 모델과 장소 repository 제안
 - 일정 순서 기반 커스텀 번호 핀과 날짜별 색상 적용
 - 같은 날짜 장소를 잇는 직선 동선 표시
@@ -141,7 +141,9 @@ trip-split/
 
 | 메뉴 | 라우트 | 기본 역할 |
 | --- | --- | --- |
-| 일정·지도 | `/trips/:tripId/itinerary` | 상단 지도 동선과 날짜별 일정·장소 배치 |
+| 계정 시작 | `/` | Google 연결, 계정 없이 시작, 공유 코드 참여 |
+| 내 여행 | `/trips` | 여행 선택과 작은 전체 일정 요약 |
+| 일정·지도 | `/trips/:tripId/itinerary` | A/B안 일차별 지도·요약과 React 날짜×시간 grid·하단 일정 form |
 | 준비 | `/trips/:tripId/preparation` | 예약과 공동·개인 체크리스트 |
 | 비용 | `/trips/:tripId/settlement` | 참여자, 개인 소비, 최종 정산과 지출 관리 |
 
@@ -151,6 +153,7 @@ trip-split/
 - 지도 compact/expanded와 선택 날짜는 Android router state로 복원하고 Web/App Link를 제공할 때 query와 매핑한다.
 - 장소 보관함은 독립 라우트나 네 번째 메뉴로 만들지 않고 일정·지도 통합 페이지의 패널 또는 바텀시트로 제공한다.
 - 여행 제목, 참여자, 공유, 익명/계정 연결과 동기화 상태는 `TripShell`이 공통으로 제공한다.
+- React/Vite의 medium·expanded `TripShell`은 `일정·지도 / 준비 / 비용` 좌측 rail을 248px와 64px 사이에서 접고 펼친다. compact에서는 같은 메뉴를 하단 navigation으로 제공한다.
 - 각 feature는 router의 `tripId`와 `TripSession` 상태를 받고 Firebase Auth·Firestore 객체를 직접 받지 않는다.
 - Android Firestore 캐시의 데이터와 보류 중 write를 표시한다. Google 장소·OCR 호출은 온라인 전용이며 실패를 저장 완료로 표시하지 않는다.
 
@@ -158,7 +161,7 @@ trip-split/
 
 ### `features/itinerary`
 
-날짜별 타임테이블과 장소 배치를 담당한다. 지도나 정산 계산을 직접 하지 않고, `placeId`, `date`, `order`를 포함한 일정 데이터를 제공한다. 같은 날짜의 `order`는 중복되지 않는 0부터 시작하는 정수로 정규화한다.
+작은 전체 일정 요약과 선택 날짜의 순서형 목록·장소 배치를 담당한다. React/Vite 화면은 같은 repository 위에 날짜×시간 grid와 하단 입력 form을 사용한다. A/B안은 `planId`로 분리하고 grid·지도·목록은 선택 안만 받는다. `category`는 고정된 6개 유형 label·색상에 대응한다. 지도나 정산 계산을 직접 하지 않고, `placeId`, `date`, `order`를 포함한 일정 데이터를 제공한다. 같은 안·날짜의 `order`는 중복되지 않는 0부터 시작하는 정수로 정규화한다.
 
 ### `features/map`
 
@@ -275,6 +278,8 @@ type ItineraryItem = {
   id: EntityId;
   tripId: EntityId;
   date: LocalDate;
+  planId?: "A" | "B";
+  category?: "flight" | "transport" | "meal" | "activity" | "stay" | "other";
   startTime?: string;
   endTime?: string;
   placeId?: EntityId;

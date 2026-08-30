@@ -244,9 +244,12 @@ service cloud.firestore {
           return data.keys().hasAll(['date', 'title', 'order', 'updatedBy', 'updatedAt'])
             && data.keys().hasOnly([
               'date', 'startTime', 'endTime', 'placeId', 'title', 'memo', 'order',
-              'updatedBy', 'updatedAt'
+              'updatedBy', 'updatedAt', 'planId', 'category'
             ])
             && validDate(data.date)
+            && (!('planId' in data) || data.planId in ['A', 'B'])
+            && (!('category' in data)
+              || data.category in ['flight', 'transport', 'meal', 'activity', 'stay', 'other'])
             && optionalTime(data, 'startTime')
             && optionalTime(data, 'endTime')
             && (!('placeId' in data)
