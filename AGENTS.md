@@ -1,0 +1,24 @@
+# Trip Split 작업 규칙
+
+- `MarkDown/`은 제품·요구사항·기술 계약의 기준입니다. 구현·테스트와 다르면 최신 결정을 확인하고 충돌을 보고합니다.
+- `frontend/`는 Flutter/Dart Android 앱과 화면·mock·FlutterFire repository·지도 adapter를 담당합니다.
+- `frontend/src/`·`public/`의 React/Vite 코드는 GitHub Pages 목업을 위해 보존하며 `VITE_DATA_SOURCE=mock`을 유지합니다.
+- `backend/`는 Firebase Functions, Firestore 규칙·Emulator 테스트와 비공개 외부 API 호출을 담당합니다.
+- `docs/`는 회의용 기능 범위와 구현 인계 문서입니다.
+- 공통 타입, Firestore 경로 또는 Callable 계약을 바꾸면 frontend와 backend 영향을 함께 확인합니다.
+- 화면·Widget·controller에서 Firebase, Google Maps 또는 OCR SDK를 직접 호출하지 않습니다.
+- 기능은 mock repository로 먼저 완성하고 외부 연결은 service/repository 경계에 둡니다.
+- `TripMember.uid`와 `Participant.id`는 다르며 연결할 때만 `Participant.linkedUid`를 사용합니다.
+- Callable 이름 `createTrip`, `createShareCode`, `joinTrip`, `searchPlaces`, `parsePlaceLink`, `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt`와 기존 Firestore ID를 임의로 바꾸지 않습니다.
+- `TASK-01`~`TASK-09`와 대응 task 파일, `BASE-*`, `IT-*`, `PREP-*`, `ST-*`, `OCR-*` ID는 재번호·재사용·변경·삭제하지 않습니다.
+- 기존 파일이나 다른 작업자의 변경을 삭제하거나 되돌리지 않습니다.
+- 장기 운영 브랜치는 `dev`와 `main`이며 작업 전과 push 직전에 `origin/dev`를 동기화하고, 새 변경이 있으면 충돌 해결 뒤 담당 검증을 다시 실행합니다.
+- 검증 후 `dev`에 직접 반영하며 별도 기능 브랜치와 `dev` 대상 Pull Request를 만들지 않습니다. `main`은 검증된 `dev`에서 릴리스 Pull Request로만 반영합니다.
+- commit, push, Pull Request 생성·갱신·merge는 각각 사용자의 명시적 승인을 받은 경우에만 수행합니다.
+- force push, `reset --hard`, 강제 clean, 승인 없는 배포·secret 등록·유료 API 호출을 하지 않습니다.
+- 사용자 설명·진행 업데이트·결과 보고는 한국어로 작성합니다.
+- 필수 런타임은 Node.js 22와 Java 21입니다.
+- 작업 중 `npm run verify:fast`, dev 반영 또는 Pull Request 전 `npm run verify:full`을 실행합니다.
+- Flutter 변경은 루트의 `npm run verify:flutter:fast`, 통합 전 `npm run verify:flutter:full`로 검증합니다.
+- 테스트·fixture·검증 조건을 약화하거나 삭제해 통과시키지 않습니다.
+- Android가 첫 실행·출시 대상이며 Flutter Web·iOS와 실제 Firebase 연결은 후속 승인 범위입니다.

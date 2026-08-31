@@ -1,5 +1,7 @@
 # Trip Split Decision History
 
+> **[이력 01 · 제품 결정 이력]** 변경 이유를 기록하며 현재 계약을 대체하지 않습니다.
+
 이 문서는 Trip Split을 기획하면서 상의하고 발전시킨 주요 결정 흐름을 남긴 기록이다.
 
 ## 1. 시작점: 강릉 여행 HTML
@@ -190,15 +192,17 @@ OCR은 있으면 좋은 기능으로 시작했지만, MVP에 포함하기로 했
 
 ## 12. 디자인 방향
 
-getdesign.md 기준으로 여행 컨셉에 맞는 디자인을 검토했고, Airbnb 스타일을 1순위로 선택했다.
+초기 탐색에서는 getdesign.md 기준으로 Airbnb 스타일을 1순위로 선택했다.
 
-결정:
+초기 결정(폐기):
 
 - 기본 디자인 참고: Airbnb
 - 일정 편집 참고: Cal.com
 - 장소/비용 목록 참고: Airtable
 - 밝고 따뜻한 여행 도구 느낌
 - 과한 랜딩 페이지가 아니라 실제 앱 화면 우선
+
+2026-08-30에 구현된 모바일 화면을 기준안으로 확정하면서 위 시각 결정은 **Structural Modernism**으로 대체했다. 현재 결정은 제한된 cobalt·ink·콘크리트 미색, 노출된 구조선, 직각 panel, 8dp grid와 앱·웹 공통 반응형 token을 사용한다. 상세 수용 기준은 `MarkDown/design.md`와 Flutter `AppTheme`을 따른다.
 
 ## 13. 역할 분담
 
@@ -317,3 +321,58 @@ OCR 결정:
 - 지도는 같은 화면에서 확대·축소하며, `?map=expanded` query로 확대 상태를 공유할 수 있다.
 - 기존 `/trips/:tripId/map`은 삭제하지 않고 확대된 일정 화면으로 redirect해 이전 링크를 보존한다.
 - 지도 입력 계약과 `MapAdapter` 경계는 바꾸지 않으며 실제 NAVER SDK는 장소·일정·지도 담당이 연결한다.
+
+## 20. 2026-08-27 - 해외여행 우선 탐색 목업과 인원 기반 정산
+
+- 다음 여행인 도쿄를 기준으로 해외여행 우선 흐름을 탐색하며 지도 경험은 Google Maps 스타일 목업으로 전환한다.
+- 여행 생성 시 여행 이름, 기간, 예상 인원을 입력하고 예상 인원 수만큼 `Participant`를 만든다.
+- 여행 접근 권한인 `TripMember`와 정산 대상인 `Participant`는 분리하며, 정산 인원 제외는 삭제 대신 `isActive: false`로 기록한다.
+- 여행 하단 내비게이션은 `일정·지도`, `준비`, `비용` 세 영역으로 단순화하고 영수증/OCR 화면은 비용 화면의 하위 진입점으로 유지한다.
+- 장소 계약에는 Google provider/source를 추가하되 기존 NAVER 계약은 제거하지 않는다.
+- 해외여행 비용 표시를 위해 통화 계약은 KRW와 JPY를 지원한다.
+- 고정 ID `tokyo-2026-11` fixture를 추가해 생성, 일정·지도, 준비, 비용 흐름을 Firebase 없이 검토할 수 있게 한다.
+- 이번 단계에서는 실제 Google Maps SDK, Places API, Routes API를 연결하지 않으며 지도 카드와 외부 Google Maps 링크만 제공한다.
+- 정산 계산 엔진과 OCR 구현은 기존 담당 경계를 유지한다.
+
+## 21. 2026-08-28 - Flutter Android 우선 전환
+
+React 웹 목업으로 정보 구조를 확인한 뒤 실제 여행 중 카메라, 파일 공유, 오프라인 캐시와 향후 위치·활동 데이터를 다룰 가능성을 다시 검토했다. 첫 제품을 Android 앱으로 만들고 Web은 같은 Flutter 코드베이스의 후속 보조 채널로 두기로 했다.
+
+결정:
+
+- 사용자 앱은 Flutter stable·Dart 기반으로 전환하고 첫 출시 대상은 Android로 한정한다.
+- 기존 Node.js 22·TypeScript Cloud Functions, Firestore 경로, Callable 이름, members 기반 Rules와 Emulator 테스트는 유지한다.
+- Android 기준은 `minSdk 24`와 현재 Play 요구사항에 맞춘 `targetSdk 36`을 scaffold에서 검증한다.
+- 2026년 11월 도쿄 여행을 첫 실사용 시나리오로 삼아 Google Maps와 JPY를 우선 구현한다.
+- 하단 내비게이션은 `일정·지도 / 준비 / 비용`이며 영수증은 비용의 하위 흐름이다.
+- 기존 React·GitHub Pages 목업은 Flutter 포팅을 위한 UX 참고 자료이며 장기적으로 두 클라이언트를 병행하지 않는다.
+- Flutter Web은 Android MVP가 안정된 뒤 계획·검토·공유용 보조 타깃으로 검증한다. 지도, 카메라, 로그인과 캐시의 플랫폼 차이를 별도 수용 기준으로 둔다.
+- 수동 일정·공유·정산을 먼저 완성하고 영수증 OCR·일본어 원문·한국어 번역 검토는 P1로 연결한다.
+- OCR provider는 클라이언트에 고정하지 않고 `parseReceipt` 뒤에서 Google Document AI Expense Parser, 일반 OCR·Translation과 다른 후보를 fixture로 비교한다.
+- 걸음 수, 이동 거리와 백그라운드 여행 경로는 권한·배터리·개인정보·Google Play 정책 검토가 필요한 P2로 두며 첫 Android MVP에 권한도 추가하지 않는다.
+- 국내 NAVER 지도 adapter, iOS와 실제 경로 계산도 P2다.
+
+Flutter Web은 공식 지원되므로 후속 구현에 기술적 장애는 없다. 다만 Android의 백그라운드 위치와 Health Connect를 Web에서 동일하게 제공할 수 없고 Google Maps Web도 일부 capability가 다르므로 “한 번 구현하면 모든 플랫폼이 동일하다”는 전제는 두지 않는다.
+
+이 결정은 2번의 국내 우선, 4번의 웹/PWA 우선, 14번의 현재 MVP 정의와 17번의 PWA 앱 셸 중 현재 방향을 대체한다. 과거 결정은 당시 맥락을 보존하기 위해 수정하지 않는다.
+
+## 22. 2026-08-28 - `dev` 직접 통합으로 Git 운영 단순화
+
+- 장기 운영 브랜치는 `dev`와 `main`만 사용한다.
+- 모든 개발 변경은 최신 `dev`에서 작은 커밋으로 진행하고 로컬 검증 뒤 `dev`에 직접 푸시한다.
+- 별도 기능 브랜치와 `dev` 대상 Pull Request는 만들지 않는다.
+- `dev` push에서 GitHub Actions와 팀 공유용 Pages를 실행한다.
+- `main`에는 직접 커밋하지 않고 검증된 `dev`의 릴리스 Pull Request로만 반영한다.
+- 여러 작업자는 같은 작업 폴더를 동시에 편집하지 않고 변경 전후에 `dev`를 동기화한다.
+
+이 결정은 18번의 기능 브랜치와 `dev` 대상 Pull Request 운영 부분을 대체한다.
+
+## 23. 2026-08-29 - 전체 일정 요약 축소와 일차별 지도 우선
+
+- 내 여행 선택 화면의 에타형 시간표는 여행 전 기간을 빠르게 훑는 약 256dp 높이의 요약으로 축소한다.
+- 일정·지도 화면에서는 큰 전체 시간표를 제거하고 `일차 tab → 선택 날짜 지도 → 순서형 일정 row`를 기본 흐름으로 사용한다.
+- 지도와 목록은 선택 날짜의 같은 `ItineraryItem`과 `order`를 사용해 핀·동선·순서 번호가 함께 바뀐다.
+- 지도 확대 route는 `map`과 `day` query를 함께 보존한다.
+- compact와 expanded는 별도 기능 화면을 만들지 않고 같은 Widget을 지도와 선택 날짜 panel로 재배치한다.
+
+이 결정은 19번의 일정·지도 통합 원칙은 유지하되, 축소 지도를 보조로 두었던 화면 위계를 선택 날짜 지도 중심으로 조정한다.

@@ -1,5 +1,11 @@
 # Trip Split Stitch Prompts
 
+> **[참고 · 전환 전 UI 프롬프트]** 이 문서는 React/PWA 목업을 만들 때 사용한 시각 참고 자료입니다. 2026-08-28 이후 구현 계약은 Flutter Android이며, 아래 Web·PC·NAVER 표현을 현재 기술 요구사항으로 사용하지 않습니다.
+
+> 아래 Airbnb·coral 시각 token도 모두 폐기된 탐색 기록이다. 현재 Structural Modernism·cobalt 계약은 `MarkDown/design.md`와 Flutter `AppTheme`만 따른다.
+
+> **[참고 02 · Stitch 목업 프롬프트]** UI 목업 생성용 보조 자료입니다.
+
 This document contains ready-to-use prompts for generating frontend mockups in Stitch.
 
 > **2026-07-14 product update:** The itinerary and map are now one primary destination. Use exactly three primary destinations — `일정·지도`, `정산`, `영수증`. Put a compact expandable map above the itinerary. Treat any later instruction for four destinations or a standalone map screen as archived guidance.

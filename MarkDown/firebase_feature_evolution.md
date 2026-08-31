@@ -1,13 +1,27 @@
 # Firebase Feature Evolution
 
-## 0. 현재 반영된 방향
+> **[참고 01 · Firebase 전환 검토]** 과거 방향과 현재 후보를 비교한 참고 자료이며 현재 계약을 대체하지 않습니다.
+
+## 0. 2026-08-28 Flutter Android 전환
+
+이 문서의 아래 본문은 Firebase 도입 과정에서 검토한 React/PWA·국내/NAVER·CLOVA 중심 과거안도 포함한다. 현재 구현 계약은 `product.md`, `requirements.md`, `tech.md`, `structure.md`와 Task 문서이며 다음 전환 결정이 우선한다.
+
+- 사용자 앱은 Flutter stable·Dart 기반 Android 앱이다. Flutter Web과 iOS는 후속이다.
+- 2026년 11월 도쿄 여행, Google Maps와 JPY를 먼저 검증한다. 국내 NAVER는 후속 adapter다.
+- 기존 Node.js 22·TypeScript Functions, Firestore 경로·Rules와 Emulator 테스트는 유지한다.
+- FlutterFire Auth·Firestore·Functions를 repository/service 경계에서 사용하고 Widget이 SDK를 직접 호출하지 않는다.
+- Android Firestore cache와 pending write 상태를 표시하며 장소 검색·OCR은 온라인 기능이다.
+- OCR은 provider-neutral `parseReceipt` 뒤에서 일본어 원문·한국어 번역을 반환하고 사용자 확정 전 원장을 바꾸지 않는다.
+- Flutter Web은 일정·준비·비용 검토용 보조 채널이며 백그라운드 위치와 Health Connect는 제공하지 않는다.
+
+## 0-1. Firebase에서 유지되는 방향
 
 이 문서의 논의 결과는 `product.md`, `requirements.md`, `tech.md`, `structure.md`, `task/` 문서에 반영한다.
 
 현재 채택한 방향은 다음과 같다.
 
 - Firebase BaaS를 백엔드로 사용한다.
-- 제품은 국내 여행과 KRW를 기준으로 한 모바일 우선 웹/PWA MVP이며, 지도는 네이버 지도 API를 사용한다.
+- 첫 제품은 도쿄·Google·JPY를 기준으로 한 Flutter Android MVP다.
 - 앱은 사용자-facing 로그인 장벽 없이 시작한다.
 - 내부적으로 Firebase Anonymous Auth로 `uid`를 발급한다.
 - Google 로그인은 선택 연결로 제공해 내 여행 목록과 사용자 프로필을 저장한다.

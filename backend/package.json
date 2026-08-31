@@ -1,0 +1,29 @@
+{
+  "name": "trip-split-backend",
+  "private": true,
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --config vitest.config.ts",
+    "test:emulator:run": "vitest run --config vitest.emulator.config.ts",
+    "preemulators": "npm run build",
+    "emulators": "firebase --config ../firebase.json emulators:start --project demo-trip-split --only auth,firestore,functions"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^7.2.5"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
+    "@types/node": "^22.0.0",
+    "firebase": "^12.16.0",
+    "firebase-tools": "^15.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.10"
+  }
+}

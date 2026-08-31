@@ -1,0 +1,283 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isTripMember(tripId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/trips/$(tripId)/members/$(request.auth.uid));
+    }
+
+    function optionalString(data, field) {
+      return !(field in data) || data[field] is string;
+    }
+
+    function optionalNumber(data, field) {
+      return !(field in data) || data[field] is number;
+    }
+
+    function optionalTime(data, field) {
+      return !(field in data)
+        || (data[field] is string
+          && data[field].matches('^([01][0-9]|2[0-3]):[0-5][0-9]$'));
+    }
+
+    function validDate(value) {
+      return value is string && value.matches('^\\d{4}-\\d{2}-\\d{2}$');
+    }
+
+    function currentAuthProvider() {
+      return request.auth.token.firebase.sign_in_provider == 'google.com'
+        ? 'google'
+        : 'anonymous';
+    }
+
+    function validUser(data) {
+      return data.keys().hasAll(['displayName', 'authProvider', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'displayName', 'email', 'photoURL', 'authProvider', 'createdAt', 'updatedAt'
+        ])
+        && data.displayName is string
+        && data.displayName.size() > 0
+        && data.displayName.size() <= 80
+        && optionalString(data, 'email')
+        && optionalString(data, 'photoURL')
+        && data.authProvider == currentAuthProvider()
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn()
+        && request.auth.uid == userId
+        && validUser(request.resource.data)
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time;
+      allow update: if signedIn()
+        && request.auth.uid == userId
+        && validUser(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['displayName', 'email', 'photoURL', 'authProvider', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    match /shareCodes/{code} {
+      allow read, write: if false;
+    }
+
+    match /trips/{tripId} {
+      function validTrip(data) {
+        return data.keys().hasAll([
+          'title', 'countryCode', 'timeZone', 'mapProvider', 'defaultCurrency',
+          'startDate', 'endDate', 'ownerUid', 'shareCode', 'createdAt', 'updatedAt'
+        ])
+          && data.keys().hasOnly([
+            'title', 'countryCode', 'timeZone', 'mapProvider', 'defaultCurrency',
+            'startDate', 'endDate', 'ownerUid', 'shareCode', 'createdAt', 'updatedAt',
+            'regionType', 'currency'
+          ])
+          && data.title is string
+          && data.title.size() > 0
+          && data.title.size() <= 80
+          && data.countryCode is string
+          && data.countryCode.matches('^[A-Z]{2}$')
+          && data.timeZone is string
+          && data.timeZone.size() > 0
+          && data.timeZone.size() <= 80
+          && data.mapProvider in ['google', 'naver']
+          && data.defaultCurrency is string
+          && data.defaultCurrency in ['KRW', 'JPY']
+          && (!('regionType' in data) || data.regionType in ['domestic', 'international'])
+          && (!('currency' in data) || data.currency == data.defaultCurrency)
+          && validDate(data.startDate)
+          && validDate(data.endDate)
+          && data.ownerUid is string
+          && data.shareCode is string
+          && data.createdAt is timestamp
+          && data.updatedAt is timestamp;
+      }
+
+      allow read: if isTripMember(tripId);
+      allow create, delete: if false;
+      allow update: if isTripMember(tripId)
+        && validTrip(request.resource.data)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.countryCode == resource.data.countryCode
+        && request.resource.data.timeZone == resource.data.timeZone
+        && request.resource.data.mapProvider == resource.data.mapProvider
+        && request.resource.data.defaultCurrency == resource.data.defaultCurrency
+        && request.resource.data.shareCode == resource.data.shareCode
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['title', 'startDate', 'endDate', 'updatedAt']);
+
+      match /members/{memberId} {
+        function validMember(data) {
+          return data.keys().hasAll(['displayName', 'role', 'joinedAt', 'lastActiveAt'])
+            && data.keys().hasOnly([
+              'displayName', 'photoURL', 'role', 'joinedAt', 'lastActiveAt'
+            ])
+            && data.displayName is string
+            && data.displayName.size() > 0
+            && data.displayName.size() <= 80
+            && optionalString(data, 'photoURL')
+            && data.role == 'editor'
+            && data.joinedAt is timestamp
+            && data.lastActiveAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create, delete: if false;
+        allow update: if isTripMember(tripId)
+          && request.auth.uid == memberId
+          && validMember(request.resource.data)
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.joinedAt == resource.data.joinedAt
+          && request.resource.data.lastActiveAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['displayName', 'photoURL', 'lastActiveAt']);
+      }
+
+      match /participants/{participantId} {
+        function validParticipant(data) {
+          return data.keys().hasAll(['name', 'isActive', 'createdAt', 'updatedAt'])
+            && data.keys().hasOnly([
+              'name', 'color', 'linkedUid', 'isActive', 'createdAt', 'updatedAt'
+            ])
+            && data.name is string
+            && data.name.size() > 0
+            && data.name.size() <= 80
+            && optionalString(data, 'color')
+            && optionalString(data, 'linkedUid')
+            && data.isActive is bool
+            && data.createdAt is timestamp
+            && data.updatedAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create: if isTripMember(tripId)
+          && validParticipant(request.resource.data)
+          && !('linkedUid' in request.resource.data)
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if isTripMember(tripId)
+          && validParticipant(request.resource.data)
+          && request.resource.data.get('linkedUid', null)
+            == resource.data.get('linkedUid', null)
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'color', 'isActive', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /places/{placeId} {
+        function validPlace(data) {
+          return data.keys().hasAll([
+            'name', 'provider', 'source', 'addedBy', 'createdAt', 'updatedAt'
+          ])
+            && data.keys().hasOnly([
+              'name', 'address', 'lat', 'lng', 'provider', 'source', 'providerPlaceId',
+              'sourceUrl', 'addedBy', 'memo', 'createdAt', 'updatedAt'
+            ])
+            && data.name is string
+            && data.name.size() > 0
+            && data.name.size() <= 160
+            && optionalString(data, 'address')
+            && optionalNumber(data, 'lat')
+            && optionalNumber(data, 'lng')
+            && (('lat' in data) == ('lng' in data))
+            && (!('lat' in data) || (
+              data.lat >= -90 && data.lat <= 90
+              && data.lng >= -180 && data.lng <= 180
+            ))
+            && data.provider in ['google', 'naver', 'manual']
+            && data.source in [
+              'googleSearch', 'googleMapsUrl', 'naverSearch', 'naverLink', 'manual'
+            ]
+            && (
+              (data.provider == 'google'
+                && data.source in ['googleSearch', 'googleMapsUrl'])
+              || (data.provider == 'naver'
+                && data.source in ['naverSearch', 'naverLink'])
+              || (data.provider == 'manual' && data.source == 'manual')
+            )
+            && (data.provider == 'manual'
+              || data.provider == get(
+                /databases/$(database)/documents/trips/$(tripId)
+              ).data.mapProvider)
+            && optionalString(data, 'providerPlaceId')
+            && optionalString(data, 'sourceUrl')
+            && data.addedBy is string
+            && optionalString(data, 'memo')
+            && data.createdAt is timestamp
+            && data.updatedAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create: if isTripMember(tripId)
+          && validPlace(request.resource.data)
+          && request.resource.data.addedBy == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.updatedAt == request.time;
+        allow update: if isTripMember(tripId)
+          && validPlace(request.resource.data)
+          && request.resource.data.addedBy == resource.data.addedBy
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.updatedAt == request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+            'name', 'address', 'lat', 'lng', 'provider', 'source', 'providerPlaceId',
+            'sourceUrl', 'memo', 'updatedAt'
+          ]);
+        allow delete: if isTripMember(tripId);
+      }
+
+      match /itinerary/{itemId} {
+        function validItinerary(data) {
+          return data.keys().hasAll(['date', 'title', 'order', 'updatedBy', 'updatedAt'])
+            && data.keys().hasOnly([
+              'date', 'startTime', 'endTime', 'placeId', 'title', 'memo', 'order',
+              'updatedBy', 'updatedAt', 'planId', 'category'
+            ])
+            && validDate(data.date)
+            && (!('planId' in data) || data.planId in ['A', 'B'])
+            && (!('category' in data)
+              || data.category in ['flight', 'transport', 'meal', 'activity', 'stay', 'other'])
+            && optionalTime(data, 'startTime')
+            && optionalTime(data, 'endTime')
+            && (!('placeId' in data)
+              || (data.placeId is string && data.placeId.size() > 0))
+            && data.title is string
+            && data.title.size() > 0
+            && data.title.size() <= 160
+            && optionalString(data, 'memo')
+            && data.order is int
+            && data.order >= 0
+            && data.updatedBy is string
+            && data.updatedAt is timestamp;
+        }
+
+        allow read: if isTripMember(tripId);
+        allow create, update: if isTripMember(tripId)
+          && validItinerary(request.resource.data)
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if isTripMember(tripId);
+      }
+
+      match /expenses/{expenseId} {
+        allow read: if isTripMember(tripId);
+        // TASK-06 runtime validator와 서버 저장 경계가 완성될 때까지
+        // 중첩 배분 데이터를 클라이언트가 직접 쓰지 못하게 한다.
+        allow create, update, delete: if false;
+      }
+    }
+  }
+}
