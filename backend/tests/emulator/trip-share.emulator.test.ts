@@ -393,6 +393,78 @@ describe("members based firestore rules", () => {
     );
   });
 
+  it("여행 수정과 일정 생성·수정에서 실제 날짜와 여행 기간을 검증한다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const tripRef = doc(memberDb, "trips", tripId);
+    const itemRef = doc(memberDb, "trips", tripId, "itinerary", "calendar-date");
+    const baseItem = {
+      date: "2026-07-01",
+      title: "날짜 검증",
+      order: 0,
+      updatedBy: memberUid,
+      updatedAt: serverTimestamp(),
+    };
+
+    for (const date of ["2000-02-29", "2028-02-29", "2026-04-30", "2100-02-28"]) {
+      await assertSucceeds(
+        updateDoc(tripRef, {
+          startDate: date,
+          endDate: date,
+          updatedAt: serverTimestamp(),
+        }),
+      );
+      await assertSucceeds(setDoc(itemRef, { ...baseItem, date }));
+    }
+    for (const date of [
+      "2026-02-29",
+      "2100-02-29",
+      "2026-04-31",
+      "2026-00-10",
+      "2026-13-01",
+      "2026-01-00",
+      "2026-01-32",
+      "1999-12-31",
+      "2101-01-01",
+      "2026-7-01",
+      "not-a-date",
+      20260701,
+      null,
+    ]) {
+      await assertFails(
+        updateDoc(tripRef, {
+          startDate: date,
+          endDate: date,
+          updatedAt: serverTimestamp(),
+        }),
+      );
+      await assertFails(
+        setDoc(doc(memberDb, "trips", tripId, "itinerary", "bad-date"), {
+          ...baseItem,
+          date,
+        }),
+      );
+      await assertFails(updateDoc(itemRef, { date, updatedAt: serverTimestamp() }));
+    }
+    await assertFails(
+      updateDoc(tripRef, {
+        startDate: "2026-07-02",
+        endDate: "2026-07-01",
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertSucceeds(
+      updateDoc(tripRef, {
+        startDate: "2026-07-01",
+        endDate: "2026-07-02",
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(updateDoc(tripRef, { endDate: "2026-06-30", updatedAt: serverTimestamp() }));
+    await assertFails(
+      updateDoc(tripRef, { startDate: "2026-07-03", updatedAt: serverTimestamp() }),
+    );
+  });
+
   it("legacy 일정은 허용하고 A/B안 및 일정 유형 enum을 검증한다", async () => {
     const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
     const baseItem = {

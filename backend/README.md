@@ -31,6 +31,8 @@ Emulator 시작 명령은 Functions를 먼저 빌드하고 과금되지 않는 `
 
 ## 작업 경계
 
+일정·지도 백엔드는 `src/places`와 장소·일정·준비 데이터 검증을, 정산·영수증 백엔드는 `src/settlement`·`src/ocr`를 맡습니다. Flutter 전체와 공통 초기화·인증·여행 공유·통합은 사용자 담당입니다. [개발 시작 안내](../docs/development-kickoff.md)에 첫 작업과 완료 기준이 있습니다. 아직 없는 도메인 폴더는 실제 구현할 때 추가합니다.
+
 - `src`: `createTrip`, `createShareCode`, `joinTrip`과 향후 Google 장소·지출·provider-neutral OCR·번역 Callable
 - `src/shared/callable.ts`: 공통 Auth·여행 멤버 검사와 `HttpsError`/`AppError` wire
 - `firestore.rules`, `firestore.indexes.json`: 멤버 기반 Firestore 접근 계약
@@ -39,13 +41,14 @@ Emulator 시작 명령은 Functions를 먼저 빌드하고 과금되지 않는 `
 
 ## 기능별 코드 찾기
 
-| 기능                      | 주요 진입점                                           |
-| ------------------------- | ----------------------------------------------------- |
-| `TASK-01 · Firebase 기반` | `src/index.ts`, `src/shared`, `firestore.rules`       |
-| `TASK-02 · 여행·공유`     | `src/share/trips.ts`, `src/share/shareCode.ts`        |
-| `TASK-03 · Google 장소`   | `src/places` (예정); 검색·Maps URL을 `Place`로 정규화 |
-| `TASK-07 · OCR·번역`      | `src/ocr` (예정); `parseReceipt`와 provider adapter   |
-| 공통 검증                 | `tests/emulator`, `src/**/*.test.ts`                  |
+| 기능                      | 주요 진입점                                             |
+| ------------------------- | ------------------------------------------------------- |
+| `TASK-01 · Firebase 기반` | `src/index.ts`, `src/shared`, `firestore.rules`         |
+| `TASK-02 · 여행·공유`     | `src/share/trips.ts`, `src/share/shareCode.ts`          |
+| `TASK-03 · Google 장소`   | `src/places` (예정); 검색·Maps URL을 `Place`로 정규화   |
+| `TASK-06 · 정산 저장`     | `src/settlement` (예정); validator와 지출 CRUD Callable |
+| `TASK-07 · OCR·번역`      | `src/ocr` (예정); `parseReceipt`와 provider adapter     |
+| 공통 검증                 | `tests/emulator`, `src/**/*.test.ts`                    |
 
 외부 API secret은 클라이언트나 Git에 저장하지 않고 Functions secret/environment에서만 사용합니다.
 

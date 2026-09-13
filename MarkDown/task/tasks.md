@@ -10,14 +10,16 @@
 
 | 역할 | 주 작업 경로 | 주 소유 영역 | 관련 Task |
 | --- | --- | --- | --- |
-| 플랫폼·통합 담당 | 루트, `frontend/lib/app`, `frontend/lib/data`, `backend/src/share` | Flutter/Firebase 기반, 인증, 여행 생성·공유·멤버, 앱 셸, 보안 규칙 통합, 백업, Android QA·통합 | `TASK-01`, `TASK-02`, `TASK-08`, `TASK-09` |
-| 정산·영수증 담당 | `frontend/lib/features/settlement`, `frontend/lib/features/receipts`, `backend/src/settlement`, `backend/src/ocr` | `Participant`, `Expense`, `ReceiptItem`, 순수 Dart 정산 엔진, 개인 소비 화면, 지출 Callable, `parseReceipt`, OCR·번역 검토 | `TASK-06`, `TASK-07` |
-| 장소·일정·지도 담당 | `frontend/lib/features/places`, `itinerary`, `map`, `preparation`, `backend/src/places` | `Place` 정규화, Google 장소·URL·직접 입력, 일정·준비 편집, 지도 adapter | `TASK-03`, `TASK-04`, `TASK-05` |
+| 플랫폼·통합 담당 (사용자: 프론트·공통) | 루트, 전체 `frontend/`, `backend/src/share`, `backend/src/shared` | 모든 Flutter 화면·Dart 정산 계산·mock/FlutterFire repository·지도 adapter, 인증·여행 공유, 공통 계약, 백업·CI·Android QA | `TASK-01`~`TASK-09`의 프론트·공통·통합 |
+| 정산·영수증 백엔드 담당 | `backend/src/settlement`, `backend/src/ocr`, 관련 backend 테스트 | 지출 runtime validator·저장 Callable, 참여자 참조·배분 검증, OCR·번역 서버 adapter | `TASK-06`, `TASK-07`의 서버 |
+| 일정·지도 백엔드 담당 | `backend/src/places`, 관련 backend 테스트, 일정·장소·준비 Rules/index 변경안 | 장소 검색·링크 해석·정규화, 일정 저장 규칙·재정렬 검증, 예약·체크리스트 저장 계약 | `TASK-03`, `TASK-04`, `TASK-05`의 서버·데이터 |
 
 - 플랫폼·통합 담당이 제품 계약과 통합의 최종 책임자다. 다른 담당자는 공통 타입이나 Firestore 경로를 단독 확정하지 않고 변경 전에 팀에 영향 범위를 공유한다.
 - OCR은 정산 원장과 한 흐름으로 연결되므로 정산·영수증 담당이 소유한다.
 - 장소 보관함, 준비와 Google API는 일정 및 지도 입력에 결합되므로 장소·일정·지도 담당이 소유한다.
-- 두 도메인 담당은 backend만이 아니라 자신의 Flutter feature, 순수 Dart 로직, repository와 Function을 세로로 함께 소유한다.
+- 2026-09-13 결정: 두 도메인 담당은 백엔드를 맡고, Flutter feature·순수 Dart 로직·repository·지도 SDK는 사용자가 맡는다. 정산 백엔드는 서버 불변식과 공통 계산 예시를 제공하고 사용자가 Dart 엔진에 같은 결과를 검증한다.
+- 일정 CRUD는 현재 Firestore 직접 쓰기와 Rules로 처리한다. 별도 일정 Callable을 임의로 추가하지 않는다. 준비 데이터 계약은 일정·지도 백엔드가 제안하고 사용자가 모델·repository를 연결한다.
+- 즉시 착수할 작업과 인계 조건은 [개발 시작 안내](../../docs/development-kickoff.md)를 따른다.
 - 각 담당자는 동시에 하나의 구현 작업만 진행한다. 리뷰 대기 작업은 WIP에서 제외할 수 있다.
 
 ## 2. 구현 전 공통 계약
@@ -75,14 +77,15 @@
 ### 단계 B — 플랫폼 기반과 mock 병렬 개발
 
 - 플랫폼·통합 담당: Flutter 앱 셸과 세 탭 route, `/map` 호환 규칙, FlutterFire Emulator, Auth와 `TripSession`을 준비한다.
-- 정산·영수증 담당: Firebase와 분리된 순수 정산 엔진과 mock repository를 만든다.
-- 장소·일정·지도 담당: mock place provider와 mock repository를 만든다.
+- 정산·영수증 백엔드 담당: 외부 API 없이 지출 validator와 Callable의 Emulator 검증을 만든다.
+- 일정·지도 백엔드 담당: mock provider를 주입하는 검색·링크 Callable과 권한·오류 테스트를 만든다.
+- 사용자: 두 서버 작업과 병렬로 Flutter mock 입력 화면과 Dart 계산을 완성한다.
 
 ### 단계 C — 도메인별 구현
 
-- 정산·영수증: 순수 Dart equal/custom → validator·개인 소비 UI → Firestore Stream → itemized → OCR·번역 순서로 구현한다.
-- 장소·일정·지도: place provider mock → 일정·준비 UI → 지도 mock → Google API 연결 순서로 구현한다.
-- 플랫폼·통합: Flutter scaffold → 여행 생성·참여·공유 → 실시간 세션 → 데이터 모델 안정화 후 Android `.trip.json` 순서로 구현한다.
+- 정산·영수증 백엔드: equal/custom 서버 validator → 지출 CRUD Callable → itemized 검증 → mock OCR → 승인된 OCR·번역 provider 순서다.
+- 일정·지도 백엔드: mock 검색·링크 Callable → 일정·장소 저장 검증 → 준비 저장 계약 → 승인된 Google API 순서다.
+- 플랫폼·통합: Flutter 일정 CRUD와 수동 지출·Dart equal/custom → 두 서버 adapter 통합 → itemized·OCR 검토 → 준비·내 여행 목록 → Android `.trip.json` 순서다.
 - 외부 API는 mock 흐름과 실패 상태가 완성된 뒤 연결한다.
 
 ### 단계 D — 통합 체크포인트

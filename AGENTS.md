@@ -5,6 +5,8 @@
 - `frontend/src/`·`public/`의 React/Vite 코드는 GitHub Pages 목업을 위해 보존하며 `VITE_DATA_SOURCE=mock`을 유지합니다.
 - `backend/`는 Firebase Functions, Firestore 규칙·Emulator 테스트와 비공개 외부 API 호출을 담당합니다.
 - `docs/`는 회의용 기능 범위와 구현 인계 문서입니다.
+- 3인 분담은 사용자(프론트·공통·통합), 일정·지도 백엔드, 정산·영수증 백엔드입니다. Flutter 전체와 Dart 계산·repository·지도 adapter는 사용자가 담당합니다.
+- 두 백엔드 담당은 자신의 Functions 모듈·검증·Emulator 테스트를 소유합니다. 공통 모델·Rules·Functions export는 플랫폼·통합 담당과 조율하며 시작 순서는 `docs/development-kickoff.md`를 따릅니다.
 - 공통 타입, Firestore 경로 또는 Callable 계약을 바꾸면 frontend와 backend 영향을 함께 확인합니다.
 - 화면·Widget·controller에서 Firebase, Google Maps 또는 OCR SDK를 직접 호출하지 않습니다.
 - 기능은 mock repository로 먼저 완성하고 외부 연결은 service/repository 경계에 둡니다.

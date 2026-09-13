@@ -8,7 +8,7 @@
 
 ## 담당
 
-장소·일정·지도 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 Firebase 계약을 검토·최종 확인한다.
+일정·지도 백엔드 담당은 `searchPlaces`·`parsePlaceLink`, 서버 provider·정규화와 backend 테스트를 맡는다. 사용자(플랫폼·통합)는 Flutter 장소 화면·직접 입력·mock/FlutterFire repository·Callable client를 맡고 공통 Firebase 계약을 최종 확인한다.
 
 ## Callable 경계
 

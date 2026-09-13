@@ -1,6 +1,6 @@
 # Firebase/API 계약 및 연결 감사
 
-> **[구현 인계 · Firebase/API]** 2026-08-30 기준 모바일 Flutter, 전환기 React 목업, Firebase Functions와 Firestore Rules의 실제 연결 상태입니다.
+> **[구현 인계 · Firebase/API]** 2026-09-13 정리. 모바일 Flutter, 전환기 React 목업, Firebase Functions와 Firestore Rules의 실제 연결 상태입니다. 함수의 목표 계약과 구현 완료 여부를 구분합니다.
 
 ## 결론
 
@@ -66,19 +66,21 @@ React의 날짜×시간 grid와 Flutter의 일정 요약·일차별 목록은 �
 
 Callable 이름은 고정하며 변경하거나 별칭을 추가하지 않습니다.
 
-| Callable          | 요청                                                                                                      | 응답                                            | Auth/멤버     | 구현 상태                                            |
-| ----------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------- | ---------------------------------------------------- |
-| `createTrip`      | canonical Trip 입력, `participantNames`; 전환기에는 `regionType`, `currency`, `participantCount`도 정규화 | `{ tripId, shareCode }`                         | Auth          | 구현·Emulator 테스트                                 |
-| `createShareCode` | `{ tripId }`                                                                                              | `{ tripId, shareCode }`                         | Auth + member | 구현·Emulator 테스트                                 |
-| `joinTrip`        | `{ shareCode, displayName? }`                                                                             | `{ tripId, title, shareCode }`                  | Auth          | 구현·Emulator 테스트                                 |
-| `searchPlaces`    | `{ tripId, query }`                                                                                       | `PlaceCandidate[]`                              | Auth + member | 이름·계약만 고정, handler/client adapter 없음        |
-| `parsePlaceLink`  | `{ tripId, url }`                                                                                         | `PlaceCandidate`                                | Auth + member | 이름·계약만 고정, handler/client adapter 없음        |
-| `createExpense`   | `tripId`와 canonical Expense draft                                                                        | 저장된 expense 식별 정보 또는 canonical Expense | Auth + member | 이름만 고정; payload·응답 wire와 validator 구현 필요 |
-| `updateExpense`   | `tripId`, `expenseId`, canonical Expense draft                                                            | 갱신 결과                                       | Auth + member | 이름만 고정; payload·응답 wire와 validator 구현 필요 |
-| `deleteExpense`   | `{ tripId, expenseId }`                                                                                   | 삭제 결과                                       | Auth + member | 이름만 고정; 참조·멱등 정책 구현 필요                |
-| `parseReceipt`    | `{ tripId, imageBase64, mimeType }`                                                                       | canonical `ParseReceiptResponse`                | Auth + member | Flutter 요청/응답·mock만 구현; backend 없음          |
+| Callable          | 요청                                                                                                      | 응답                             | Auth/멤버     | 구현 상태                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------- | --------------------------------------------------- |
+| `createTrip`      | canonical Trip 입력, `participantNames`; 전환기에는 `regionType`, `currency`, `participantCount`도 정규화 | `{ tripId, shareCode }`          | Auth          | 구현·Emulator 테스트                                |
+| `createShareCode` | `{ tripId }`                                                                                              | `{ tripId, shareCode }`          | Auth + member | 구현·Emulator 테스트                                |
+| `joinTrip`        | `{ shareCode, displayName? }`                                                                             | `{ tripId, title, shareCode }`   | Auth          | 구현·Emulator 테스트                                |
+| `searchPlaces`    | `{ tripId, query }`                                                                                       | `PlaceCandidate[]`               | Auth + member | 이름·계약만 고정, handler/client adapter 없음       |
+| `parsePlaceLink`  | `{ tripId, url }`                                                                                         | `PlaceCandidate`                 | Auth + member | 이름·계약만 고정, handler/client adapter 없음       |
+| `createExpense`   | `{ tripId, draft }`                                                                                       | `{ expense: Expense }`           | Auth + member | TASK-06 wire 확정, handler·validator·adapter 미구현 |
+| `updateExpense`   | `{ tripId, expenseId, draft }`                                                                            | `{ expense: Expense }`           | Auth + member | 전체 draft 교체 계약 확정, 구현 필요                |
+| `deleteExpense`   | `{ tripId, expenseId }`                                                                                   | `{ expenseId }`                  | Auth + member | 없는 지출에도 성공하는 계약 확정, 구현 필요         |
+| `parseReceipt`    | `{ tripId, imageBase64, mimeType }`                                                                       | canonical `ParseReceiptResponse` | Auth + member | Flutter 요청/응답·mock만 구현; backend 없음         |
 
-구현되지 않은 지출 Callable의 구체적인 성공 응답을 이 문서에서 임의로 확정하지 않습니다. 같은 runtime validator와 transaction 경계가 설계될 때 세 함수와 Flutter adapter를 한 변경으로 확정해야 합니다.
+지출의 필드·감사 정보·수정·삭제·재시도 정책은 [TASK-06의 지출 Callable 인계 계약](../MarkDown/task/task_function6_settlement.md#2026-09-13-지출-callable-인계-계약)이 기준입니다. 정산 백엔드는 handler·validator를, 사용자는 Flutter adapter를 같은 wire로 구현하며 통합 테스트로 연결을 확인합니다.
+
+2026-09-13 수정에서는 여행·일정 Rules가 2000~2100년 실제 날짜와 여행 시작일≤종료일을 검증합니다. Flutter 일정 입력도 같은 연도 범위를 사용합니다. 비용 화면은 현재 Auth uid에 연결된 유일한 Participant로 개인 금액을 계산하고, 연결이 없으면 전체 원장과 연결 안내를 표시합니다. 운영 Rules 배포는 별도입니다.
 
 `parseReceipt`의 canonical 응답은 Flutter 계약을 따릅니다.
 

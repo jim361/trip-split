@@ -26,7 +26,18 @@ service cloud.firestore {
     }
 
     function validDate(value) {
-      return value is string && value.matches('^\\d{4}-\\d{2}-\\d{2}$');
+      return value is string
+        && value.matches('^\\d{4}-\\d{2}-\\d{2}$')
+        && validCalendarDate(value);
+    }
+
+    function validCalendarDate(value) {
+      let year = int(value[0:4]);
+      let month = int(value[5:7]);
+      let day = int(value[8:10]);
+      let date = timestamp.date(year, month, day);
+      return year >= 2000 && year <= 2100
+        && date.year() == year && date.month() == month && date.day() == day;
     }
 
     function currentAuthProvider() {
@@ -97,6 +108,7 @@ service cloud.firestore {
           && (!('currency' in data) || data.currency == data.defaultCurrency)
           && validDate(data.startDate)
           && validDate(data.endDate)
+          && data.startDate <= data.endDate
           && data.ownerUid is string
           && data.shareCode is string
           && data.createdAt is timestamp

@@ -8,7 +8,7 @@
 
 ## 담당
 
-정산·영수증 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 타입, Firestore 경로, 라우트와 보안 규칙 변경을 검토·최종 확인한다.
+정산·영수증 백엔드 담당은 TypeScript runtime validator, 지출 CRUD Callable, 참여자 참조·배분 검증과 backend 테스트를 맡는다. 사용자(플랫폼·통합)는 Flutter 입력·개인 소비·송금 화면, 순수 Dart 정산 엔진, mock/FlutterFire repository와 adapter 테스트를 맡는다. 계산 예시와 금액 불변식은 공동 검토하고 같은 입력·결과로 검증한다.
 
 ## 범위와 의존성
 
@@ -75,6 +75,27 @@ type Expense = {
 `receiptItems`는 MVP에서 `Expense` 문서 안에 저장한다. `equal`은 지출 전체, `itemized`는 각 `ReceiptItem`, `custom`은 지출 전체에 직접 입력한 금액을 기준으로 최종 `allocatedAmounts`를 만든다.
 
 ## 계산 불변식
+
+### 2026-09-13 지출 Callable 인계 계약
+
+서버 handler와 Flutter adapter는 다음 wire를 함께 구현한다. 아래는 확정한 구현 목표이며 현재 서버 구현 완료를 뜻하지 않는다.
+
+| 함수 | 요청 | 성공 응답 |
+| --- | --- | --- |
+| `createExpense` | `{ tripId, draft }` | `{ expense: Expense }` |
+| `updateExpense` | `{ tripId, expenseId, draft }` | `{ expense: Expense }` |
+| `deleteExpense` | `{ tripId, expenseId }` | `{ expenseId }` |
+
+- `draft`는 위 canonical `Expense`에서 `id`, `tripId`, `createdBy`, `updatedBy`, `createdAt`, `updatedAt`을 제외한 필드다. 알려지지 않은 필드와 클라이언트 감사 필드 입력은 거부한다. 응답 `Expense`는 epoch milliseconds timestamp를 사용하고 Firestore에서는 server timestamp로 저장한다.
+- `createExpense`는 서버가 새 문서 ID를 생성한다. UI는 중복 제출을 막고 자동 재시도하지 않는다. 통신 중단으로 결과가 불명확하면 원장 재조회와 사용자 확인 후 다시 등록한다. exactly-once 재시도는 이 단계의 보장 범위가 아니다.
+- `updateExpense`는 부분 patch가 아닌 전체 draft 교체다. 선택 필드 생략은 삭제를 뜻하며 `createdBy/createdAt`은 보존한다. 없는 지출은 `not-found`다.
+- `deleteExpense`는 Auth·여행 멤버 확인 후 실행하며 이미 없는 지출에도 같은 `{ expenseId }`를 반환한다. 실제 결제·송금 API를 호출하지 않는다.
+- P0는 `equal/custom`과 `source=manual`, 빈 `receiptItems`만 저장한다. `itemized`·OCR는 지원되기 전 `invalid-argument`로 거부하며 검증 없이 저장하지 않는다. `equal`은 서버 계산과 제출 배분을 대조하고 `custom`은 소비자 집합·총액·정수·음수 부담액을 검증한다.
+- 새 지출은 결제자와 소비자 모두 같은 여행의 활성 Participant여야 한다. 수정 시 기존 지출의 결제자·소비자로 이미 포함된 비활성 Participant는 유지할 수 있으나 새 비활성 Participant를 추가하지 않는다. 유효한 `placeId`·`itineraryItemId`도 같은 여행에서 조회한다.
+- participant·참조·기존 지출 확인과 쓰기는 한 transaction 경계에서 처리한다. 모든 오류는 공통 `details.appCode`, `retryable`, 선택적 `field` wire를 따른다.
+- Flutter `TripRepositories.createExpense`는 응답의 Expense를 반환하고 update/delete는 성공 확인 뒤 기존 Stream을 사용한다. 읽기는 Firestore, 쓰기는 Callable이며 Rules의 직접 쓰기 차단을 유지한다.
+
+### 금액·참여자 검증
 
 - 모든 금액은 부동소수점이 아닌 통화별 최소 단위 정수다.
 - MVP 지출 통화는 KRW와 JPY를 지원하며, 각 통화의 paid/owed/net을 별도로 계산한다.

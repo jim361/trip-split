@@ -5,6 +5,18 @@ import 'package:trip_split/domain/repositories.dart';
 import 'package:trip_split/features/itinerary/itinerary_editor.dart';
 
 void main() {
+  test('서버와 같은 2000~2100년 범위의 실제 날짜만 허용한다', () {
+    for (final date in ['2000-02-29', '2028-02-29', '2100-12-31']) {
+      expect(ItineraryItemDraft(date: date, title: '일정', order: 0).date, date);
+    }
+    for (final date in ['1999-12-31', '2101-01-01', '2100-02-29']) {
+      expect(
+        () => ItineraryItemDraft(date: date, title: '일정', order: 0),
+        throwsA(isA<AppError>()),
+      );
+    }
+  });
+
   test('도쿄 fixture의 날짜와 시간을 검증하고 날짜별 order를 유지한다', () {
     for (final item in tokyoTripFixture.itinerary) {
       final draft = ItineraryItemDraft(

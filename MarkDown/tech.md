@@ -209,7 +209,11 @@ Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로
 | 정산·영수증 | `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` | 지출 runtime 검증·감사 필드 기록, 이미지 검증, OCR·번역 provider 호출과 `ParsedReceipt` 정규화 | 이름·client/mock 경계만 존재; backend 미구현 |
 | 장소·일정·지도 | `searchPlaces`, `parsePlaceLink` | Google 장소 검색·URL 해석, `Place` 후보 정규화 | provider mock만 존재; backend 미구현 |
 
-플랫폼·통합 담당은 Firebase 초기화, Functions 진입점, 보안 규칙, 공통 라우트, dependency와 lockfile을 최종 확인한다. 도메인 담당은 자신의 `features`, repository, Function 모듈과 테스트를 소유한다. 공통 타입이나 Firestore 경로 변경은 `dev`에 푸시하기 전에 세 담당자가 함께 검토한다.
+플랫폼·통합 담당(사용자)은 전체 Flutter 화면·Dart 계산·repository·지도 SDK와 공통 기반을 구현하고 Firebase 초기화, Functions 진입점, 보안 규칙, dependency와 lockfile을 최종 확인한다. 두 백엔드 담당은 각자의 Function 모듈·서버 검증·테스트를 소유한다. 공통 타입이나 Firestore 경로 변경은 `dev`에 푸시하기 전에 세 담당자가 함께 검토한다.
+
+여행 생성·수정과 일정 저장 날짜는 `2000-01-01`부터 `2100-12-31`까지 실제 달력 날짜만 허용한다. 여행의 종료일은 시작일보다 빠를 수 없다. Firestore 직접 쓰기에도 같은 검증을 적용하며, 일정의 날짜를 여행 기간 안으로 제한하는 정책과 자정 경계의 상세 UX는 TASK-04에서 함께 검토한다.
+
+비용 화면의 개인 요약은 `Participant.linkedUid == 현재 Auth uid`인 유일한 참여자로 계산한다. 연결이 없거나 중복되어 모호하면 개인 요약·송금액을 표시하지 않고 연결 안내와 전체 원장만 표시한다. 비활성 참여자의 기존 원장은 계속 개인 요약에 포함한다.
 
 장소·OCR Callable은 `{ tripId, ...도메인 입력 }`을 받고 Auth와 `trips/{tripId}/members/{uid}`를 확인한 뒤에만 외부 provider를 호출한다. `searchPlaces({ tripId, query })`는 `PlaceCandidate[]`, `parsePlaceLink({ tripId, url })`는 `PlaceCandidate`로 정규화한다. 지출 목록과 실시간 Stream은 멤버 기반 Rules로 읽고, 생성·수정·삭제는 공통 runtime validator를 통과하는 위 Callable만 사용한다. validator가 구현될 때까지 expense의 클라이언트 직접 쓰기 거부 규칙을 유지한다.
 

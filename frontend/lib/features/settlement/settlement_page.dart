@@ -7,12 +7,14 @@ class SettlementPage extends StatelessWidget {
   const SettlementPage({
     super.key,
     required this.trip,
+    required this.currentUserUid,
     required this.participants,
     required this.expenses,
     required this.onOpenReceipts,
   });
 
   final Trip trip;
+  final String currentUserUid;
   final List<Participant> participants;
   final List<Expense> expenses;
   final VoidCallback onOpenReceipts;
@@ -22,14 +24,12 @@ class SettlementPage extends StatelessWidget {
     final activeParticipants = participants
         .where((participant) => participant.isActive)
         .toList();
-    final linkedParticipants = activeParticipants
-        .where((participant) => participant.linkedUid != null)
+    final linkedParticipants = participants
+        .where((participant) => participant.linkedUid == currentUserUid)
         .toList();
-    final me = linkedParticipants.isNotEmpty
-        ? linkedParticipants.first
-        : activeParticipants.isEmpty
-        ? null
-        : activeParticipants.first;
+    final me = linkedParticipants.length == 1
+        ? linkedParticipants.single
+        : null;
     final totalsByCurrency = <CurrencyCode, CurrencyAmount>{};
     for (final expense in expenses) {
       totalsByCurrency.update(
@@ -135,12 +135,18 @@ class SettlementPage extends StatelessWidget {
           ),
         ),
         const Divider(),
-        _FinancialSummary(
-          currency: trip.defaultCurrency,
-          paid: paid,
-          share: share,
-          balance: balance,
-        ),
+        if (me == null)
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Text('아직 내 정산 참여자가 연결되지 않았습니다. 여행 전체 지출은 확인할 수 있습니다.'),
+          )
+        else
+          _FinancialSummary(
+            currency: trip.defaultCurrency,
+            paid: paid,
+            share: share,
+            balance: balance,
+          ),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: const BoxDecoration(
@@ -172,53 +178,54 @@ class SettlementPage extends StatelessWidget {
           ),
         ),
         _ExpenseLedger(expenses: expenses, showCurrency: hasMixedCurrencies),
-        Container(
-          margin: const EdgeInsets.fromLTRB(16, 32, 16, 0),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerLow,
-            border: Border.all(color: AppTheme.line),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(bottom: 8),
-                decoration: const BoxDecoration(
-                  border: Border(bottom: BorderSide(color: AppTheme.line)),
-                ),
-                child: const Text('최종 정산', style: _labelStyle),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      balance >= 0 ? '동행에게 받을 금액' : '동행에게 보낼 금액',
-                      style: textTheme.titleMedium,
-                    ),
+        if (me != null)
+          Container(
+            margin: const EdgeInsets.fromLTRB(16, 32, 16, 0),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
+              border: Border.all(color: AppTheme.line),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.only(bottom: 8),
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: AppTheme.line)),
                   ),
-                  Text(
-                    _formatMoney(balance.abs(), trip.defaultCurrency),
-                    style: textTheme.titleMedium?.copyWith(
-                      color: AppTheme.primary,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.content_copy_outlined, size: 18),
-                  label: const Text('정산 문구 복사'),
+                  child: const Text('최종 정산', style: _labelStyle),
                 ),
-              ),
-            ],
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        balance >= 0 ? '동행에게 받을 금액' : '동행에게 보낼 금액',
+                        style: textTheme.titleMedium,
+                      ),
+                    ),
+                    Text(
+                      _formatMoney(balance.abs(), trip.defaultCurrency),
+                      style: textTheme.titleMedium?.copyWith(
+                        color: AppTheme.primary,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {},
+                    icon: const Icon(Icons.content_copy_outlined, size: 18),
+                    label: const Text('정산 문구 복사'),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }
@@ -284,6 +291,7 @@ class _FinancialSummary extends StatelessWidget {
                         fit: BoxFit.scaleDown,
                         child: Text(
                           _formatMoney(values[index], currency),
+                          key: ValueKey('personal-summary-$index'),
                           style: TextStyle(
                             color: index == 2 ? AppTheme.primary : AppTheme.ink,
                             fontWeight: index == 2

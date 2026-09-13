@@ -81,6 +81,7 @@ final class _TripRouteHostState extends State<TripRouteHost> {
           ),
           TripDestination.settlement => SettlementPage(
             trip: trip,
+            currentUserUid: auth.user.uid,
             participants: _session.participants,
             expenses: _session.expenses,
             onOpenReceipts: () =>

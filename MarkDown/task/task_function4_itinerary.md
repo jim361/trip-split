@@ -10,7 +10,7 @@ Flutter의 `ItineraryItemDraft`와 React 일정 form이 입력을 먼저 검증�
 
 ## 담당
 
-장소·일정·지도 담당이 구현을 소유하고 플랫폼·통합 담당이 공통 라우트와 Firebase 계약을 검토·최종 확인한다.
+사용자(플랫폼·통합)는 Flutter 일정·준비 화면, 입력 검증·재정렬과 client repository를 구현한다. 일정·지도 백엔드 담당은 Firestore Rules·인덱스·Emulator 검증과 준비 저장 계약을 맡는다. 일정 CRUD는 기존 Firestore 직접 쓰기를 사용하며 별도 Callable을 추가하지 않는다. 공통 모델과 경로 변경은 함께 검토한다.
 
 ## 작업
 

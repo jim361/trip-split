@@ -195,7 +195,11 @@ bool _isLocalDate(String value) {
   final month = int.parse(match.group(2)!);
   final day = int.parse(match.group(3)!);
   final parsed = DateTime.utc(year, month, day);
-  return parsed.year == year && parsed.month == month && parsed.day == day;
+  return year >= 2000 &&
+      year <= 2100 &&
+      parsed.year == year &&
+      parsed.month == month &&
+      parsed.day == day;
 }
 
 String? _optionalItineraryTime(String? value, String field) {

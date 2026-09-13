@@ -8,7 +8,7 @@
 
 ## 담당
 
-정산·영수증 담당이 `parseReceipt`, OCR·번역 검토 화면과 지출 변환을 소유한다. 플랫폼·통합 담당은 Functions 공통 진입점, Auth/`TripSession`, 환경변수 예시와 보안 규칙 변경을 검토·최종 확인한다. 장소·일정·지도 담당은 장소 선택 Widget의 공개 인터페이스만 제공한다.
+정산·영수증 백엔드 담당은 `parseReceipt`, 이미지 검증·OCR·번역 서버 adapter와 backend 테스트를 맡는다. 사용자(플랫폼·통합)는 카메라·Photo Picker, 전송 고지, OCR 검토 화면·지출 변환과 Flutter client를 맡고 Functions 공통 진입점·설정·Rules를 최종 확인한다. 장소 선택 Widget도 사용자가 구현한다.
 
 ## 범위와 의존성
 

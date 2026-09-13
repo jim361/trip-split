@@ -4,7 +4,7 @@
 
 ## 1. 프로젝트 구조 원칙
 
-Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만들고 기존 Node.js·TypeScript Firebase backend를 유지한다. 세 명의 작업 영역은 `플랫폼·통합`, `정산·영수증`, `장소·일정·지도`로 나누되 공통 계약을 먼저 고정하고 각 기능을 mock으로 독립 개발한 뒤 작은 단위로 지속 통합한다.
+Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만들고 기존 Node.js·TypeScript Firebase backend를 유지한다. 2026-09-13부터 사용자 1명이 `프론트·공통·통합`, 나머지 2명이 `정산·영수증 백엔드`와 `일정·지도 백엔드`를 맡는다. 공통 계약을 먼저 고정하고 mock으로 독립 개발한 뒤 작은 단위로 지속 통합한다.
 
 핵심 원칙은 다음과 같다.
 
@@ -24,10 +24,12 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 
 ### 플랫폼·통합 담당
 
-담당: 앱 기반, 사용자 세션, 공통 계약과 통합 품질 최종 확인
+담당: 사용자. 전체 프론트엔드, 앱 기반, 사용자 세션, 공통 계약과 통합 품질 최종 확인
 
 - Flutter Android 프로젝트, router와 Material 앱 셸 구성
 - 공통 `TripSession` 상태, 디자인 토큰과 공통 Widget 관리
+- 일정·장소·지도·준비·정산·OCR의 Flutter 화면, 순수 Dart 계산과 mock/FlutterFire repository 전체 구현
+- Google Maps 앱 SDK adapter, 카메라·Photo Picker와 OCR 검토·지출 변환 구현
 - Firebase 클라이언트, Emulator Suite, Anonymous Auth와 선택적 Google 계정 연결
 - 여행 생성, 공유 코드 참여, 멤버와 권한 관리. Android App Links는 후속
 - Firestore 보안 규칙과 실시간 세션의 통합 검증
@@ -37,37 +39,33 @@ Trip Split 클라이언트는 Flutter stable·Dart 기반 Android 앱으로 만�
 
 ### 정산·영수증 담당
 
-담당: `Participant`, `Expense`, `ReceiptItem`, 정산 엔진과 OCR 검토 흐름
+담당: 정산·영수증 백엔드. `Participant`, `Expense`, `ReceiptItem`의 서버 검증과 저장 경계
 
 - 결제액, 부담액, 받을 금액·보낼 금액을 분리한 개인 정산 모델 설계
-- 전체 균등, 영수증 항목별, 참여자별 직접 입력 분할 계산
-- 할인, 봉사료, 기타 조정 금액 배분과 최소 통화 단위 나머지 처리
-- 개인별 카테고리 합계와 날짜·장소·메뉴/지출 항목별 소비 내역 계산
-- 수동 지출 등록, 지출 목록과 최종 송금 결과 UI
-- provider-neutral OCR·번역 요청, 원문/번역 항목 수정·추가, 합계 검증과 수동 등록 fallback
-- 정산 repository와 Firestore 데이터 구조 제안
-- 순수 계산 함수, fixture와 단위 테스트 관리
+- equal/custom/itemized 및 할인·봉사료·조정의 서버 배분 검증과 Dart 엔진용 공통 입출력 예시 제공
+- `createExpense`, `updateExpense`, `deleteExpense`의 Auth·멤버·참여자 참조 검증과 transaction
+- provider-neutral `parseReceipt`, 이미지 검증, OCR·번역 서버 adapter와 비저장 정책
+- 정산 Firestore 계약·Rules 변경안과 backend 단위·Emulator 테스트 관리
+- Flutter 화면·순수 Dart 정산 엔진·client repository는 플랫폼·통합 담당이 구현
 
 ### 장소·일정·지도 담당
 
-담당: 장소 정규화, 일정·준비 편집, 지도 표시와 Google API 어댑터
+담당: 일정·지도 백엔드. 장소 정규화, 일정·준비 데이터와 Google 서버 API
 
-- Google 장소 검색, Google Maps URL 해석, 직접 입력 흐름
-- 장소 보관함, 작은 전체 일정 미리보기와 일차별 지도·순서 목록 UI
-- 앱 내부 `Place` 정규화 모델과 장소 repository 제안
-- 일정 순서 기반 커스텀 번호 핀과 날짜별 색상 적용
-- 같은 날짜 장소를 잇는 직선 동선 표시
-- 지도 provider 인터페이스와 `google_maps_flutter` 어댑터
-- 예약·체크리스트의 최소 준비 화면과 repository
-- 장소·일정·지도 fixture와 단위/통합 테스트 관리
+- `searchPlaces`, `parsePlaceLink`와 provider-neutral `PlaceCandidate` 정규화
+- 일정·장소의 Firestore 직접 CRUD 규칙, A/B·날짜별 재정렬 batch의 검증·인덱스 변경안
+- 예약·체크리스트의 최소 저장 계약과 접근 규칙 제안
+- Google 서버 API adapter, backend fixture와 단위·Emulator 테스트 관리
+- Flutter 지도 SDK·핀·동선·입력 화면·client repository는 플랫폼·통합 담당이 구현
 
 ### 공유 파일과 Cloud Function 소유권
 
 | 범위 | 주 담당 | 변경 규칙 |
 | --- | --- | --- |
 | 루트 검증 wrapper, `frontend/pubspec.yaml`·`pubspec.lock`, `frontend/lib/app`, Firebase 진입점·설정·보안 규칙 | 플랫폼·통합 | 다른 담당자는 변경안을 제안하고 플랫폼·통합 담당자가 최종 확인한다. |
-| `frontend/lib/features/settlement`, `frontend/lib/features/receipts`, expense repository | 정산·영수증 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
-| `frontend/lib/features/places`, `itinerary`, `map`, `preparation`과 관련 repository | 장소·일정·지도 | 공통 타입이나 Firestore 경로 변경은 세 명의 리뷰가 필요하다. |
+| 전체 `frontend/`, Dart 계산, mock/FlutterFire repository와 지도 adapter | 플랫폼·통합 (사용자) | 서버 담당자는 계약과 fixture를 제공한다. 공통 타입이나 Firestore 경로 변경은 세 명이 검토한다. |
+| `backend/src/settlement`, `backend/src/ocr`와 해당 테스트 | 정산·영수증 백엔드 | 서버 validator와 Callable을 소유하고 Flutter 영향은 사용자와 함께 검증한다. |
+| `backend/src/places`와 일정·장소·준비 데이터 테스트 | 일정·지도 백엔드 | 서버 provider와 Rules 변경안을 소유하고 Flutter 영향은 사용자와 함께 검증한다. |
 | 여행 생성, 공유 코드 검증·참여 Function | 플랫폼·통합 | 인증·보안 규칙과 함께 통합한다. |
 | `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` Function | 정산·영수증 | 공통 지출 validator, OCR 비밀 키, 검증·오류 형식은 공통 계약을 따른다. |
 | 장소 검색, 장소 URL 해석 Function | 장소·일정·지도 | Google 서버 키, 검증·오류 형식은 공통 계약을 따른다. |
