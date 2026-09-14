@@ -82,3 +82,5 @@ MVP로 채택한 ID:
 - `MarkDown/decision_history.md`: 결정 이력과 변경 이유(현재 계약을 직접 대체하지 않음)
 
 - [2026-09-14 화면·API 작업 공유와 캡처](development-update-2026-09-14.md): Discord 복사용 글, 실제 Flutter 화면 13장, 검증 결과와 후속 작업.
+- [시트 내보내기 고정 샘플](fixtures/tokyo-2025-sheet1/README.md): 2025년 도쿄 여행 첫 탭에서 추출한 일정·예상 비용·실제 지출, 원본 셀과 합계 차이. 기존 앱 mock과 별도로 사용하는 보고서 테스트 자료.
+- [Google Sheets 내보내기 인계](sheet-export.md): Flutter 중심 생성·기존 데이터와 정산 재사용·Google OAuth 경계·미구현 작업.

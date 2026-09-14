@@ -334,6 +334,12 @@ MVP에서는 모든 멤버가 편집 가능한 모델로 시작한다. 세부 �
 
 보조 공유 방식으로 `.trip.json` 내보내기/가져오기를 제공한다. 이 기능은 백업, 포트폴리오 데모, 서버 장애 대비, 데이터 이전에 유용하다.
 
+### Google Sheets 보고서 추가 방향 — 2026-09-14
+
+일정·지출 보고서는 Flutter service에서 기존 repository 데이터와 Dart 정산 결과로 생성한다. 화면에서 SDK를 직접 호출하지 않으며, 사용자 Google OAuth의 `drive.file` 범위로 Sheets API에 새 문서를 만든다. 시트 전용 Firebase Callable이나 서버 집계는 추가하지 않는다. 이 사용자 권한 기반 출력은 서버 비밀키가 필요한 Google Places·OCR 호출과 구분한다. Firebase Google 로그인과 Sheets 권한 부여도 별개다.
+
+현재 완료 범위는 [고정 샘플](../docs/fixtures/tokyo-2025-sheet1/README.md)과 [구현 경계 문서](../docs/sheet-export.md)다. 실제 출력 화면·OAuth·시트 생성은 미구현이며 `.trip.json` 백업/복원 계약과 2026년 기본 mock은 유지한다. 일정/장소/지출 조회와 통화별 정산을 재사용하고 양방향 시트 동기화는 도입하지 않는다.
+
 ## 12. Provider와 플랫폼 capability 경계
 
 Flutter의 도메인 계약은 provider 응답과 SDK 객체를 포함하지 않는다.

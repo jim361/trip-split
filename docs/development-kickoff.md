@@ -6,6 +6,7 @@
 
 - [화면·API 인계](frontend-api-handoff.md): 화면 제작 순서, 구현된 11개 Callable, 준비 데이터 wire, 오류와 재시도.
 - [Firebase 연결 감사](firebase-api-contract.md): 구현/Emulator와 실제 외부 연결 구분.
+- [시트 내보내기](sheet-export.md): 고정 일정·지출 샘플과 Flutter 중심 출력 방향. 현재 샘플·문서 준비 단계다.
 - [작업 인덱스](../MarkDown/task/tasks.md), [기술 계약](../MarkDown/tech.md), [작업 공유·캡처](development-update-2026-09-14.md).
 - 일정 CRUD·길게 끌어 재정렬, 수동 비용, 장소, 준비, 참여자, 개인 정산, 여행 설정·공유, itemized/OCR 검토까지 Flutter에 연결했다. 동일 기능을 처음부터 다시 만들지 않고 최신 dev의 구현을 읽고 이어서 작업한다.
 
@@ -18,6 +19,8 @@
 | 정산·영수증 백엔드        | backend/src/settlement, backend/src/ocr, 도메인 테스트                                          | equal/custom/itemized validator 교차 검토, 금액·조정·비활성 참여자 회귀 보강, OCR provider benchmark/연결 준비          |
 
 공통 모델, backend/src/index.ts, firestore.rules/indexes, lockfile은 사용자가 최종 통합한다. 필요한 변경을 담당별로 공유하고 서로의 코드를 덮어쓰지 않는다. 이번 일괄 구현은 역할 분담 변경이 아니다.
+
+2026-09-14 추가 작업인 Google Sheets 보고서는 사용자가 기존 Flutter repository·Dart 정산을 재사용해 담당한다. 고정 샘플로 양식과 미리보기를 먼저 만들고 Google OAuth·Sheets 생성을 연결한다. 두 백엔드 담당에게 시트용 서버를 추가하지 않는다. D-day/오늘 일정 카드·Gemini 브리핑은 후속 논의다.
 
 ## 처음 실행
 

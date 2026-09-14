@@ -413,3 +413,14 @@ Flutter Web은 공식 지원되므로 후속 구현에 기술적 장애는 없�
 ## 2026-09-14 · 화면과 필요한 서버 함수를 함께 구현
 
 사용자가 API 명세만이 아니라 필요한 서버 함수 구현까지 승인했다. 장소→일정·준비→참여자·개인 정산→내 여행·공유→P1 영수증 검토 순서로 구현하고 기존 3인 소유 영역을 유지한다. 공통 listMyTrips/linkMyParticipant 두 Callable, members.uid index, 준비 최상위 wire를 추가했다. personal 체크리스트는 멤버 공유 분류다. equal/custom 총액 저장은 manual·빈 receiptItems, itemized는 검토 항목과 집계 배분을 저장한다. 장소 삭제 참조 제한은 UI 검사이며 서버 원자적 제한은 후속 검토다. 실제 Google/OCR 연결·운영 배포·main merge는 승인 범위에 포함하지 않는다. [현재 인계 문서](../docs/frontend-api-handoff.md)를 기준으로 팀원 다음 작업을 갱신한다.
+
+## 28. 2026-09-14 - 시트 고정 샘플과 Flutter 중심 내보내기
+
+- 일정·지출 보고서 내보내기의 기본 양식으로 사용자가 제공한 2026년 도쿄 여행 시트를 참고한다. 테스트 입력은 별도로 제공한 2025년 도쿄 여행 문서의 첫 번째 `최영락` 탭에서 추출한다.
+- 일정 74개·예상 비용 73건·실제 지출 87건과 원본 셀·링크·서식을 보존했다. 원본 날짜의 연도 불일치, 다음 날 귀국편, 합계와 상세 금액 차이, 원화 수령 메모를 구분한다. 기존 2026년 앱 mock을 교체하지 않는다.
+- 사용자의 프론트 재사용 제안에 따라 기존 repository와 Dart 정산으로 Flutter service에서 보고서 값·서식을 만들고 사용자 OAuth로 새 Google Sheet를 생성하는 방향을 택한다. 백엔드 정산 담당에게 보고서 서버를 추가하던 제안은 채택하지 않는다.
+- 기존 팀 역할, Callable 11개, Firestore 경로, `.trip.json` 스키마와 TASK ID를 유지한다. Google OAuth·Sheets API 설정과 실제 생성은 후속 연결 작업이다.
+- D-day/오늘 일정 카드와 Gemini 브리핑은 이번에 병행하지 않는 후속 논의로 남긴다. 시트 출력에 LLM을 사용하지 않는다.
+- 이번 반영은 고정 샘플과 문서의 commit/push이며 시트 화면·생성 구현 완료나 운영 연결·main merge를 의미하지 않는다.
+
+상세: [시트 내보내기 인계](../docs/sheet-export.md), [고정 샘플](../docs/fixtures/tokyo-2025-sheet1/README.md).
