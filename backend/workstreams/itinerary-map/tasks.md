@@ -1,7 +1,7 @@
 # 일정·지도 백엔드 작업 목록
 
-> 마지막 갱신: 2026-09-14. 담당: 일정·지도 백엔드. 기준: `dev` / `a5cfb0a`.
-> 현재는 하네스 문서 작성과 커밋 후보의 전체 검증 완료, 제품 구현 착수 전이다. 다음 작업은 **IMB-01의 원본 개발 clone 환경 연결**이다.
+> 마지막 갱신: 2026-09-14. 담당: 일정·지도 백엔드. 기준: `dev` / `8317a73`.
+> **IMB-01 완료.** 원본 개발 clone의 Node 22·Java 21 연결, 의존성 설치와 기준선 검증을 마쳤다. IMB-02는 미착수이며 이번 요청에 포함하지 않는다.
 
 ## 작업 규칙
 
@@ -18,7 +18,9 @@
 
 - [x] 커밋 후보 검증 복사본에서 Node 22·Java 21을 확인하고 루트의 `npm ci`를 실행했다.
 - [x] 검증 복사본에서 `npm run verify:full`을 통과했다. `verify:fast`와 `test:emulator`가 포함되며 기준과 결과는 아래 기록을 따른다.
-- [ ] 원본 개발 clone에 같은 런타임 경로와 의존성을 연결한다. 검증 복사본 설치를 원본 clone 설치로 간주하지 않는다.
+- [x] 원본 개발 clone에서 기존 Node 22.23.2·Java 21.0.11을 실행 세션의 `PATH`·`JAVA_HOME`에 연결하고 루트의 `npm ci`를 종료 0으로 완료했다.
+- [x] 원본 개발 clone의 `npm run verify:fast`와 `npm run test:emulator`가 각각 종료 0으로 완료됐다. 검증 복사본·기존 CI와 실행 근거를 따로 기록했다.
+- 상태: 완료. 영구 환경 설정은 변경하지 않았으며 새 PowerShell 세션에서는 아래 런타임 연결 명령을 다시 실행한다.
 - 선행: IMB-00. 쓰기: 설치 산출물과 이 문서의 실행 기록. package·lockfile·검증 설정을 바꾸지 않는다.
 - 완료: 두 검증이 종료 0. 기존 실패나 환경 부족은 경로·메시지·명령을 남기고 미완료로 유지한다.
 
@@ -97,18 +99,62 @@
 
 2026-09-14 후속 요청으로 `backend/README.md`를 공통 진입점으로 정리했다. 담당별 코드·문서·새 테스트 위치, 공용 파일 조율 절차와 일정·지도 `AGENT.md`의 적용 범위를 명시하고, 미구현으로 남아 있던 서버 설명을 현재 11개 Callable 기준으로 수정했다. SPEC의 오래된 README 설명도 갱신했다. 정산 담당의 예정 폴더·빈 문서나 테스트는 생성하지 않았으며 제품 코드·공통 API 계약은 변경하지 않았다. 관련 문서 5개의 Prettier 검사와 로컬 링크 33개, 현재 export 11개와 README의 일치 확인은 통과했다. README 정리 시점의 `npm run verify:fast`는 의존성 미설치로 `prettier`를 찾지 못해 종료 1이었으며, 당시 제품 테스트·commit·push는 수행하지 않았다.
 
-2026-09-14 사용자에게 문서 다섯 파일의 commit·dev push 승인을 받았다. 최신 `origin/dev`가 `a5cfb0a`와 일치함을 확인하고, staged tree `69b7db524ea3802f3123e0e5bc011f0f0b1bbaca`를 별도 검증 폴더에 추출했다. `graphify-out/`은 커밋·검증 복사본에 포함하지 않았다. 공식 SHA256을 확인한 Node 22.23.2와 로컬 Java 21.0.11을 사용해 `npm ci`, `npm run verify:full`이 종료 0으로 완료됐다. 단위 테스트 91개(프론트 59·백엔드 32), Emulator 테스트 21개와 Git guard 자체 검사 29개가 통과했다. 이 결과 기록만 후속으로 갱신하며 문서 형식을 다시 검사한다. 실제 Google API·Flutter 실기기 QA는 실행하지 않았다. 원본 clone의 `node_modules` 설치와 런타임 PATH 연결은 아직 남아 있다.
+2026-09-14 사용자에게 문서 다섯 파일의 commit·dev push 승인을 받았다. 최신 `origin/dev`가 `a5cfb0a`와 일치함을 확인하고, staged tree `69b7db524ea3802f3123e0e5bc011f0f0b1bbaca`를 별도 검증 폴더에 추출했다. `graphify-out/`은 커밋·검증 복사본에 포함하지 않았다. 공식 SHA256을 확인한 Node 22.23.2와 로컬 Java 21.0.11을 사용해 `npm ci`, `npm run verify:full`이 종료 0으로 완료됐다. 단위 테스트 91개(프론트 59·백엔드 32), Emulator 테스트 21개와 Git guard 자체 검사 29개가 통과했다. 이 결과 기록을 후속으로 갱신하고 문서 형식을 다시 검사했다. 실제 Google API·Flutter 실기기 QA는 실행하지 않았다. 당시 원본 clone의 `node_modules` 설치와 런타임 PATH 연결은 남아 있었으며, 아래 원본 실행으로 별도 완료했다.
+
+문서 커밋 `8317a7342d12cf458fc1fe525beaa8ca86526078`의 기존 [push CI](https://github.com/jim361/trip-split/actions/runs/34839539658)와 [PR CI](https://github.com/jim361/trip-split/actions/runs/34839544057)는 모두 성공했다. `verify`와 `flutter-android` 작업의 성공을 이번 세션에서 읽기 전용으로 재확인했다. 이 CI 결과와 앞선 검증 복사본의 `verify:full`은 원본 clone의 설치·검증 기록을 대신하지 않는다. IMB-01 완료를 확인한 당시 세션에서는 새 CI 실행·commit·push·PR 변경을 하지 않았다.
+
+### 2026-09-14 / IMB-01 / 원본 clone 실행
+
+- 기준 SHA: `8317a7342d12cf458fc1fe525beaa8ca86526078`. `git fetch origin dev` 종료 0, `HEAD...origin/dev`의 앞섬·뒤처짐이 `0 / 0`이어서 추가 병합은 필요하지 않았다. 시작 시 tracked·staged 변경은 없고 기존 미추적 `graphify-out/`만 있었다.
+- 실행 위치: `C:\Users\Josh\Documents\Codex\2026-09-14\github-dev-dev-x20-x20-flutter\work\trip-split`. 앞선 복사본은 이 경로의 형제 폴더 `../push-validation/repo`다.
+- 원인·조치: 기본 PATH의 Node 24와 Java 미연결·의존성 미설치를 해소하기 위해 준비된 런타임을 재사용했다. 제품 코드·package·lockfile·검증 설정은 수정하지 않았고 추적 파일 변경은 이 `tasks.md`뿐이다.
+
+| 명령·확인                                          | 종료 코드·실제 결과                                                                                                                                                     |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `node --version`, `npm --version`, `java -version` | 모두 0. Node 22.23.2, npm 10.9.8, JBR OpenJDK 21.0.11                                                                                                                   |
+| `npm ci`                                           | 0. 원본에 1,233개 패키지 설치. `package-lock.json` SHA256은 설치 전후 `5039FD409365148F959101A6AEB4A2E78D785D1CD4B92FA3D56F368748E69947`로 동일                         |
+| `npm run verify:fast`                              | 0. format·lint·frontend/backend typecheck 통과, 단위 테스트 91개(프론트 59·백엔드 32) 통과                                                                              |
+| `npm run test:emulator`                            | 0. backend 빌드와 Auth·Firestore·Functions의 2개 파일·21개 테스트 통과. `demo-trip-split` 사용, Functions의 `Using node@22 from host` 확인. 종료 후 사용 포트 해제 확인 |
+| 로컬 분석 산출물 보존                              | 검증 동안 `graphify-out/`을 형제 경로 `../imb-01-graphify-out`에 임시 보관하고 `finally`에서 원위치 복원. 172개 파일의 상대 경로·SHA256이 모두 일치                     |
+| 영구 환경 확인                                     | User/Machine의 `PATH`·`JAVA_HOME` 해시가 실행 전후 동일. 설정은 각 검증 프로세스에만 적용                                                                               |
+
+로컬 근거: [환경·런타임](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-original-clone/environment-before.log>), [설치 로그](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-original-clone/npm-ci.log>), [verify:fast 로그](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-original-clone/verify-fast.log>), [Emulator 로그](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-original-clone/test-emulator.log>), [종료 코드](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-original-clone/verification-results.log>), [산출물 복원](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-original-clone/graph-preservation.log>). 앞선 복사본 로그는 `../push-validation/npm-ci.log`, `../push-validation/verify-full.log`, `../push-validation/git-guard.log`에 그대로 보존했다.
+
+설치 시 npm audit가 기존 lockfile 기준 취약점 36건(moderate 25·high 11)을 보고했고, Emulator는 `firebase-functions` 업데이트를 권고했다. 설치·검증 실패는 아니며 의존성 변경은 공통 담당의 별도 검토 항목이다. `npm audit fix`나 package 갱신은 실행하지 않았다.
+
+최초 원본 검증에서는 IMB-01에 필요한 `verify:fast`·`test:emulator`를 실행했다. `verify:full`·Git guard 자체 검사는 최초 원본 실행에 포함하지 않았으며 앞선 복사본·기존 CI의 성공 기록과 구분한다. Flutter 로컬 검증·Android 기기 QA·실제 Google API도 실행하지 않았다. 당시에는 IMB-02 구현과 추가 commit·push 없이 IMB-01에서 종료했다.
+
+### 2026-09-14 / IMB-01 / 후속 commit·push 승인과 전체 검증
+
+사용자가 IMB-01 완료 기록의 commit·dev push와 Graphify 갱신을 후속으로 승인했다. 최신 `origin/dev`와 원본 `HEAD`가 `8317a73`으로 일치함을 확인한 뒤, 같은 로컬 Node 22.23.2·Java 21.0.11로 원본의 `npm run verify:full`을 실행해 종료 0을 확인했다. format·lint·타입 검사, 단위 테스트 91개, frontend/backend 빌드와 Emulator 테스트 21개가 통과했다. [전체 검증 로그](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-push/verify-full.log>)와 [종료 코드](<C:/Users/Josh/Documents/ChatGPT/Trip Spilt/outputs/imb-01-push/verification-results.log>)를 별도 보존했다.
+
+검증 중 임시 보관한 `graphify-out/`은 172개 파일의 해시를 대조해 복원했다. 이후 승인된 그래프 갱신은 로컬 분석 산출물에만 반영하며, 커밋 대상은 이 `tasks.md` 한 파일이다. IMB-02 구현·전역 환경 설정·package·lockfile 변경은 포함하지 않는다. 최종 커밋 SHA와 원격·CI 결과는 반영 후 결과 보고 및 로컬 그래프 갱신 기록에서 확인한다.
+
+### 다음 PowerShell 세션의 런타임 연결
+
+원본 저장소 루트에서 다음을 실행한다. 기존 설치를 재사용하며 PowerShell 프로필·사용자/시스템 환경 변수·전역 npm 설정을 바꾸지 않는다. 별도 실행 스크립트도 추가하지 않는다.
+
+```powershell
+$nodeDir = (Resolve-Path -LiteralPath '..\validation-tools\node-v22.23.2-win-x64').Path
+$env:JAVA_HOME = 'C:\Users\Josh\.jdks\jbr-21.0.11'
+$env:PATH = "$nodeDir;$env:JAVA_HOME\bin;$env:PATH"
+node --version
+npm.cmd --version
+java -version
+```
+
+`graphify-out/`은 저장소의 공통 format·lint 제외 설정에 등록되지 않은 로컬 분석 산출물이다. 위 기준선 검사처럼 저장소 밖에 임시 보관한 상태로 검증하고 종료 후 복원한다. 산출물에 맞춰 공통 검사 설정을 바꾸거나 산출물을 포맷하지 않는다.
 
 추가 실행은 `날짜 / IMB ID / 기준 SHA / 가설·변경 파일 / 명령 / 종료 코드·관찰 / 다음 조치` 순서로 기록한다. 긴 로그는 팀이 확인할 수 있는 산출물 경로를 연결하며 개인정보·키를 포함하지 않는다.
 
 ## 다음 세션 인계 — 여섯 칸
 
 1. **목표:** Phase B 일정·지도 백엔드의 검색·링크와 참조·동시 변경을 안정화한다.
-2. **끝난 것:** 최신 dev 동기화, 담당 범위와 네 문서 작성, 기존 코드·호출자·Rules 확인, 공통 backend README 정리, 커밋 후보 복사본의 Node 22·Java 21 전체 검증. 제품 코드 수정 없음.
-3. **남은 것:** IMB-01의 원본 clone 환경 연결 후 IMB-02부터 진행. Google 환경·URL 정책·장소 삭제 정책은 미정이며 팀에 전달하지 않았다.
+2. **끝난 것:** 담당 하네스·공통 backend README, 검증 복사본의 전체 검증과 `8317a73` 기존 CI 성공. IMB-01 원본 clone의 런타임 연결·`npm ci`·`verify:fast`·Emulator 검증 완료. 제품 코드 수정 없음.
+3. **남은 것:** 후속 요청에서 IMB-02부터 진행한다. 이번 요청에서는 착수하지 않는다. Google 환경·URL 정책·장소 삭제 정책은 미정이며 팀에 전달하지 않았다. npm audit의 기존 의존성 취약점은 공통 담당 검토가 남아 있다.
 4. **결정과 이유:** 별도 clone의 dev 직접 작업, 기존 `src/places` 재사용, 새 Emulator 테스트는 전용 하위 폴더. 공용 테스트·공통 모델 변경 충돌을 줄인다.
 5. **하지 말 것:** 다른 백엔드와 Flutter 코드 덮어쓰기, 공통 계약 독단 변경, 운영 fixture 반환, 테스트 약화, 무승인 원격 반영·유료 호출·secret 등록·배포.
-6. **확인 방법:** 저장소 루트에서 아래 명령을 각각 실행하고 결과를 확인한다. 실패를 무시하고 다음 명령을 계속하지 않는다.
+6. **확인 방법:** 저장소 루트에서 위 런타임 연결 명령을 적용하고, `graphify-out/`을 임시 보관한 상태에서 아래 명령을 각각 실행한다. 실패를 무시하고 다음 명령을 계속하지 않으며 종료 후 산출물을 복원한다.
 
 ```powershell
 git status --short
@@ -116,8 +162,7 @@ git fetch origin dev
 git log --oneline HEAD..origin/dev
 node --version
 java -version
-# Node 22·Java 21 확인 및 dev 동기화 후
-npm ci
+# 의존성이 없거나 lockfile이 바뀐 경우에만 npm ci를 다시 실행한다.
 npm run verify:fast
 npm run test:emulator
 ```
