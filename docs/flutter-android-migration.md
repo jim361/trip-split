@@ -2,6 +2,8 @@
 
 > **[회의 04 · 플랫폼 전환]** 2026-08-28에 확정한 Android 우선 전환 범위와 실행 순서입니다.
 
+2026-09-14 보정: 현재는 Phase B(P0) 통합 단계다. P1 화면·mock이 먼저 구현돼 있어도 OCR 실제 연결은 B 완료 뒤 C에서 진행한다. 담당별 현재 작업과 단계 통과 조건은 [개발 시작 안내](development-kickoff.md)를 따른다.
+
 ## 1. 결정
 
 - 사용자 앱은 Vite·React PWA에서 Flutter stable 기반 Android 앱으로 전환한다.
@@ -10,7 +12,7 @@
 - Flutter Web은 같은 Dart 도메인·repository 코드를 재사용하는 후속 보조 채널이다.
 - iOS, 백그라운드 경로 기록과 Health Connect는 첫 Android MVP에 포함하지 않는다.
 
-## 2. 현재와 목표 상태
+## 2. 전환 당시(2026-08-28)와 목표 상태
 
 | 영역        | 현재 저장소                                                      | 목표                                                                          |
 | ----------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
@@ -21,7 +23,7 @@
 | 인증·데이터 | FlutterFire client·repository 경계와 임시 React Firebase Web SDK | Android Emulator 수직 검증을 마친 FlutterFire Auth·Firestore·Functions        |
 | OCR         | CLOVA 전제와 callable placeholder                                | provider-neutral `parseReceipt`; Document AI/OCR·번역 후보를 backend에서 비교 |
 
-기존 React 목업은 Flutter 화면을 검증할 때 참고할 UX 자료다. Flutter 세로 기능 조각이 대체되기 전까지 삭제하지 않으며 React와 Flutter를 장기 이중 제품으로 운영하지 않는다.
+위 표는 전환 당시 기록이다. 현재 주요 Flutter 화면·11개 Callable·itemized/OCR mock 구현은 [화면/API 인계](frontend-api-handoff.md)를 따른다. 기존 React 목업은 Flutter 화면을 검증할 때 참고할 UX 자료이며 GitHub Pages mock으로 보존한다. Flutter 화면을 자동 반영하는 배포본이 아니다.
 
 ## 3. 단계별 범위
 
@@ -33,26 +35,33 @@
 - [x] 고정 ID `tokyo-2026-11` fixture와 mock repository 주입
 - [x] `dart format`, `flutter analyze`, unit/widget test, debug APK build — GitHub Actions 포함 통과
 - [x] FlutterFire 설정, Auth·Firestore·Functions service/repository와 Emulator 주소 구성
-- [ ] Anonymous Auth, `TripSession`, 여행 생성·공유 코드 입장의 Android Emulator 수직 검증. mock Widget·service 계약은 완료
+- [x] Anonymous Auth, `TripSession`, 여행 생성·공유 코드 입장의 Android Emulator 수직 smoke — 2026-08-30 기록. 이후 추가된 전체 도메인의 두 기기 QA는 B에서 별도 검증
 
 Phase A가 끝나기 전에는 실제 Google Maps·OCR·위치 권한을 추가하지 않는다.
 
-### Phase B · Android 핵심 기능
+### Phase B · Android 핵심 기능(P0), 현재 단계
 
 - 장소·일정 CRUD와 Google Maps 번호 핀·직선 동선
 - 예약·체크리스트의 최소 준비 데이터
+- 공유 코드·여행 설정과 membership 기반 기본 내 여행 목록. 실제 Google 계정 연결/복구 검증과 구분
 - 참여자 관리, 수동 equal/custom 지출과 통화별 paid/owed/net
 - 두 익명 사용자의 실시간 공동 편집과 members 기반 Rules 검증
-- Android 파일 선택기를 이용한 `.trip.json` 내보내기·복원
+- 핵심 데이터 안정화 뒤 Android 파일 선택기를 이용한 `.trip.json` 내보내기·새 여행 복원, 실제 여행 전 검증
 
-### Phase C · 영수증과 배포 준비
+주요 화면·repository·Emulator handler는 구현됐다. 현재 남은 것은 실제 Google 지도/장소 검색, 두 Android 클라이언트 통합·오류 복구와 백업/복원이다. Google Maps/Places는 승인된 환경에서 B에 연결하며 Routes API·이동 시간 자동 계산은 포함하지 않는다.
+
+### Phase C · 영수증과 배포 준비(P1)
+
+B 완료 뒤 시작한다. 선행 구현된 itemized·검토 UI·OCR Emulator handler는 유지하며 외부 provider 비교·연결을 현재 B 작업으로 앞당기지 않는다.
 
 - itemized 정산과 조정 항목
 - Android 카메라 또는 시스템 Photo Picker
 - 일본어 영수증 원문·한국어 번역·금액/통화 후보를 함께 보여주는 OCR 검토
 - 사용자 확정 전 미반영, 수동 fallback, 임시 이미지 폐기 검증
+- 선택적 Google 계정 연결 시 UID 유지·여행 접근 복구와 익명 세션 소실 안내 검증
 - 실기기 QA, adaptive icon·splash, 접근성, 개인정보·권한 안내
-- 요청이 있을 때만 서명·Play 내부 테스트 또는 실제 외부 API를 연결
+- 승인된 환경에서 OCR·번역 provider를 연결하고 실제 이미지·실패 복구를 확인
+- 서명·Play 내부 테스트·운영 배포는 해당 실행 승인 범위에서 진행
 
 ### Phase D · 후속
 
@@ -60,6 +69,11 @@ Phase A가 끝나기 전에는 실제 Google Maps·OCR·위치 권한을 추가�
 - 국내 NAVER adapter와 iOS
 - 실제 경로·이동 시간
 - 사용자가 명시적으로 시작·종료하는 이동 기록과 Health Connect
+- App Links·자동 환율·송금 완료 상태·고급 권한·오프라인 병합, Sheets/CSV 가져오기와 D-day/오늘 일정·Gemini 후보는 별도 채택·범위 확인 뒤 진행
+
+### 별도 병행 작업 · 시트 보고서
+
+사용자가 고정 샘플 양식·미리보기를 B와 병행하고 기존 repository·Dart 정산과 OAuth·새 Google Sheet 생성을 순서대로 연결한다. B/C 필수 완료 조건이나 OCR의 선행 조건으로 추가하지 않으며 `.trip.json` 백업과 구분한다. [시트 인계](sheet-export.md)를 따른다.
 
 ## 4. Flutter Web 수용 기준
 

@@ -4,6 +4,8 @@
 
 기준: [기술 계약](../MarkDown/tech.md), [개발 시작 안내](development-kickoff.md), [Firebase 연결 상태](firebase-api-contract.md), [화면 캡처와 공유 문구](development-update-2026-09-14.md).
 
+현재 착수는 Phase B(P0) 핵심 통합이다. 아래 표는 구현 목록이며 모든 항목의 실제 연결을 동시에 시작하라는 지시가 아니다. 수동 equal/custom·최소 준비·기본 내 여행 목록·Google 지도/검색은 B, itemized·촬영/OCR·번역의 실제 통합은 B 완료 뒤 C(P1)다. P1 선행 구현과 회귀 테스트는 유지한다. 담당별 작업은 개발 시작 안내를 따른다.
+
 ## 1. 제작 순서와 화면 동작
 
 | 순서           | 화면                            | 구현한 흐름                                                                                                             | 저장 경계                                          |

@@ -16,7 +16,7 @@ Flutter의 `ItineraryItemDraft`와 React 일정 form이 입력을 먼저 검증�
 
 - [x] `ItineraryItem` 타입 정의
 - [x] Firestore itinerary 구조 설계
-- [ ] `Reservation`, `ChecklistItem` 최소 계약과 Firestore 경로 설계
+- [x] `Reservation`, `ChecklistItem` 최소 계약과 Firestore 경로 설계
 - [x] ItineraryItem에 updatedBy, updatedAt 반영
 - [x] 날짜별 탭 또는 섹션 구현
 - [x] `/trips/:tripId/itinerary`의 선택 날짜 지도와 아래 compact 일정 row를 하나의 스크롤 흐름으로 구성
@@ -29,18 +29,20 @@ Flutter의 `ItineraryItemDraft`와 React 일정 form이 입력을 먼저 검증�
 - [x] Flutter Android에서 같은 일정 CRUD에 도달하는 compact 입력 흐름 구현
 - [x] 장소 없는 항공편·체크인·휴식 일정 허용
 - [x] 일정 순서 변경 구현
-- [ ] 수동 `order`를 canonical로 저장하고 시간순 정렬은 명시적 보조 action으로 제공
-- [ ] 일정·예약·체크리스트 데이터를 FlutterFire repository `Stream`으로 구독
+- [x] 수동 `order`를 canonical로 저장하고 시간순 정렬은 명시적 보조 action으로 제공
+- [x] 일정·예약·체크리스트 데이터를 FlutterFire repository `Stream`으로 구독
 - [x] 일정 순서 변경을 원자적 transaction으로 저장 (tech.md의 batch/transaction 계약)
 - [ ] 다른 참여자의 변경 사항이 즉시 반영되는지 검증
 - [x] router state에 선택 날짜와 지도 확대 상태를 유지하면서 일정 편집이 가능한지 검증
-- [ ] 예약 제목·유형·상태·URL·메모의 최소 CRUD 구현
-- [ ] 공동·개인 체크리스트와 완료 상태의 최소 CRUD 구현
+- [x] 예약 제목·유형·상태·URL·메모의 최소 CRUD 구현
+- [x] 공동·개인 체크리스트와 완료 상태의 최소 CRUD 구현
 - [ ] 민감한 여권·결제 문서가 준비 데이터에 저장되지 않는지 검증
 
 React/Vite 기본값인 `VITE_DATA_SOURCE=mock`에서는 편집 결과가 브라우저 실행 안에서만 유지된다. `firebase` 또는 Emulator mode에서 같은 trip을 선택한 경우에만 React 편집과 Flutter 요약이 같은 Firestore itinerary를 구독한다.
 
 ## 2026-09-14 Flutter 일정 편집 인계
+
+아래는 같은 날 초기 일정 구현 이력이다. 뒤의 준비 기능 구현으로 예약·체크리스트 미구현 상태는 해소됐다. 현재 이 Task 전체는 B(P0)이며 두 Android 클라이언트 QA가 남아 있다. 당시 검증 숫자·로컬 반영 상태는 역사 기록으로 보존한다.
 
 - 일정 추가와 행 선택으로 편집 화면을 열고 날짜·A/B안·유형·선택 시간·장소·메모를 저장한다. 장소 없음과 연결 해제를 지원한다.
 - 새 일정과 날짜·계획을 옮긴 일정은 대상 그룹의 마지막 순서에 추가한다. 같은 그룹을 편집할 때는 기존 수동 순서를 유지한다.

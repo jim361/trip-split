@@ -2,6 +2,8 @@
 
 > **[TASK-07 · 영수증 OCR]** 영수증 인식, 수정 가능한 초안과 지출 저장 경계입니다.
 
+**착수 단계는 Phase C(P1)**다. 현재 Phase B(P0) 수동 일정·지도·정산의 통합 검증이 먼저다. 선행 구현된 촬영/검토 UI·mock·Emulator handler와 테스트는 유지하고, 실제 provider 비교·연결은 B 완료 뒤 진행한다. [단계별 담당과 완료 조건](../../docs/development-kickoff.md)을 따른다.
+
 ## 목표
 
 사용자가 Android 카메라 또는 시스템 Photo Picker에서 영수증 이미지를 선택하면 stateless `parseReceipt` Function이 OCR·번역 provider를 호출하고 저장되지 않은 수정 가능한 초안을 돌려준다. 사용자는 원문과 한국어 번역을 비교하고 항목명·금액을 수정하거나 누락 항목과 조정 금액을 추가한 뒤, 합계를 확인해 명시적으로 하나의 canonical `Expense`를 저장한다.
@@ -51,7 +53,7 @@ type ParseReceiptResponse = {
 
 `ParseReceiptResponse`는 `tech.md`의 canonical `ParsedReceipt`와 같은 구조다. `items[].sourceOrder`는 초안 생성 시 `ReceiptItem.sortOrder`로 복사하고, 사용자가 행을 재정렬하면 저장 직전에 0부터 다시 정규화한다.
 
-현재 Flutter에는 `tripId`와 검증된 앱 내부 `ReceiptImageInput(bytes, mimeType, fileName?)`을 받는 stateless `ReceiptParser` 계약, 5MiB JPEG/PNG/WebP 사전 검증과 일본어 mock fixture가 있다. Base64는 검증된 입력을 Callable wire로 바꾸는 adapter 경계에서만 생성한다. Firebase Callable 구현과 backend의 같은 크기 상수, 이미지 선택·초안 편집·지출 저장은 아래 단계에 남아 있다.
+현재 Flutter에는 `tripId`와 검증된 앱 내부 `ReceiptImageInput(bytes, mimeType, fileName?)`을 받는 stateless `ReceiptParser` 계약, 5MiB JPEG/PNG/WebP 사전 검증과 일본어 mock fixture가 있다. Base64는 검증된 입력을 Callable wire로 바꾸는 adapter 경계에서만 생성한다. 2026-09-14 Firebase Callable의 Emulator handler·5MiB 검증, 이미지 선택·초안 편집·지출 저장을 구현했다. 실제 OCR·번역 provider, 서버 전체 이미지 디코딩과 실기기 검증이 남아 있으며 아래 체크리스트는 C 단계의 최종 통합 기준이다.
 
 - `parseReceipt`는 인증이 필요한 HTTPS callable Function으로 구현한다. `tripId`의 멤버인지 확인한 뒤에만 선택된 OCR·번역 adapter를 호출한다.
 - 클라이언트와 Function은 허용 MIME type과 최대 원본 크기를 하나의 설정으로 공유하고, 허용하지 않는 파일은 외부 전송 전에 거부한다.

@@ -2,12 +2,12 @@
 
 > **[인계 01 · 플랫폼·통합 구현 현황]** 공통 계약과 도메인 담당자 연결점을 정리합니다.
 
-## 2026-09-13 개발 착수 기준
+## 2026-09-14 개발 착수 기준
 
 사용자가 전체 프론트·공통·통합을, 두 팀원이 일정·지도 백엔드와 정산·영수증 백엔드를 맡습니다. [개발 시작 안내](development-kickoff.md)의 첫 작업과 [현재 API 계약](firebase-api-contract.md)을 기준으로 인계합니다.
 
 - Android Emulator의 익명 Auth → createTrip/joinTrip → trip 구독 smoke는 2026-08-30 완료 기록이 있습니다. 실제 Firebase 운영 연결·실기기 QA와 도메인 전체 통합은 여전히 후속입니다.
-- 코드에는 공통 여행 Callable 3개만 있습니다. 장소 검색·지출 CRUD·OCR 서버는 각 담당의 첫 구현 대상입니다.
+- 현재 11개 Callable과 주요 Flutter 화면·repository가 구현돼 있습니다. 현재 Phase B에서는 기존 코드를 검토하고 핵심 두 기기 QA, 수동 정산 안정화와 실제 Google Places/지도 연결을 이어갑니다. P1 itemized·OCR의 실제 연결은 B 완료 뒤 C입니다.
 - 지출 wire와 서버 검증 책임은 TASK-06에 정리했고, 개인 요약의 로그인 UID 연결 및 날짜 Rules 검증을 보완했습니다.
 
 ## 2026-08-29 `dev` 팀 공유 체크포인트 (과거 기록)

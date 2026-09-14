@@ -2,6 +2,8 @@
 
 > **[TASK-09 · 마감·출시]** Android 접근성, 권한과 출시 전 품질 검증입니다.
 
+단계: B에서는 핵심 흐름의 두 기기·오류·키보드·재접속 QA를 수행하고 C에서는 itemized·촬영/OCR·계정 복구와 출시 품질까지 확장한다. 아래 전체 목록을 B의 OCR 선행 조건으로 해석하지 않는다. App Links·Web·iOS와 공개 배포는 현재 완료 조건이 아니며 [단계별 안내](../../docs/development-kickoff.md)를 따른다.
+
 ## 목표
 
 MVP를 데모 가능한 품질로 정리한다.
@@ -21,7 +23,7 @@ MVP를 데모 가능한 품질로 정리한다.
 - [ ] 로딩 상태 정리
 - [ ] 에러 상태 정리
 - [ ] 저장 중/저장 완료 상태 정리
-- [ ] Firebase 전체 보안 규칙 점검. members·공유·장소 baseline은 완료했고 expense 저장 Callable·validator와 `linkedUid` 연결 Callable은 남음
+- [ ] Firebase 전체 보안 규칙 점검. members·공유·장소·준비 Rules와 expense 저장 validator/Callable·`linkedUid` 연결 Callable은 구현됐으며 전체 회귀·기기 통합을 확인
 - [x] Anonymous Auth와 members 보안 규칙 점검
 - [ ] Google 로그인 연결 UX 점검
 - [x] 공유 코드 만료/비활성 정책 점검

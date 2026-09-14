@@ -2,6 +2,8 @@
 
 > **[TASK-09 · 마감·출시]** 첫 MVP는 Android 내부 테스트까지를 대상으로 하며 Play 배포, signing secret, 실제 유료 API 연결은 별도 승인 항목이다.
 
+실행 단계는 [개발 시작 안내](development-kickoff.md)를 따른다. Phase B에서는 핵심 일정·준비·수동 정산·지도/검색·백업과 두 기기 QA를, Phase C에서는 itemized·촬영/OCR·계정 복구·출시 품질까지 확인한다. 아래 OCR·번역 항목은 C에 적용하고 B의 선행 조건으로 삼지 않는다. 공통 자동 회귀는 기존 P1 테스트까지 항상 유지한다. Sheets 보고서는 별도 병행 작업이며 출시 필수 조건이 아니다.
+
 ## 1. 변경 통합
 
 - [ ] 최신 `origin/dev`를 동기화하고 변경 범위에 맞는 로컬 검증을 통과시킨 뒤 `dev`에 직접 푸시한다.
@@ -45,15 +47,15 @@ flutter build apk --debug
 - [ ] system back, 하단 내비게이션, deep link 호환 경로를 확인한다.
 - [ ] 익명 사용자 두 명이 공유 코드로 같은 여행에 들어가 변경을 실시간 확인한다.
 - [ ] 비행기 모드·재접속에서 캐시 데이터, pending write, 실패 복구 문구를 확인한다.
-- [ ] 카메라·Photo Picker는 필요한 순간에만 권한 또는 시스템 선택기를 사용하고, 영수증 외부 전송 고지가 먼저 보이는지 확인한다.
+- [ ] **C:** 카메라·Photo Picker는 필요한 순간에만 권한 또는 시스템 선택기를 사용하고, 영수증 외부 전송 고지가 먼저 보이는지 확인한다.
 
 ## 4. 외부 서비스와 개인정보
 
-- [ ] Android Maps 키는 package/SHA 제한, backend Places·OCR·번역 키는 서버 API 제한을 적용한다.
-- [ ] Firebase budget alert와 Maps·Places·OCR·Translation quota를 정한다.
+- [ ] **B:** Android Maps 키는 package/SHA 제한, backend Places 키는 서버 API 제한을 적용한다. **C:** OCR·번역 provider도 서버 경계에서 제한한다.
+- [ ] **B:** Firebase budget alert와 Maps·Places quota를 정한다. **C:** OCR·Translation의 비용·호출 제한을 정한다.
 - [ ] `dart_defines.local.json`, Firebase 설정, Functions secret과 signing 자료가 Git에 포함되지 않았는지 확인한다.
 - [ ] Android cloud backup과 기기 간 전송에서 앱의 인증·캐시 데이터가 제외되는지 manifest와 backup rules를 확인한다.
-- [ ] OCR 이미지·원문·임시 초안이 Storage, Firestore, 로그와 분석 이벤트에 남지 않는지 확인한다.
+- [ ] **C:** OCR 이미지·원문·임시 초안이 Storage, Firestore, 로그와 분석 이벤트에 남지 않는지 확인한다.
 - [ ] 개인정보처리방침과 Google Play Data Safety 초안을 팀이 검토한다.
 
 ## 5. 배포 승인

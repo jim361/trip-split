@@ -17,7 +17,7 @@
 - 병렬 가능: 순수 정산 엔진과 mock repository 기반 UI는 Firebase 연결 전에 개발할 수 있다.
 - 후행: Task 7 OCR은 이 문서의 `Expense`, `ReceiptItem`, 검증 함수와 지출 저장 흐름을 재사용한다.
 - P0: 수동 `equal/custom`, 통화별 실시간 원장 재계산, 개인 소비 조회와 송금 제안까지 포함한다.
-- P1: `itemized`, 할인·봉사료·기타 조정과 Task 7 OCR 초안을 연결한다.
+- P1(Phase C): P0(Phase B) 통합 검증 뒤 `itemized`, 할인·봉사료·기타 조정과 Task 7 OCR 초안을 실제 기기·provider에 연결한다. 선행 구현된 validator·화면·mock 테스트는 유지하며 외부 OCR 비교/연결은 현재 착수 범위가 아니다.
 - 후속: 복수 결제자, 자동 환율, 송금 완료 상태, 정산 snapshot, 수정 이력과 특수 보상 규칙은 제외한다.
 
 ## Canonical 데이터 계약
@@ -90,7 +90,7 @@ type Expense = {
 - `createExpense`는 서버가 새 문서 ID를 생성한다. UI는 중복 제출을 막고 자동 재시도하지 않는다. 통신 중단으로 결과가 불명확하면 원장 재조회와 사용자 확인 후 다시 등록한다. exactly-once 재시도는 이 단계의 보장 범위가 아니다.
 - `updateExpense`는 부분 patch가 아닌 전체 draft 교체다. 선택 필드 생략은 삭제를 뜻하며 `createdBy/createdAt`은 보존한다. 없는 지출은 `not-found`다.
 - `deleteExpense`는 Auth·여행 멤버 확인 후 실행하며 이미 없는 지출에도 같은 `{ expenseId }`를 반환한다. 실제 결제·송금 API를 호출하지 않는다.
-- P0는 `equal/custom`과 `source=manual`, 빈 `receiptItems`만 저장한다. `itemized`·OCR는 지원되기 전 `invalid-argument`로 거부하며 검증 없이 저장하지 않는다. `equal`은 서버 계산과 제출 배분을 대조하고 `custom`은 소비자 집합·총액·정수·음수 부담액을 검증한다.
+- P0 수동 입력은 `equal/custom`과 `source=manual`, 빈 `receiptItems`를 사용한다. 현재 서버는 선행 구현된 `itemized`도 전체 검증 후 허용하므로 P0 범위 정리를 이유로 이를 다시 거부하거나 테스트를 삭제하지 않는다. `equal`은 서버 계산과 제출 배분을 대조하고 `custom`은 소비자 집합·총액·정수·음수 부담액을 검증한다. 실제 OCR 입력은 P1 연결 범위다.
 - 새 지출은 결제자와 소비자 모두 같은 여행의 활성 Participant여야 한다. 수정 시 기존 지출의 결제자·소비자로 이미 포함된 비활성 Participant는 유지할 수 있으나 새 비활성 Participant를 추가하지 않는다. 유효한 `placeId`·`itineraryItemId`도 같은 여행에서 조회한다.
 - participant·참조·기존 지출 확인과 쓰기는 한 transaction 경계에서 처리한다. 모든 오류는 공통 `details.appCode`, `retryable`, 선택적 `field` wire를 따른다.
 - Flutter `TripRepositories.createExpense`는 응답의 Expense를 반환하고 update/delete는 성공 확인 뒤 기존 Stream을 사용한다. 읽기는 Firestore, 쓰기는 Callable이며 Rules의 직접 쓰기 차단을 유지한다.
@@ -216,6 +216,8 @@ type Expense = {
 - [ ] 정산 문구의 모든 송금액 합계가 채무자 net 및 채권자 net과 일치하는지 테스트한다.
 
 ## 2026-09-14 Flutter 수동 지출 흐름 인계
+
+아래는 초기 mock 구현 당시 이력이다. 같은 날 뒤의 정산·서버 확장으로 Callable/Flutter adapter·전체 통화별 개인 집계·송금 복사는 구현됐다. 초기 `미완료`·`후속` 문구를 현재 착수 목록으로 사용하지 않고 [단계별 안내](../../docs/development-kickoff.md)를 따른다.
 
 - 기존 비용 화면의 `지출 추가 → 기본 정보 → 배분 확인 → 저장 → 상세 → 비용 목록`을 연결했다. 지출 행을 누르면 상세를 열고 수정·삭제할 수 있다. 입력 화면은 두 칸 배치를 사용하며 큰 글씨에서는 한 칸으로 전환한다.
 - 첫 범위는 `manual`·빈 `receiptItems`·`equal/custom`이다. 기존 itemized/OCR 지출은 조회만 유지하고 수동 폼으로 덮어쓰지 않는다. 실제 비용 결제·송금은 수행하지 않는다.

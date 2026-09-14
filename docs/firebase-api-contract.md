@@ -8,7 +8,7 @@
 - Flutter의 지출 create/update/delete는 Callable을 사용한다. Rules의 expense 직접 쓰기 거부는 유지한다.
 - 예약·체크리스트 모델, mock/Firestore repository와 Rules를 구현했다. 기본 mock은 메모리 데이터이며 다른 프로세스와 공유되지 않는다.
 - 장소 검색·링크와 OCR는 인증·권한·입력 검증 후 Emulator에서만 샘플을 반환한다. 외부 Google Places/OCR 서비스는 연결되지 않았으며 Emulator 밖에서는 unavailable이다.
-- Flutter 내부 지도는 mock 표시 모델이고 외부 지도 URL 열기는 Android adapter로 연결했다. 실제 Google Maps SDK는 후속이다.
+- Flutter 내부 지도는 mock 표시 모델이고 외부 지도 URL 열기는 Android adapter로 연결했다. 실제 Google Maps SDK와 Places는 현재 Phase B(P0)에 필요한 연결이며 OCR·번역은 B 완료 뒤 C(P1)다.
 - 실제 Firebase 운영 프로젝트·secret 등록·Rules/Functions/index 배포는 이번 작업에 포함하지 않는다.
 
 ## Firestore 경로와 쓰기 주체
@@ -68,5 +68,6 @@ Android Firebase SDK가 emulator에서도 API key 형식을 확인하므로 `dar
 
 1. 팀원들이 신규 handler·검증·Rules와 계약을 인계받아 회귀 검증하고 예외 사례를 보강한다.
 2. 사용자 담당으로 Android 두 클라이언트의 전체 생성·편집·재정렬·정산 흐름과 카메라·사진·공유·지도 Intent를 확인한다.
-3. 승인된 환경에서 Google Places/Maps와 OCR·번역 provider, timeout·오류·보관 정책을 연결한다. 외부 검색/OCR 장애에도 직접 입력 경로를 유지한다.
-4. 운영 프로젝트·Auth/SHA/OAuth 설정·비용 한도·배포 승인을 확인한 뒤 Functions/Rules/index를 배포한다. `.trip.json`과 출시 QA는 TASK-08/09 후속이다.
+3. B에서는 승인된 Google Places/Maps와 timeout·오류 처리를 연결한다. 핵심 데이터 안정화 뒤 TASK-08 `.trip.json` 백업/복원을 실제 여행 전에 검증하고 두 Android 클라이언트의 전체 핵심 흐름을 확인한다.
+4. B 완료 뒤 C에서 itemized·OCR·번역 provider와 이미지/보관·timeout 정책, 계정 복구·TASK-09 출시 품질을 검증한다. 외부 검색/OCR 장애에도 직접 입력 경로를 유지한다. 이미 구현된 P1 mock·validator는 삭제하지 않는다.
+5. 단계 진입과 운영 실행 승인은 별개다. 실제 연결마다 프로젝트·Auth/SHA/OAuth 설정·비용 한도·배포 승인 범위를 확인한다. 시트는 Flutter 담당 병행 작업이며 새 서버 API는 추가하지 않는다. [개발 시작 안내](development-kickoff.md)를 따른다.

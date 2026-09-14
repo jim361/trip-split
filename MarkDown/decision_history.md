@@ -424,3 +424,13 @@ Flutter Web은 공식 지원되므로 후속 구현에 기술적 장애는 없�
 - 이번 반영은 고정 샘플과 문서의 commit/push이며 시트 화면·생성 구현 완료나 운영 연결·main merge를 의미하지 않는다.
 
 상세: [시트 내보내기 인계](../docs/sheet-export.md), [고정 샘플](../docs/fixtures/tokyo-2025-sheet1/README.md).
+
+## 29. 2026-09-14 - 담당 지시와 실행 단계 재점검
+
+- 사용자가 OCR은 후속 개발로 이해하고 있었음을 확인하고, 다른 지시도 단계별로 정리하도록 요청했다. 현재 착수는 Phase B(P0), 실제 OCR·번역은 B 검증 뒤 Phase C(P1)로 명시한다. 선행 구현된 itemized·영수증 UI·mock·validator와 기존 테스트는 유지한다.
+- 문서마다 다르게 쓰던 Phase A~D를 기반 → 핵심 통합 → 확장/출시 품질 → 후속으로 맞춘다. 기존 TASK/기능 ID, 역할, Firestore·Callable 계약은 바꾸지 않는다.
+- 최소 예약·체크리스트는 기존 요구사항대로 B(P0)다. 기본 내 여행 목록은 27번의 최신 화면 결정과 구현대로 B에 포함하고 Google 계정 연결/복구의 실제 검증과 구분한다.
+- 실제 Google 지도·장소 검색은 B, 실제 경로/이동 시간은 D다. `.trip.json`은 핵심 데이터 안정화 뒤 B 마감에서 실제 여행 전 백업/복원을 검증한다. Sheets 출력은 사용자 병행 작업으로 B/C 필수 조건에 추가하지 않고, Sheets/CSV 가져오기와도 구분한다.
+- 오래된 회의 표·체크리스트와 최신 구현 기록의 차이를 표시한다. 서버 Emulator 성공을 Android 두 기기·실제 외부 연결 완료로 처리하지 않는다. 과거 commit/push 승인을 새 배포·PR 작업 승인으로 일반화하지 않는다.
+
+기준: [요구사항](requirements.md), [실행 단계](task/tasks.md#4-구현-및-통합-순서), [담당별 현재 작업과 통과 조건](../docs/development-kickoff.md).

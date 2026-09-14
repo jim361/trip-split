@@ -4,6 +4,8 @@
 
 ## 디스코드에 붙여넣을 글
 
+2026-09-14 단계 점검을 반영한 안내다. 아래 구현 이력과 현재 착수 단계는 구분한다.
+
 ```text
 [Trip Split 개발 현황 공유]
 
@@ -20,14 +22,22 @@
 담당은 그대로입니다.
 - 저는 Flutter 전체·공통·통합과 Android QA를 맡습니다.
 - 일정·지도 백엔드는 backend/src/places와 관련 Rules/테스트를 검토하고 URL·동시 변경 예외부터 보강해 주세요.
-- 정산·영수증 백엔드는 backend/src/settlement, backend/src/ocr의 금액·참조·항목 검증을 확인하고 실제 OCR 연결 준비를 이어가 주세요.
+- 정산 백엔드는 backend/src/settlement의 equal/custom 지출 CRUD·금액·권한·참조·응답 유실을 확인하고 두 기기 정산 QA를 이어가 주세요.
+
+현재 단계는 Phase B(P0)입니다.
+- 일정·장소·최소 예약/체크리스트·참여자·수동 정산·기본 내 여행/공유/설정을 통합 검증합니다.
+- 실제 Google 지도 SDK는 제가, Google Places 검색·링크 provider는 일정·지도 백엔드가 승인된 환경에서 연결합니다.
+- 핵심 데이터가 안정되면 .trip.json 백업·새 여행 복원을 실제 여행 전에 확인합니다.
+- Phase C(P1)는 B 완료 뒤 itemized·영수증 OCR/번역·계정 복구·출시 품질을 검증하는 단계입니다. 기존 UI·mock·validator는 유지하되 OCR 비교/연결은 지금 시작할 필수 작업이 아닙니다.
+- 시트 내보내기 양식·미리보기는 제가 기존 repository/Dart 정산을 활용해 병행합니다. 별도 시트용 서버는 만들지 않습니다.
+- Web·iOS·NAVER·실제 경로 계산·자동 환율·Gemini 등은 후속이며 현재 작업에 추가하지 않습니다.
 
 기반 함수는 이미 있으니 새로 만들기보다 최신 코드를 먼저 보고 이어가면 됩니다.
 Node 22 / Java 21에서 npm ci → npm run verify:fast → npm run test:emulator로 시작하면 됩니다.
 작업 전과 push 직전 origin/dev를 동기화하고, 전체 검증 후 dev에 직접 반영합니다.
 
 검증: Flutter 117개, React 59개, backend 32개, Firebase Emulator 21개 통과. Android debug APK 빌드 완료.
-Google 장소 검색/OCR는 아직 Emulator 샘플입니다. 실제 유료 API·운영 배포·두 Android 기기 전체 QA는 후속입니다.
+Google 장소 검색/OCR는 아직 Emulator 샘플입니다. 두 Android 기기 핵심 QA와 Google 지도/검색은 B, 실제 OCR/번역은 C입니다. 실제 API·운영 배포는 해당 환경과 실행 범위를 확인한 뒤 진행합니다.
 React Pages 목업에 이번 Flutter 화면이 자동 반영되는 것은 아닙니다.
 
 시작 안내: https://github.com/jim361/trip-split/blob/dev/docs/development-kickoff.md
