@@ -8,3 +8,4 @@ backend/lib
 firebase-debug.log
 firestore-debug.log
 MarkDown
+graphify-out

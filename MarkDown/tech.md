@@ -84,6 +84,7 @@ trips/{tripId}
   endDate
   ownerUid
   shareCode
+  referenceVersion        # 내부 참조 쓰기 직렬화 버전, 구형 생략=0
   createdAt
   updatedAt
 
@@ -442,5 +443,5 @@ Web을 추가할 때는 `MapCapabilities`, 로그인, 파일·카메라와 공�
 - `searchPlaces.query` wire는 string이다. 장소·OCR handler는 Auth/member와 입력을 검증하고 Emulator에서만 샘플을 반환한다. 외부 서비스 미연결은 unavailable이다.
 - 지출 validator는 equal/custom/itemized를 검사한다. 총액 분할은 source=manual, 빈 receiptItems. itemized는 행/조정 합계와 참여자별 집계·총액을 함께 검증한다. 감사 정보는 서버가 기록한다.
 - 준비 예약 type: flight/stay/transport/ticket/other, status: planned/booked/cancelled. 체크리스트 scope: shared/personal. personal은 비공개 권한이 아니다.
-- 장소 참조 중 삭제 제한은 현재 화면 검사다. 서버 원자적 참조 삭제 정책은 후속 검토이며 동시 삭제 시 재선택/해제로 복구한다.
+- IMB-03 후속: 장소·일정 삭제는 `deletePlace`/`deleteItineraryItem` Callable이 참조 중이면 `failed-precondition`으로 거부한다. 장소의 일정·지출 참조와 일정의 예약·지출 참조를 검사한다. 참조 생성/교체/해제와 삭제가 여행 `referenceVersion`을 transaction에서 +1 갱신해 빈 역참조 조회 뒤 동시 연결을 보호한다. 일정·예약 Rules는 같은 여행 대상 존재(`existsAfter`)와 버전 갱신을 강제하며 대상 직접 삭제는 거부한다. 구형 버전 생략은 0, 원장·다른 문서는 자동 삭제하지 않는다. 실제 배포는 별도 승인이다.
 - [현재 화면·wire 명세](../docs/frontend-api-handoff.md), [실제 연결 상태](../docs/firebase-api-contract.md), [작업 공유](../docs/development-update-2026-09-14.md)를 함께 확인한다.

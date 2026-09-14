@@ -1,0 +1,276 @@
+{
+  "node_count": 3082,
+  "unverified_node_count": 0,
+  "raw_edge_count": 5856,
+  "non_object_edges": 0,
+  "missing_endpoint_edges": 0,
+  "dangling_endpoint_edges": 260,
+  "self_loop_edges": 9,
+  "valid_candidate_edges": 5596,
+  "exact_duplicate_edges": 3,
+  "directed_unique_endpoint_pairs": 4862,
+  "directed_same_endpoint_collapsed_edges": 734,
+  "undirected_unique_endpoint_pairs": 4787,
+  "undirected_same_endpoint_collapsed_edges": 809,
+  "same_endpoint_group_count": 356,
+  "relation_variant_groups": 40,
+  "source_file_variant_groups": 0,
+  "source_location_variant_groups": 310,
+  "context_variant_groups": 9,
+  "post_build_graph_type": "Graph",
+  "post_build_node_count": 3082,
+  "post_build_edge_count": 4787,
+  "post_build_error": "",
+  "producer_suppression": {
+    "path": "C:\\Users\\Josh\\.codex\\tools\\graphify\\Lib\\site-packages\\graphify\\extract.py",
+    "total_sites": 12,
+    "sites": [
+      {
+        "line": 1336,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1869,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 1871,
+        "name": "seen_doc_refs",
+        "tuple_arity": 0,
+        "sample": "seen_doc_refs: set[str] = set()"
+      },
+      {
+        "line": 2241,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = {n[\"id\"] for n in nodes}"
+      },
+      {
+        "line": 2388,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids = {n.get(\"id\") for n in nodes}"
+      },
+      {
+        "line": 3026,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 3195,
+        "name": "seen_keys",
+        "tuple_arity": 0,
+        "sample": "seen_keys: set[tuple] = set()"
+      },
+      {
+        "line": 4887,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 4995,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5074,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5589,
+        "name": "seen_ids",
+        "tuple_arity": 0,
+        "sample": "seen_ids: set[str] = set()"
+      },
+      {
+        "line": 5590,
+        "name": "seen_edges",
+        "tuple_arity": 4,
+        "sample": "seen_edges: set[tuple[str, str, str, str | None]] = set()"
+      }
+    ],
+    "error": ""
+  },
+  "examples": [
+    {
+      "source": "frontend_lib_shared_theme_app_theme",
+      "target": "static_const",
+      "edge_count": 25,
+      "relations": [
+        "references"
+      ],
+      "source_files": [
+        "frontend/lib/shared/theme/app_theme.dart"
+      ],
+      "source_locations": [
+        "L10",
+        "L11",
+        "L12",
+        "L13",
+        "L15",
+        "L16",
+        "L17",
+        "L18",
+        "L19",
+        "L20",
+        "L21",
+        "L23",
+        "L24",
+        "L25",
+        "L26",
+        "L27",
+        "L28",
+        "L30",
+        "L33",
+        "L36",
+        "L5",
+        "L6",
+        "L7",
+        "L8",
+        "L9"
+      ],
+      "contexts": [
+        "variable_type"
+      ]
+    },
+    {
+      "source": "frontend_integration_test_two_device_test",
+      "target": "frontend_integration_test_two_device_test_tapkey",
+      "edge_count": 16,
+      "relations": [
+        "defines"
+      ],
+      "source_files": [
+        "frontend/integration_test/two_device_test.dart"
+      ],
+      "source_locations": [
+        "L111",
+        "L113",
+        "L114",
+        "L120",
+        "L122",
+        "L165",
+        "L167",
+        "L175",
+        "L178",
+        "L179",
+        "L227",
+        "L229",
+        "L230",
+        "L313",
+        "L83",
+        "L87"
+      ],
+      "contexts": [
+        ""
+      ]
+    },
+    {
+      "source": "frontend_lib_domain_models",
+      "target": "frontend_lib_domain_models_epochmillis",
+      "edge_count": 16,
+      "relations": [
+        "defines",
+        "references"
+      ],
+      "source_files": [
+        "frontend/lib/domain/models.dart"
+      ],
+      "source_locations": [
+        "L106",
+        "L107",
+        "L125",
+        "L128",
+        "L158",
+        "L159",
+        "L180",
+        "L181",
+        "L214",
+        "L215",
+        "L257",
+        "L3",
+        "L343",
+        "L344",
+        "L86",
+        "L87"
+      ],
+      "contexts": [
+        "",
+        "variable_type"
+      ]
+    },
+    {
+      "source": "frontend_lib_domain_models",
+      "target": "frontend_lib_domain_models_entityid",
+      "edge_count": 15,
+      "relations": [
+        "defines",
+        "references"
+      ],
+      "source_files": [
+        "frontend/lib/domain/models.dart"
+      ],
+      "source_locations": [
+        "L1",
+        "L102",
+        "L123",
+        "L148",
+        "L175",
+        "L202",
+        "L203",
+        "L245",
+        "L246",
+        "L252",
+        "L288",
+        "L325",
+        "L326",
+        "L338",
+        "L339"
+      ],
+      "contexts": [
+        "",
+        "variable_type"
+      ]
+    },
+    {
+      "source": "frontend_lib_domain_models",
+      "target": "string",
+      "edge_count": 15,
+      "relations": [
+        "references"
+      ],
+      "source_files": [
+        "frontend/lib/domain/models.dart"
+      ],
+      "source_locations": [
+        "L104",
+        "L177",
+        "L178",
+        "L205",
+        "L210",
+        "L211",
+        "L213",
+        "L250",
+        "L251",
+        "L254",
+        "L256",
+        "L340",
+        "L63",
+        "L83",
+        "L84"
+      ],
+      "contexts": [
+        "variable_type"
+      ]
+    }
+  ]
+}

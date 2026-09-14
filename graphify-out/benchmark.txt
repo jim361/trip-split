@@ -1,0 +1,31 @@
+Graphify 모델 기반 조회 크기 추정; 정확도·실측 비용 절감 검증 아님.
+{
+  "corpus_tokens": 432382,
+  "corpus_words": 324287,
+  "nodes": 3080,
+  "edges": 4777,
+  "avg_query_tokens": 9784,
+  "reduction_ratio": 44.2,
+  "per_question": [
+    {
+      "question": "referenceVersion deletePlace",
+      "query_tokens": 14904,
+      "reduction": 29.0
+    },
+    {
+      "question": "FirestoreTripRepositories itinerary",
+      "query_tokens": 7063,
+      "reduction": 61.2
+    },
+    {
+      "question": "Google Sheets",
+      "query_tokens": 11022,
+      "reduction": 39.2
+    },
+    {
+      "question": "IMB-03",
+      "query_tokens": 6148,
+      "reduction": 70.3
+    }
+  ]
+}

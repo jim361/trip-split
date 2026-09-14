@@ -83,6 +83,12 @@ service cloud.firestore {
     }
 
     match /trips/{tripId} {
+      function referenceWrite() {
+        let trip = /databases/$(database)/documents/trips/$(tripId);
+        return getAfter(trip).data.get('referenceVersion', 0)
+          == get(trip).data.get('referenceVersion', 0) + 1;
+      }
+
       function validTrip(data) {
         return data.keys().hasAll([
           'title', 'countryCode', 'timeZone', 'mapProvider', 'defaultCurrency',
@@ -91,7 +97,7 @@ service cloud.firestore {
           && data.keys().hasOnly([
             'title', 'countryCode', 'timeZone', 'mapProvider', 'defaultCurrency',
             'startDate', 'endDate', 'ownerUid', 'shareCode', 'createdAt', 'updatedAt',
-            'regionType', 'currency'
+            'regionType', 'currency', 'referenceVersion'
           ])
           && data.title is string
           && data.title.size() > 0
@@ -106,6 +112,8 @@ service cloud.firestore {
           && data.defaultCurrency in ['KRW', 'JPY']
           && (!('regionType' in data) || data.regionType in ['domestic', 'international'])
           && (!('currency' in data) || data.currency == data.defaultCurrency)
+          && (!('referenceVersion' in data) || (data.referenceVersion is int
+            && data.referenceVersion >= 0 && data.referenceVersion <= 9007199254740991))
           && validDate(data.startDate)
           && validDate(data.endDate)
           && data.startDate <= data.endDate
@@ -127,8 +135,10 @@ service cloud.firestore {
         && request.resource.data.shareCode == resource.data.shareCode
         && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.updatedAt == request.time
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['referenceVersion'])
+          || request.resource.data.get('referenceVersion', -1) == resource.data.get('referenceVersion', 0) + 1)
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['title', 'startDate', 'endDate', 'updatedAt']);
+          .hasOnly(['title', 'startDate', 'endDate', 'updatedAt', 'referenceVersion']);
 
       match /members/{memberId} {
         function validMember(data) {
@@ -249,7 +259,7 @@ service cloud.firestore {
             'name', 'address', 'lat', 'lng', 'provider', 'source', 'providerPlaceId',
             'sourceUrl', 'memo', 'updatedAt'
           ]);
-        allow delete: if isTripMember(tripId);
+        allow delete: if false; // deletePlace Callable에서 역참조와 동시 연결을 검사한다.
       }
 
       match /itinerary/{itemId} {
@@ -266,7 +276,8 @@ service cloud.firestore {
             && optionalTime(data, 'startTime')
             && optionalTime(data, 'endTime')
             && (!('placeId' in data)
-              || (data.placeId is string && data.placeId.size() > 0))
+              || (data.placeId is string && data.placeId.size() > 0
+                && existsAfter(/databases/$(database)/documents/trips/$(tripId)/places/$(data.placeId))))
             && data.title is string
             && data.title.size() > 0
             && data.title.size() <= 160
@@ -278,11 +289,18 @@ service cloud.firestore {
         }
 
         allow read: if isTripMember(tripId);
-        allow create, update: if isTripMember(tripId)
+        allow create: if isTripMember(tripId)
+          && (!('placeId' in request.resource.data) || referenceWrite())
           && validItinerary(request.resource.data)
           && request.resource.data.updatedBy == request.auth.uid
           && request.resource.data.updatedAt == request.time;
-        allow delete: if isTripMember(tripId);
+        allow update: if isTripMember(tripId)
+          && (request.resource.data.get('placeId', null) == resource.data.get('placeId', null)
+            || referenceWrite())
+          && validItinerary(request.resource.data)
+          && request.resource.data.updatedBy == request.auth.uid
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if false; // deleteItineraryItem Callable만 허용한다.
       }
 
       match /expenses/{expenseId} {
@@ -313,11 +331,16 @@ service cloud.firestore {
             && (!('url' in data) || (data.url is string && data.url.size() <= 2048 && data.url.matches('^https?://[^ /@?#]+([/?#][^ ]*)?$')))
             && (!('memo' in data) || (data.memo is string && data.memo.size() <= 2000))
             && (!('itineraryItemId' in data) || (data.itineraryItemId is string
-              && exists(/databases/$(database)/documents/trips/$(tripId)/itinerary/$(data.itineraryItemId))));
+              && existsAfter(/databases/$(database)/documents/trips/$(tripId)/itinerary/$(data.itineraryItemId))));
         }
-        allow read, delete: if isTripMember(tripId);
-        allow create: if isTripMember(tripId) && valid(request.resource.data) && validPreparationCreate(request.resource.data);
-        allow update: if isTripMember(tripId) && valid(request.resource.data) && validPreparationUpdate(request.resource.data);
+        allow read: if isTripMember(tripId);
+        allow delete: if isTripMember(tripId)
+          && (!('itineraryItemId' in resource.data) || referenceWrite());
+        allow create: if isTripMember(tripId) && valid(request.resource.data) && validPreparationCreate(request.resource.data)
+          && (!('itineraryItemId' in request.resource.data) || referenceWrite());
+        allow update: if isTripMember(tripId) && valid(request.resource.data) && validPreparationUpdate(request.resource.data)
+          && (request.resource.data.get('itineraryItemId', null) == resource.data.get('itineraryItemId', null)
+            || referenceWrite());
       }
       match /checklistItems/{checklistItemId} {
         function valid(data) {

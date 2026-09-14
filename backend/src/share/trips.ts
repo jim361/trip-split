@@ -81,6 +81,7 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
           shareCode: code,
           createdAt: timestamp,
           updatedAt: timestamp,
+          referenceVersion: 0,
           // React GitHub Pages 목업이 교체될 때까지만 유지하는 legacy 필드입니다.
           regionType: tripInput.countryCode === "KR" ? "domestic" : "international",
           currency: tripInput.defaultCurrency,

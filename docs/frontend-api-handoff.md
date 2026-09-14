@@ -27,7 +27,7 @@
 
 - **시간순 정렬**: 사용자 확인 후 시간 있는 일정 우선, 같은 시각은 기존 순서, 시간 없는 일정은 끝. 날짜·A/B 그룹 밖은 변경하지 않는다.
 - **기간 수정**: 기존 일정의 날짜를 자동 변경하거나 삭제하지 않는다. 기간 밖 일정도 날짜 선택에서 계속 접근하며 설정에 안내한다.
-- **장소 삭제**: 화면은 현재 구독된 일정·지출에서 참조 중이면 연결 위치를 보여주고 삭제를 막는다. 이는 클라이언트 안내이며 서버의 원자적 참조 삭제 제한은 아니다. 다른 클라이언트와 삭제/연결이 경합할 수 있으므로 편집기는 삭제된 참조를 표시하고 저장 전 재선택·해제를 요구한다.
+- **장소·일정 삭제**: 화면 안내에 더해 서버 Callable도 참조 중 삭제를 거부한다. 장소는 일정·지출, 일정은 예약·지출의 연결을 먼저 명시적으로 해제해야 한다. 여행 referenceVersion을 참조 저장·해제와 삭제가 공유하여 동시 연결을 보호한다. 기존 고아 참조는 편집기에서 재선택·해제한다. 문서·정산 내역을 자동 삭제하지 않는다.
 - **개인 체크리스트**: personal은 분류이며 비공개 접근 권한이 아니다. 해당 여행의 모든 멤버가 읽고 편집한다. 민감 문서 첨부는 제공하지 않는다.
 - **내 계정 연결**: 요청자의 Auth UID만 사용한다. 같은 여행에서 하나만 연결하고 기존 본인 연결을 해제하며 새 연결을 transaction으로 적용한다. 다른 계정에 연결된 참여자·비활성 대상은 거부한다.
 - **통화**: JPY/KRW 최소 단위 정수. 다른 통화는 합산·환산하지 않는다. OCR 미지원 통화는 사용자가 지원 통화와 금액을 확인하기 전 저장을 막는다.
@@ -36,7 +36,7 @@
 
 ## 3. Callable 목록
 
-아래 요청과 응답은 Firebase Callable SDK의 `data`다. 기존 9개 이름은 유지하고 공통 2개를 추가했다. Auth UID는 토큰에서 얻는다. 리전은 `asia-northeast3`다.
+아래 요청과 응답은 Firebase Callable SDK의 `data`다. 기존 11개 이름을 유지하고 삭제 Callable 2개를 추가했다. Auth UID는 토큰에서 얻는다. 리전은 `asia-northeast3`다.
 
 | 이름 / 소유                | 요청                                        | 성공 응답                    | 현재 구현                                             |
 | -------------------------- | ------------------------------------------- | ---------------------------- | ----------------------------------------------------- |
@@ -47,12 +47,16 @@
 | linkMyParticipant / 공통   | `{tripId, participantId: string 또는 null}` | `{tripId, participantId}`    | null은 본인 연결 해제, 계정 경쟁 transaction          |
 | searchPlaces / 일정·지도   | `{tripId, query: string}`                   | `PlaceCandidate[]`           | Auth·멤버·입력·provider 검증, Emulator fixture        |
 | parsePlaceLink / 일정·지도 | `{tripId, url: string}`                     | `PlaceCandidate`             | URL 검증, Emulator fixture                            |
+| deletePlace / 공통         | `{tripId, placeId}`                         | `{placeId}`                  | 멤버만 삭제, 일정·지출 참조 중 거부, 없는 ID는 성공   |
+| deleteItineraryItem / 공통 | `{tripId, itineraryItemId}`                 | `{itineraryItemId}`          | 멤버만 삭제, 예약·지출 참조 중 거부, 없는 ID는 성공   |
 | createExpense / 정산       | `{tripId, draft}`                           | `{expense: Expense}`         | 전체 runtime 검증·참조 확인·서버 감사 정보            |
 | updateExpense / 정산       | `{tripId, expenseId, draft}`                | `{expense: Expense}`         | 전체 draft 교체, 생성 감사 정보 보존                  |
 | deleteExpense / 정산       | `{tripId, expenseId}`                       | `{expenseId}`                | 멤버만 삭제, 없는 ID 재삭제도 성공                    |
 | parseReceipt / 정산·영수증 | `{tripId, imageBase64, mimeType}`           | `ParseReceiptResponse`       | Auth·멤버·MIME/크기 검증, Emulator fixture, 저장 없음 |
 
 searchPlaces/parsePlaceLink/parseReceipt는 Emulator 밖에서 `unavailable`을 반환한다. 실제 인식·검색 결과를 흉내 내 운영에 반환하지 않는다. backend 검색 후보의 source는 googleSearch, 링크 후보는 googleMapsUrl이다. 기존 Flutter 검색 fixture는 회귀를 위해 원래 source 메타데이터를 보존한다.
+
+참조 중 삭제 오류는 `failed-precondition`, `details={appCode: conflict, retryable: false, field: placeId 또는 itineraryItemId}`다. 직접 Firestore 삭제는 거부한다. 일정 placeId·예약 itineraryItemId 변경과 연결된 예약 삭제는 같은 transaction에서 여행 `referenceVersion`을 +1 갱신한다. 구형 필드 생략은 0이고 단순 제목/order 수정은 기존 참조를 바꾸지 않으면 버전 증가를 요구하지 않는다. [저장 경계 상세](firebase-api-contract.md)를 함께 적용한다.
 
 ### 내 여행 인덱스와 기존 데이터
 

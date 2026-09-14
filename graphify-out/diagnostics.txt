@@ -1,0 +1,40 @@
+[graphify] MultiDiGraph edge-collapse diagnostic
+input: <in-memory>
+input_stage: provided JSON (normal graph.json is post-build)
+effective_directed: <direct-call>
+nodes: 3082
+unverified_code_nodes: 0
+raw_edges: 5856
+valid_candidate_edges: 5596
+missing_endpoint_edges: 0
+dangling_endpoint_edges: 260
+self_loop_edges: 9
+exact_duplicate_edges: 3
+directed_unique_endpoint_pairs: 4862
+directed_same_endpoint_collapsed_edges: 734
+undirected_unique_endpoint_pairs: 4787
+undirected_same_endpoint_collapsed_edges: 809
+same_endpoint_group_count: 356
+relation_variant_groups: 40
+source_file_variant_groups: 0
+source_location_variant_groups: 310
+context_variant_groups: 9
+post_build_graph_type: Graph
+post_build_edges: 4787
+producer_suppression_sites: 12
+producer_suppression_examples:
+  - L1336 seen_ids arity=unknown
+  - L1869 seen_ids arity=unknown
+  - L1871 seen_doc_refs arity=unknown
+  - L2241 seen_ids arity=unknown
+  - L2388 seen_ids arity=unknown
+  - L3026 seen_keys arity=unknown
+  - L3195 seen_keys arity=unknown
+  - L4887 seen_ids arity=unknown
+examples:
+  - frontend_lib_shared_theme_app_theme -> static_const edges=25 relations=['references'] locations=['L10', 'L11', 'L12', 'L13', 'L15', 'L16', 'L17', 'L18', 'L19', 'L20', 'L21', 'L23', 'L24', 'L25', 'L26', 'L27', 'L28', 'L30', 'L33', 'L36', 'L5', 'L6', 'L7', 'L8', 'L9'] contexts=['variable_type']
+  - frontend_integration_test_two_device_test -> frontend_integration_test_two_device_test_tapkey edges=16 relations=['defines'] locations=['L111', 'L113', 'L114', 'L120', 'L122', 'L165', 'L167', 'L175', 'L178', 'L179', 'L227', 'L229', 'L230', 'L313', 'L83', 'L87'] contexts=['']
+  - frontend_lib_domain_models -> frontend_lib_domain_models_epochmillis edges=16 relations=['defines', 'references'] locations=['L106', 'L107', 'L125', 'L128', 'L158', 'L159', 'L180', 'L181', 'L214', 'L215', 'L257', 'L3', 'L343', 'L344', 'L86', 'L87'] contexts=['', 'variable_type']
+  - frontend_lib_domain_models -> frontend_lib_domain_models_entityid edges=15 relations=['defines', 'references'] locations=['L1', 'L102', 'L123', 'L148', 'L175', 'L202', 'L203', 'L245', 'L246', 'L252', 'L288', 'L325', 'L326', 'L338', 'L339'] contexts=['', 'variable_type']
+  - frontend_lib_domain_models -> string edges=15 relations=['references'] locations=['L104', 'L177', 'L178', 'L205', 'L210', 'L211', 'L213', 'L250', 'L251', 'L254', 'L256', 'L340', 'L63', 'L83', 'L84'] contexts=['variable_type']
+note: normal graph.json is post-build; raw producer loss must be measured earlier.

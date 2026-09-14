@@ -3,6 +3,7 @@ import { onCall, type CallableRequest } from "firebase-functions/v2/https";
 import { appError, requireTripMember } from "../shared/callable";
 import { asRecord, requireDocumentId } from "../shared/input";
 import { validateExpenseDraft } from "./expenseValidation";
+import { referenceUpdate } from "../shared/references";
 
 async function saveExpense(request: CallableRequest<unknown>, updating: boolean) {
   const input = asRecord(request.data);
@@ -14,6 +15,7 @@ async function saveExpense(request: CallableRequest<unknown>, updating: boolean)
     ? trip.collection("expenses").doc(requireDocumentId(input, "expenseId"))
     : trip.collection("expenses").doc();
   await getFirestore().runTransaction(async (tx) => {
+    const tripSnapshot = await tx.get(trip);
     const previous = updating ? await tx.get(ref) : null;
     if (updating && !previous?.exists) throw appError("not-found", "이미 삭제된 지출입니다.");
     const member = await tx.get(trip.collection("members").doc(auth.uid));
@@ -41,6 +43,7 @@ async function saveExpense(request: CallableRequest<unknown>, updating: boolean)
           field,
         });
     }
+    tx.update(trip, referenceUpdate(tripSnapshot));
     tx.set(ref, {
       ...draft,
       createdBy: old?.createdBy ?? auth.uid,
@@ -71,8 +74,10 @@ export const deleteExpense = onCall(async (request) => {
   const expenseId = requireDocumentId(input, "expenseId");
   const trip = getFirestore().doc(`trips/${tripId}`);
   await getFirestore().runTransaction(async (tx) => {
+    const tripSnapshot = await tx.get(trip);
     if (!(await tx.get(trip.collection("members").doc(auth.uid))).exists)
       throw appError("permission-denied", "여행 멤버만 삭제할 수 있습니다.");
+    tx.update(trip, referenceUpdate(tripSnapshot));
     tx.delete(trip.collection("expenses").doc(expenseId));
   });
   return { expenseId };

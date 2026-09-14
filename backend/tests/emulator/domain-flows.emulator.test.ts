@@ -18,6 +18,8 @@ import {
   deleteDoc,
   serverTimestamp,
   onSnapshot,
+  writeBatch,
+  increment,
 } from "firebase/firestore";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 import { beforeAll, beforeEach, afterEach, afterAll, it, expect } from "vitest";
@@ -147,7 +149,12 @@ it("두 인증 클라이언트의 구독에 장소·일정·준비·설정과 �
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
-    await setDoc(reference("itinerary", "sync-item"), {
+    const itineraryBatch = writeBatch(owner.db);
+    itineraryBatch.update(doc(owner.db, "trips", tripId), {
+      referenceVersion: increment(1),
+      updatedAt: serverTimestamp(),
+    });
+    itineraryBatch.set(reference("itinerary", "sync-item"), {
       date: "2026-11-25",
       planId: "B",
       category: "activity",
@@ -157,6 +164,7 @@ it("두 인증 클라이언트의 구독에 장소·일정·준비·설정과 �
       updatedAt: serverTimestamp(),
       updatedBy: uid,
     });
+    await itineraryBatch.commit();
     await setDoc(reference("reservations", "sync-reservation"), {
       title: "식당 예약",
       type: "other",

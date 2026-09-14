@@ -202,6 +202,7 @@ final class FirestoreTripRepositories
     ChecklistDraft draft, {
     String? id,
   }) => _savePreparation(tripId, 'checklistItems', draft.toJson(), id: id);
+
   Future<String> _savePreparation(
     String tripId,
     String collection,
@@ -210,7 +211,10 @@ final class FirestoreTripRepositories
   }) => _guard(() async {
     final ref = _tripCollection(tripId, collection).doc(id);
     final uid = _requireUid();
-    if (id == null) {
+    final itineraryItemId = collection == 'reservations'
+        ? _optionalText(data['itineraryItemId'])
+        : null;
+    if (id == null && itineraryItemId == null) {
       await ref.set({
         ...data,
         'createdBy': uid,
@@ -220,18 +224,39 @@ final class FirestoreTripRepositories
       });
     } else {
       await _firestore.runTransaction((transaction) async {
-        final old = await transaction.get(ref);
-        if (!old.exists) {
-          throw const AppError(
-            code: AppErrorCode.notFound,
-            message: '이미 삭제된 준비 항목입니다.',
-            retryable: false,
-          );
+        final trip = collection == 'reservations'
+            ? await transaction.get(_firestore.doc('trips/$tripId'))
+            : null;
+        DocumentSnapshot<Map<String, dynamic>>? old;
+        String? previousItineraryItemId;
+        if (id != null) {
+          old = await transaction.get(ref);
+          if (!old.exists) {
+            throw const AppError(
+              code: AppErrorCode.notFound,
+              message: '이미 삭제된 준비 항목입니다.',
+              retryable: false,
+            );
+          }
+          previousItineraryItemId = _optionalText(old.data()!['itineraryItemId']);
+        }
+        if (previousItineraryItemId != itineraryItemId) {
+          if (itineraryItemId != null) {
+            await _requireReferenceTarget(
+              transaction,
+              _tripCollection(tripId, 'itinerary').doc(itineraryItemId),
+              'itineraryItemId',
+            );
+          }
+          transaction.update(trip!.reference, _referenceVersionUpdate(trip));
         }
         transaction.set(ref, {
           ...data,
-          'createdBy': old.data()!['createdBy'],
-          'createdAt': old.data()!['createdAt'],
+          if (old != null) 'createdBy': old.data()!['createdBy'] else 'createdBy': uid,
+          if (old != null)
+            'createdAt': old.data()!['createdAt']
+          else
+            'createdAt': FieldValue.serverTimestamp(),
           'updatedBy': uid,
           'updatedAt': FieldValue.serverTimestamp(),
         });
@@ -252,8 +277,18 @@ final class FirestoreTripRepositories
     }),
   );
   @override
-  Future<void> deleteReservation(String tripId, String id) =>
-      _guard(() => _tripCollection(tripId, 'reservations').doc(id).delete());
+  Future<void> deleteReservation(String tripId, String id) => _guard(() async {
+    final ref = _tripCollection(tripId, 'reservations').doc(id);
+    await _firestore.runTransaction((transaction) async {
+      final trip = await transaction.get(_firestore.doc('trips/$tripId'));
+      final old = await transaction.get(ref);
+      if (!old.exists) return;
+      if (_optionalText(old.data()!['itineraryItemId']) != null) {
+        transaction.update(trip.reference, _referenceVersionUpdate(trip));
+      }
+      transaction.delete(ref);
+    });
+  });
   @override
   Future<void> deleteChecklist(String tripId, String id) =>
       _guard(() => _tripCollection(tripId, 'checklistItems').doc(id).delete());
@@ -394,8 +429,9 @@ final class FirestoreTripRepositories
   );
 
   @override
-  Future<void> deletePlace(EntityId tripId, EntityId placeId) =>
-      _guard(() => _tripCollection(tripId, 'places').doc(placeId).delete());
+  Future<void> deletePlace(EntityId tripId, EntityId placeId) async {
+    await _call('deletePlace', {'tripId': tripId, 'placeId': placeId});
+  }
 
   @override
   Stream<List<ItineraryItem>> watchItinerary(EntityId tripId) =>
@@ -423,11 +459,25 @@ final class FirestoreTripRepositories
     final reference = _tripCollection(tripId, 'itinerary').doc();
     final now = DateTime.now().millisecondsSinceEpoch;
     final uid = _requireUid();
-    await reference.set({
+    final data = {
       ..._itineraryDraft(draft),
       'updatedBy': uid,
       'updatedAt': FieldValue.serverTimestamp(),
-    });
+    };
+    if (draft.placeId == null) {
+      await reference.set(data);
+    } else {
+      await _firestore.runTransaction((transaction) async {
+        final trip = await transaction.get(_firestore.doc('trips/$tripId'));
+        await _requireReferenceTarget(
+          transaction,
+          _tripCollection(tripId, 'places').doc(draft.placeId),
+          'placeId',
+        );
+        transaction.update(trip.reference, _referenceVersionUpdate(trip));
+        transaction.set(reference, data);
+      });
+    }
     return ItineraryItem(
       id: reference.id,
       tripId: tripId,
@@ -450,20 +500,47 @@ final class FirestoreTripRepositories
     EntityId tripId,
     EntityId itineraryItemId,
     ItineraryItemDraft draft,
-  ) => _guard(
-    () => _tripCollection(tripId, 'itinerary').doc(itineraryItemId).update({
-      ..._itineraryDraft(draft, deleteNulls: true),
-      'updatedBy': _requireUid(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }),
-  );
+  ) => _guard(() async {
+    final reference = _tripCollection(tripId, 'itinerary').doc(itineraryItemId);
+    final uid = _requireUid();
+    await _firestore.runTransaction((transaction) async {
+      final trip = await transaction.get(_firestore.doc('trips/$tripId'));
+      final old = await transaction.get(reference);
+      if (!old.exists) {
+        throw const AppError(
+          code: AppErrorCode.notFound,
+          message: '이미 삭제된 일정입니다.',
+          retryable: false,
+        );
+      }
+      if (_optionalText(old.data()!['placeId']) != draft.placeId) {
+        if (draft.placeId != null) {
+          await _requireReferenceTarget(
+            transaction,
+            _tripCollection(tripId, 'places').doc(draft.placeId),
+            'placeId',
+          );
+        }
+        transaction.update(trip.reference, _referenceVersionUpdate(trip));
+      }
+      transaction.update(reference, {
+        ..._itineraryDraft(draft, deleteNulls: true),
+        'updatedBy': uid,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    });
+  });
 
   @override
-  Future<void> deleteItineraryItem(EntityId tripId, EntityId itineraryItemId) =>
-      _guard(
-        () =>
-            _tripCollection(tripId, 'itinerary').doc(itineraryItemId).delete(),
-      );
+  Future<void> deleteItineraryItem(
+    EntityId tripId,
+    EntityId itineraryItemId,
+  ) async {
+    await _call('deleteItineraryItem', {
+      'tripId': tripId,
+      'itineraryItemId': itineraryItemId,
+    });
+  }
 
   @override
   Future<void> reorderItineraryItems(
@@ -476,27 +553,34 @@ final class FirestoreTripRepositories
         _tripCollection(tripId, 'itinerary').doc(id),
     ];
     // 이동·삭제와 경합하면 재조회한 뒤 거부한다. 일부 순서만 저장하지 않는다.
-    await _firestore.runTransaction((transaction) async {
-      for (final reference in references) {
-        final snapshot = await transaction.get(reference);
-        final data = snapshot.data();
-        if (data == null) {
-          throw const AppError(
-            code: AppErrorCode.notFound,
-            message: '삭제된 일정이 있습니다. 목록을 확인하고 다시 시도해 주세요.',
-            retryable: false,
-          );
+    try {
+      await _firestore.runTransaction((transaction) async {
+        for (final reference in references) {
+          final snapshot = await transaction.get(reference);
+          final data = snapshot.data();
+          if (data == null) {
+            throw const AppError(
+              code: AppErrorCode.notFound,
+              message: '삭제된 일정이 있습니다. 목록을 확인하고 다시 시도해 주세요.',
+              retryable: false,
+            );
+          }
+          draft.checkItem(itineraryItemFromFirestore(tripId, snapshot.id, data));
         }
-        draft.checkItem(itineraryItemFromFirestore(tripId, snapshot.id, data));
+        for (final (order, reference) in references.indexed) {
+          transaction.update(reference, {
+            'order': order,
+            'updatedBy': uid,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      });
+    } catch (error) {
+      if (mapFirebaseError(error).code != AppErrorCode.permissionDenied) {
+        rethrow;
       }
-      for (final (order, reference) in references.indexed) {
-        transaction.update(reference, {
-          'order': order,
-          'updatedBy': uid,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-      }
-    });
+      await _classifyReorderPermissionDenied(tripId, draft, references, error);
+    }
   });
 
   @override
@@ -545,6 +629,73 @@ final class FirestoreTripRepositories
     String name,
   ) => _firestore.collection('trips').doc(tripId).collection(name);
 
+  Future<void> _requireReferenceTarget(
+    Transaction transaction,
+    DocumentReference<Map<String, dynamic>> target,
+    String field,
+  ) async {
+    if ((await transaction.get(target)).exists) return;
+    throw AppError(
+      code: AppErrorCode.notFound,
+      message: '연결할 항목을 찾을 수 없습니다. 다시 선택해 주세요.',
+      retryable: false,
+      field: field,
+    );
+  }
+
+  Map<String, Object?> _referenceVersionUpdate(
+    DocumentSnapshot<Map<String, dynamic>> trip,
+  ) {
+    if (!trip.exists) {
+      throw const AppError(
+        code: AppErrorCode.notFound,
+        message: '여행을 찾을 수 없습니다.',
+        retryable: false,
+      );
+    }
+    final data = trip.data()!;
+    final version = data.containsKey('referenceVersion')
+        ? data['referenceVersion']
+        : 0;
+    if (version is! int || version < 0 || version >= 9007199254740991) {
+      throw const AppError(
+        code: AppErrorCode.conflict,
+        message: '여행의 참조 버전을 확인해 주세요.',
+        retryable: false,
+        field: 'referenceVersion',
+      );
+    }
+    // ponytail: 여행 하나의 참조 쓰기를 직렬화한다. 실제 경합이 커지면 대상별 버전으로 분리한다.
+    return {
+      'referenceVersion': version + 1,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  Future<void> _classifyReorderPermissionDenied(
+    String tripId,
+    ItineraryOrderDraft draft,
+    List<DocumentReference<Map<String, dynamic>>> references,
+    Object originalError,
+  ) => classifyReorderPermissionDenied(
+    draft: draft,
+    originalError: originalError,
+    reload: () async {
+      final snapshots = await Future.wait(
+        references.map(
+          (reference) => reference.get(const GetOptions(source: Source.server)),
+        ),
+      );
+      return [
+        for (final snapshot in snapshots)
+          switch (snapshot.data()) {
+            final data? => itineraryItemFromFirestore(tripId, snapshot.id, data),
+            null => null,
+          },
+      ];
+    },
+  );
+
   Stream<List<T>> _watchCollection<T>(
     CollectionReference<Map<String, dynamic>> collection,
     T Function(QueryDocumentSnapshot<Map<String, dynamic>>) convert,
@@ -565,6 +716,31 @@ final class FirestoreTripRepositories
     }
     return uid;
   }
+}
+
+/// 재조회 실패는 원래 permission-denied를 유지하고, 확인된 상태만 분류합니다.
+Future<void> classifyReorderPermissionDenied({
+  required ItineraryOrderDraft draft,
+  required Object originalError,
+  required Future<List<ItineraryItem?>> Function() reload,
+}) async {
+  late final List<ItineraryItem?> items;
+  try {
+    items = await reload();
+  } catch (_) {
+    throw originalError;
+  }
+  for (final item in items) {
+    if (item == null) {
+      throw const AppError(
+        code: AppErrorCode.notFound,
+        message: '삭제된 일정이 있습니다. 목록을 확인하고 다시 시도해 주세요.',
+        retryable: false,
+      );
+    }
+    draft.checkItem(item);
+  }
+  throw originalError;
 }
 
 Stream<T> _mapErrors<T>(Stream<T> source) => source.transform(

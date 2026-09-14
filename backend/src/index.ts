@@ -14,5 +14,6 @@ setGlobalOptions({
 export { createShareCode, createTrip, joinTrip } from "./share/trips";
 export { listMyTrips, linkMyParticipant } from "./share/tripManagement";
 export { searchPlaces, parsePlaceLink } from "./places/places";
+export { deletePlace, deleteItineraryItem } from "./shared/references";
 export { createExpense, updateExpense, deleteExpense } from "./settlement/expenses";
 export { parseReceipt } from "./ocr/receipts";

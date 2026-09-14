@@ -4,7 +4,7 @@
 
 ## 먼저 확인할 것
 
-- [화면·API 인계](frontend-api-handoff.md): 화면 제작 순서, 구현된 11개 Callable, 준비 데이터 wire, 오류와 재시도.
+- [화면·API 인계](frontend-api-handoff.md): 화면 제작 순서, 구현된 13개 Callable, 준비 데이터 wire, 오류와 재시도.
 - [Firebase 연결 감사](firebase-api-contract.md): 구현/Emulator와 실제 외부 연결 구분.
 - [시트 내보내기](sheet-export.md): 고정 샘플, 구현된 Flutter 출력·미리보기·OAuth 생성·복구 코드와 실제 연결 전 검증 항목.
 - [2026-09-14 추가 통합](integration-update-2026-09-14.md): Google 지도 adapter·시트 출력·구독 상태와 공통 계약 검증. 실기기 QA는 사용자 요청으로 이번 작업에서 제외했다.
@@ -93,7 +93,7 @@ flutter run
 - [x] 일정 편집·optional 장소·A/B/날짜별 원자적 순서 저장, 시간 정렬, 외부 지도 열기.
 - [x] 예약·체크리스트 모델/CRUD/Rules, 개인 항목도 여행 멤버에게 보이는 분류 정책.
 - [ ] 실제 Google 검색·장소 링크 지원 범위 확대와 provider 실패/timeout/할당량 처리. 구현 전 사용할 환경·비용과 URL 정책 공유.
-- [ ] 참조 중 장소 삭제를 서버에서 원자적으로 막을 필요가 있는지 검토. 현재 화면 검사와 동시 삭제 복구를 무결성 보장으로 오인하지 않기.
+- [x] IMB-03 후속에서 장소·일정 참조 중 삭제 거부와 참조 저장/삭제의 공통 버전을 구현했다. 검증·로컬 반영 상태는 [담당 기록](../backend/workstreams/itinerary-map/tasks.md)을 확인하며 운영 배포·Android 전체 도메인 QA와 구분한다.
 - [ ] 두 Android 기기에서 일정/장소/준비 실시간 갱신 검증에 참여.
 
 ## 정산·영수증 구현 이력 — 현재 B / OCR 착수 C

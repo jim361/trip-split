@@ -4,7 +4,7 @@
 
 ## 현재 상태
 
-- 기존 9개와 신규 공통 2개, 총 11개 Callable을 export한다. `backend/src/index.ts`가 진입점이다.
+- 기존 11개에 참조 검사 삭제 2개를 더해 총 13개 Callable을 export한다. `backend/src/index.ts`가 진입점이다.
 - Flutter의 지출 create/update/delete는 Callable을 사용한다. Rules의 expense 직접 쓰기 거부는 유지한다.
 - 예약·체크리스트 모델, mock/Firestore repository와 Rules를 구현했다. 기본 mock은 메모리 데이터이며 다른 프로세스와 공유되지 않는다.
 - 장소 검색·링크와 OCR는 인증·권한·입력 검증 후 Emulator에서만 샘플을 반환한다. 외부 Google Places/OCR 서비스는 연결되지 않았으며 Emulator 밖에서는 unavailable이다.
@@ -14,32 +14,35 @@
 
 ## Firestore 경로와 쓰기 주체
 
-| 경로                               | 읽기        | 쓰기·제약                                                                                             |
-| ---------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------- |
-| users/{uid}                        | 본인        | 본인 프로필, 서버 시간                                                                                |
-| shareCodes/{code}                  | client 금지 | 공유 Callable의 Admin transaction                                                                     |
-| trips/{tripId}                     | member      | 생성·코드는 Callable, client는 title/startDate/endDate만 수정                                         |
-| trips/{tripId}/members/{uid}       | member      | createTrip/joinTrip 생성, 본인은 제한된 profile/lastActive 수정. uid는 서버가 문서 ID와 동일하게 기록 |
-| trips/{tripId}/participants/{id}   | member      | 이름·색상·활성 상태 CRUD, 물리 삭제 금지. linkedUid는 linkMyParticipant만 수정                        |
-| trips/{tripId}/places/{id}         | member      | 직접 CRUD, 좌표·provider/source·감사 정보 Rules                                                       |
-| trips/{tripId}/itinerary/{id}      | member      | 직접 CRUD, 날짜/time/order Rules. 그룹 순서는 Flutter transaction                                     |
-| trips/{tripId}/reservations/{id}   | member      | 직접 CRUD, 준비 wire·참조·감사 정보 Rules                                                             |
-| trips/{tripId}/checklistItems/{id} | member      | 직접 CRUD, personal도 여행 멤버에게 공유                                                              |
-| trips/{tripId}/expenses/{id}       | member      | 지출 Callable만 생성·수정·삭제, client write 전부 금지                                                |
+| 경로                               | 읽기        | 쓰기·제약                                                                                                     |
+| ---------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------- |
+| users/{uid}                        | 본인        | 본인 프로필, 서버 시간                                                                                        |
+| shareCodes/{code}                  | client 금지 | 공유 Callable의 Admin transaction                                                                             |
+| trips/{tripId}                     | member      | 생성·코드는 Callable. client는 title/startDate/endDate와 참조 변경 시 referenceVersion을 정확히 +1            |
+| trips/{tripId}/members/{uid}       | member      | createTrip/joinTrip 생성, 본인은 제한된 profile/lastActive 수정. uid는 서버가 문서 ID와 동일하게 기록         |
+| trips/{tripId}/participants/{id}   | member      | 이름·색상·활성 상태 CRUD, 물리 삭제 금지. linkedUid는 linkMyParticipant만 수정                                |
+| trips/{tripId}/places/{id}         | member      | 생성·수정은 직접 쓰기와 Rules. 삭제는 deletePlace Callable만 허용                                             |
+| trips/{tripId}/itinerary/{id}      | member      | 생성·수정·순서는 Rules/transaction. 장소 참조 변경은 여행 버전 갱신 필수, 삭제는 deleteItineraryItem Callable |
+| trips/{tripId}/reservations/{id}   | member      | 직접 CRUD, 준비 wire·참조·감사 정보 Rules                                                                     |
+| trips/{tripId}/checklistItems/{id} | member      | 직접 CRUD, personal도 여행 멤버에게 공유                                                                      |
+| trips/{tripId}/expenses/{id}       | member      | 지출 Callable만 생성·수정·삭제, client write 전부 금지                                                        |
 
 `listMyTrips`는 members.uid collection-group query를 사용한다. 인덱스를 함께 반영해야 한다. uid가 없는 구형 멤버는 기존 코드로 재참여하면 보정된다. 운영 배포 전 별도 backfill/재참여 계획이 필요하며 기존 문서 ID는 바꾸지 않는다.
 
-장소 참조 중 삭제 제한은 화면의 현재 데이터 기준 안내다. 서버는 원자적 참조 무결성 삭제를 보장하지 않는다. 참조 대상 삭제와 동시 변경에 대한 UI 재선택·해제 처리를 유지한다.
+장소·일정 삭제는 서버에서도 참조 중이면 거부한다. 장소는 일정·지출, 일정은 예약·지출의 참조를 검사한다. 사용자가 참조 필드를 명시적으로 해제한 뒤 삭제하며 다른 문서·원장을 자동 삭제하지 않는다. 삭제와 참조 생성/교체/해제가 동일 여행 문서의 `referenceVersion`을 transaction에서 읽고 +1 갱신하므로 역참조 조회 뒤 동시 연결도 충돌한다. 일정·예약의 직접 참조 변경은 Rules가 버전 갱신과 같은 여행 `existsAfter()`를 강제한다. 정산은 Admin transaction에서 같은 버전을 갱신한다.
+
+`referenceVersion`은 내부 저장 필드이며 새 여행은 0, 구형 문서의 생략은 0이다. 정수 0~9007199254740991이고 변경은 +1만 허용한다. 별도 데이터 이관이나 클라이언트 Trip 모델 필드는 필요 없다. 기존 고아 참조는 자동 복구하지 않으며 편집 시 재선택/해제를 요구한다. 새 Rules와 Callable·Flutter repository를 함께 반영해야 한다. 구형 앱의 직접 삭제/버전 없는 연결은 거부된다. 현재는 로컬 변경·Emulator 검증 범위이며 운영 배포는 별도 승인이다.
 
 ## Callable와 Flutter 연결
 
-| 함수                                        | Flutter 경계              | 서버 상태                                              |
-| ------------------------------------------- | ------------------------- | ------------------------------------------------------ |
-| createTrip, createShareCode, joinTrip       | FirebaseTripShareService  | 구현, Auth·공유 transaction                            |
-| listMyTrips, linkMyParticipant              | FirestoreTripRepositories | 구현, 본인 목록·유일한 계정 연결                       |
-| searchPlaces, parsePlaceLink                | FirebasePlaceProvider     | 구현, Emulator 샘플 / 외부 provider 미연결             |
-| createExpense, updateExpense, deleteExpense | FirestoreTripRepositories | 구현, equal/custom/itemized validator·참조 transaction |
-| parseReceipt                                | FirebaseReceiptParser     | 구현, stateless Emulator 샘플 / 외부 OCR 미연결        |
+| 함수                                        | Flutter 경계              | 서버 상태                                                     |
+| ------------------------------------------- | ------------------------- | ------------------------------------------------------------- |
+| createTrip, createShareCode, joinTrip       | FirebaseTripShareService  | 구현, Auth·공유 transaction                                   |
+| listMyTrips, linkMyParticipant              | FirestoreTripRepositories | 구현, 본인 목록·유일한 계정 연결                              |
+| searchPlaces, parsePlaceLink                | FirebasePlaceProvider     | 구현, Emulator 샘플 / 외부 provider 미연결                    |
+| deletePlace, deleteItineraryItem            | FirestoreTripRepositories | 참조 중 삭제 거부, 없는 대상 멱등 성공, 여행 버전 transaction |
+| createExpense, updateExpense, deleteExpense | FirestoreTripRepositories | 구현, equal/custom/itemized validator·참조 transaction        |
+| parseReceipt                                | FirebaseReceiptParser     | 구현, stateless Emulator 샘플 / 외부 OCR 미연결               |
 
 응답 Timestamp는 epoch milliseconds, Firestore 저장 시간은 server timestamp다. Auth UID와 Participant ID는 구분하고 요청의 감사 정보를 신뢰하지 않는다. 각 함수의 JSON과 오류는 [인계 명세](frontend-api-handoff.md#3-callable-목록)를 따른다.
 
@@ -47,7 +50,7 @@
 
 `frontend/src`와 `public`은 GitHub Pages 참고 목업으로 보존하며 `VITE_DATA_SOURCE=mock`을 유지한다. 이번 Flutter 화면과 서버 연결을 React에 자동 이식하지 않았다.
 
-- React의 expense 직접 쓰기·participant 물리 삭제·linkedUid 직접 입력은 실제 Rules와 맞지 않는 전환기 메서드다. Pages mock 이외를 제품 기준으로 사용하지 않는다.
+- React의 expense 직접 쓰기·participant 물리 삭제·linkedUid 직접 입력·버전 없는 일정 참조 쓰기·장소/일정 직접 삭제는 실제 Rules와 맞지 않는 전환기 메서드다. Pages mock 이외를 제품 기준으로 사용하지 않는다.
 - React OCR는 legacy merchantName/item.name, Flutter는 original/translated를 분리한 canonical 응답이다.
 - React와 Flutter Tokyo fixture의 의미·JPY 4,500 기준은 유지하며 stable ID는 치환하지 않는다. `frontend/src/test/fixtures/tokyoTrip.ts`의 tokyoFlutterIdMap을 사용한다.
 - 강릉 React fixture는 KRW/NAVER/itemized 회귀 자료이며 Firebase seed가 아니다.

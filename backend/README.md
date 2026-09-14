@@ -41,17 +41,18 @@ Firebase Callable Functions, Firestore 보안 규칙과 Emulator 통합 테스�
 
 ## 현재 서버 구현
 
-[src/index.ts](src/index.ts)에서 다음 **11개 Callable**을 export합니다. 함수 구현과 실제 외부 서비스 연결 완료는 구분합니다.
+[src/index.ts](src/index.ts)에서 다음 **13개 Callable**을 export합니다. 함수 구현과 실제 외부 서비스 연결 완료는 구분합니다.
 
 | 기능                | Callable                                          | 코드와 연결 상태                                                                                         |
 | ------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | 여행·공유           | `createTrip`, `createShareCode`, `joinTrip`       | [src/share/trips.ts](src/share/trips.ts), 구현됨                                                         |
 | 내 여행·참여자 연결 | `listMyTrips`, `linkMyParticipant`                | [src/share/tripManagement.ts](src/share/tripManagement.ts), 구현됨                                       |
 | 장소 검색·링크      | `searchPlaces`, `parsePlaceLink`                  | [src/places/places.ts](src/places/places.ts), 인증·멤버·입력 검증과 Emulator fixture, 외부 Google 미연결 |
+| 참조 검사 삭제      | `deletePlace`, `deleteItineraryItem`              | [src/shared/references.ts](src/shared/references.ts), 참조 중 삭제 거부와 여행 버전 transaction          |
 | 지출 CRUD           | `createExpense`, `updateExpense`, `deleteExpense` | [src/settlement/expenses.ts](src/settlement/expenses.ts), 구현됨                                         |
 | 영수증 검토 후보    | `parseReceipt`                                    | [src/ocr/receipts.ts](src/ocr/receipts.ts), 입력 검증과 Emulator fixture, 외부 OCR 미연결                |
 
-장소·OCR 함수는 현재 Emulator 밖에서 `unavailable`을 반환합니다. 기존 itemized·OCR 선행 구현과 회귀는 유지하되 실제 OCR 연결을 현재 B의 필수 작업으로 착각하지 않습니다. 일정·장소·준비 CRUD는 Flutter repository와 Firestore Rules 경계이며, 시트용 서버 함수를 추가하지 않습니다.
+장소·OCR 함수는 현재 Emulator 밖에서 `unavailable`을 반환합니다. 기존 itemized·OCR 선행 구현과 회귀는 유지하되 실제 OCR 연결을 현재 B의 필수 작업으로 착각하지 않습니다. 일정·장소·준비 저장은 Flutter repository와 Rules 경계이며, 장소·일정 삭제는 위 Callable만 사용합니다. 참조 변경은 여행 `referenceVersion`을 원자적으로 갱신하며 [공통 계약](../docs/firebase-api-contract.md)을 따릅니다. 시트용 서버 함수를 추가하지 않습니다.
 
 ## 실행
 

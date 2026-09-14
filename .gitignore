@@ -17,3 +17,18 @@ backend/.env.local
 frontend/dart_defines.local.json
 .DS_Store
 Thumbs.db
+
+# Share Graphify outputs; keep caches and machine-specific sidecars local.
+graphify-out/*
+!graphify-out/graph.json
+!graphify-out/graph.html
+!graphify-out/itinerary-map.html
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/manifest.json
+!graphify-out/cost.json
+!graphify-out/coverage.json
+!graphify-out/diagnostics.json
+!graphify-out/diagnostics.txt
+!graphify-out/benchmark.txt
+!graphify-out/build-info.json
+!graphify-out/extraction.raw.json
