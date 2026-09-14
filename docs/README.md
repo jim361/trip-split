@@ -10,6 +10,8 @@
 
 2026-09-13부터 구현 착수는 [3인 개발 시작 안내](development-kickoff.md)를 사용합니다. 사용자 1명이 Flutter·공통·통합, 두 팀원이 각 백엔드를 담당합니다. 회의 표의 `MVP`는 채택 여부이며 구현 완료 표시는 각 TASK 체크리스트에서 관리합니다.
 
+2026-09-14부터 화면 제작과 서버 인계에는 [Flutter 화면 완성·API 인계 명세](frontend-api-handoff.md)를 함께 사용합니다. 남은 화면·버튼·상태, 9개 Callable의 호출 시점·요청·응답·오류와 아직 합의되지 않은 계약 제안을 정리합니다.
+
 1. 기능을 이야기할 때 문서의 기능 ID를 사용한다.
 2. 각 행의 `상태`를 `논의중`, `MVP`, `후속`, `제외` 중 하나로 바꾼다.
 3. 기능을 빼더라도 행을 삭제하지 않고 `제외`로 남겨 결정 이유를 보존한다.
@@ -72,8 +74,11 @@ MVP로 채택한 ID:
 
 - `docs/project-scope-review.md`: 현재 구현, 첫 사용 가능 버전, 추가 후보와 회의 우선 질문
 - `docs/firebase-api-contract.md`: 화면별 Firebase/API 계약, 모바일·웹 불일치와 실제 연결 상태
+- `docs/frontend-api-handoff.md`: Flutter 화면 제작 목록, API 요구사항·JSON 예시·미확정 계약·흐름별 인계 기준
 - `docs/flutter-android-migration.md`: 확정된 플랫폼 전환과 단계별 실행 순서
 - `docs/README.md`, `docs/itinerary-map.md`, `docs/settlement-receipts.md`: 회의용 기능 후보와 결정 상태
 - `MarkDown/product.md`, `MarkDown/requirements.md`, `MarkDown/tech.md`, `MarkDown/structure.md`: 합의가 끝난 제품·기술 계약
 - `MarkDown/task/*.md`: 채택된 기능의 구현 체크리스트
 - `MarkDown/decision_history.md`: 결정 이력과 변경 이유(현재 계약을 직접 대체하지 않음)
+
+- [2026-09-14 화면·API 작업 공유와 캡처](development-update-2026-09-14.md): Discord 복사용 글, 실제 Flutter 화면 13장, 검증 결과와 후속 작업.

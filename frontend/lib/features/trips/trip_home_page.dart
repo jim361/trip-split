@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/auth_session_gate.dart';
 import '../../domain/models.dart';
+import '../../domain/repositories.dart';
 import '../../services/trip_share_service.dart';
 import '../../shared/theme/app_theme.dart';
 import '../itinerary/trip_timetable.dart';
@@ -14,6 +15,7 @@ final class TripHomePage extends StatefulWidget {
     required this.joinFirst,
     required this.featuredTrip,
     required this.featuredItinerary,
+    required this.repositories,
     super.key,
   });
 
@@ -22,6 +24,7 @@ final class TripHomePage extends StatefulWidget {
   final bool joinFirst;
   final Trip? featuredTrip;
   final List<ItineraryItem> featuredItinerary;
+  final TripRepositories repositories;
 
   @override
   State<TripHomePage> createState() => _TripHomePageState();
@@ -41,6 +44,15 @@ final class _TripHomePageState extends State<TripHomePage> {
   bool _busy = false;
   bool _linking = false;
   AppError? _error;
+  late Future<List<Trip>> _myTrips;
+  String? _selectedTripId;
+
+  @override
+  void initState() {
+    super.initState();
+    _myTrips = widget.repositories.listMyTrips();
+    _selectedTripId = widget.featuredTrip?.id;
+  }
 
   @override
   void dispose() {
@@ -55,7 +67,12 @@ final class _TripHomePageState extends State<TripHomePage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FutureBuilder<List<Trip>>(
+    future: _myTrips,
+    builder: (context, snapshot) => _buildPage(context, snapshot),
+  );
+
+  Widget _buildPage(BuildContext context, AsyncSnapshot<List<Trip>> snapshot) {
     final auth = AuthSessionScope.of(context);
     return Scaffold(
       appBar: AppBar(
@@ -113,19 +130,48 @@ final class _TripHomePageState extends State<TripHomePage> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final selector = _TripSelector(
-              trip: widget.featuredTrip,
-              onOpen: widget.featuredTrip == null
-                  ? null
-                  : () => _openTrip(widget.featuredTrip!.id),
+            final trips = snapshot.data ?? <Trip>[];
+            final selected =
+                trips.where((t) => t.id == _selectedTripId).firstOrNull ??
+                trips.firstOrNull;
+            final selector = Column(
+              children: [
+                if (!snapshot.hasData && !snapshot.hasError)
+                  const LinearProgressIndicator(),
+                if (snapshot.hasError)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('내 여행 목록을 불러오지 못했습니다. 다시 시도해 주세요.'),
+                  ),
+                if (snapshot.hasData && trips.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Text('아직 참여한 여행이 없습니다. 여행을 만들거나 공유 코드로 참여해 주세요.'),
+                  ),
+                for (final trip in trips)
+                  _TripSelector(
+                    trip: trip,
+                    onOpen: () => setState(() => _selectedTripId = trip.id),
+                  ),
+                TextButton.icon(
+                  onPressed: () => setState(
+                    () => _myTrips = widget.repositories.listMyTrips(),
+                  ),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('여행 목록 새로고침'),
+                ),
+              ],
             );
-            final workspace = _TripWorkspace(
-              trip: widget.featuredTrip,
-              itinerary: widget.featuredItinerary,
-              onOpen: widget.featuredTrip == null
-                  ? null
-                  : () => _openTrip(widget.featuredTrip!.id),
-            );
+            final workspace = selected == null
+                ? const _TripWorkspace(trip: null, itinerary: [], onOpen: null)
+                : StreamBuilder<List<ItineraryItem>>(
+                    stream: widget.repositories.watchItinerary(selected.id),
+                    builder: (context, items) => _TripWorkspace(
+                      trip: selected,
+                      itinerary: items.data ?? [],
+                      onOpen: () => _openTrip(selected.id),
+                    ),
+                  );
 
             if (constraints.maxWidth >= AppTheme.expandedBreakpoint) {
               final controls = _controlWidgets(
@@ -485,7 +531,7 @@ final class _TripSelector extends StatelessWidget {
                   const Icon(Icons.sync, size: 14),
                   const SizedBox(width: 4),
                   Text(
-                    '동기화됨',
+                    '여행 선택',
                     style: theme.textTheme.labelSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),

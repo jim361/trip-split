@@ -86,6 +86,7 @@ export const createTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async
           currency: tripInput.defaultCurrency,
         });
         transaction.create(memberRef, {
+          uid: auth.uid,
           displayName,
           ...(typeof auth.token.picture === "string" ? { photoURL: auth.token.picture } : {}),
           role: "editor",
@@ -289,9 +290,10 @@ export const joinTrip = onCall({ region: FUNCTIONS_REGION, cors: true }, async (
     const displayName = getDisplayName(auth.token, auth.uid, requestedDisplayName);
 
     if (memberSnapshot.exists) {
-      transaction.update(memberRef, { lastActiveAt: timestamp });
+      transaction.update(memberRef, { uid: auth.uid, lastActiveAt: timestamp });
     } else {
       transaction.create(memberRef, {
+        uid: auth.uid,
         displayName,
         ...(typeof auth.token.picture === "string" ? { photoURL: auth.token.picture } : {}),
         role: "editor",

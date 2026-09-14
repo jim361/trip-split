@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:trip_split/domain/models.dart';
 import 'package:trip_split/shared/theme/app_theme.dart';
+
+import 'settlement_engine.dart';
+import '../../shared/widgets/edit_frame.dart';
 
 // [TASK-06 · 정산] 참가자와 통화별 지출을 보여 주는 화면 경계입니다.
 class SettlementPage extends StatelessWidget {
@@ -11,6 +15,10 @@ class SettlementPage extends StatelessWidget {
     required this.participants,
     required this.expenses,
     required this.onOpenReceipts,
+    required this.onAddExpense,
+    required this.onOpenExpense,
+    this.onManageParticipants,
+    this.onPersonalSettlement,
   });
 
   final Trip trip;
@@ -18,6 +26,10 @@ class SettlementPage extends StatelessWidget {
   final List<Participant> participants;
   final List<Expense> expenses;
   final VoidCallback onOpenReceipts;
+  final VoidCallback onAddExpense;
+  final ValueChanged<Expense> onOpenExpense;
+  final VoidCallback? onManageParticipants;
+  final VoidCallback? onPersonalSettlement;
 
   @override
   Widget build(BuildContext context) {
@@ -135,6 +147,26 @@ class SettlementPage extends StatelessWidget {
           ),
         ),
         const Divider(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(
+            spacing: 8,
+            children: [
+              if (onManageParticipants != null)
+                TextButton.icon(
+                  onPressed: onManageParticipants,
+                  icon: const Icon(Icons.group_outlined),
+                  label: const Text('정산 참여자 관리'),
+                ),
+              if (onPersonalSettlement != null)
+                TextButton.icon(
+                  onPressed: onPersonalSettlement,
+                  icon: const Icon(Icons.receipt_long_outlined),
+                  label: const Text('개인 소비·정산'),
+                ),
+            ],
+          ),
+        ),
         if (me == null)
           const Padding(
             padding: EdgeInsets.all(16),
@@ -161,7 +193,8 @@ class SettlementPage extends StatelessWidget {
             children: [
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: () {},
+                  key: const Key('expense-add'),
+                  onPressed: onAddExpense,
                   icon: const Icon(Icons.add, size: 18),
                   label: const Text('지출 추가'),
                 ),
@@ -177,7 +210,11 @@ class SettlementPage extends StatelessWidget {
             ],
           ),
         ),
-        _ExpenseLedger(expenses: expenses, showCurrency: hasMixedCurrencies),
+        _ExpenseLedger(
+          expenses: expenses,
+          showCurrency: hasMixedCurrencies,
+          onOpenExpense: onOpenExpense,
+        ),
         if (me != null)
           Container(
             margin: const EdgeInsets.fromLTRB(16, 32, 16, 0),
@@ -218,7 +255,30 @@ class SettlementPage extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () async {
+                      try {
+                        await Clipboard.setData(
+                          ClipboardData(
+                            text: settlementShareText(
+                              trip.title,
+                              expenses,
+                              participants,
+                            ),
+                          ),
+                        );
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('정산 문구를 복사했습니다.')),
+                          );
+                        }
+                      } catch (error) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(actionError(error))),
+                          );
+                        }
+                      }
+                    },
                     icon: const Icon(Icons.content_copy_outlined, size: 18),
                     label: const Text('정산 문구 복사'),
                   ),
@@ -263,7 +323,7 @@ class _FinancialSummary extends StatelessWidget {
           for (var index = 0; index < labels.length; index++)
             Expanded(
               child: Container(
-                height: 96,
+                constraints: const BoxConstraints(minHeight: 96),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: index == 2
@@ -274,6 +334,7 @@ class _FinancialSummary extends StatelessWidget {
                       : null,
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -284,7 +345,7 @@ class _FinancialSummary extends StatelessWidget {
                             : AppTheme.mutedInk,
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 16),
                     Align(
                       alignment: Alignment.bottomRight,
                       child: FittedBox(
@@ -313,10 +374,15 @@ class _FinancialSummary extends StatelessWidget {
 }
 
 class _ExpenseLedger extends StatelessWidget {
-  const _ExpenseLedger({required this.expenses, required this.showCurrency});
+  const _ExpenseLedger({
+    required this.expenses,
+    required this.showCurrency,
+    required this.onOpenExpense,
+  });
 
   final List<Expense> expenses;
   final bool showCurrency;
+  final ValueChanged<Expense> onOpenExpense;
 
   @override
   Widget build(BuildContext context) {
@@ -344,12 +410,18 @@ class _ExpenseLedger extends StatelessWidget {
             )
           else
             for (final expense in expenses)
-              _LedgerRow(
-                date: _shortDate(expense.expenseDate),
-                item: expense.title,
-                amount: showCurrency
-                    ? _formatMoney(expense.totalAmount, expense.currency)
-                    : _formatAmount(expense.totalAmount),
+              Material(
+                child: InkWell(
+                  key: ValueKey('expense-row-${expense.id}'),
+                  onTap: () => onOpenExpense(expense),
+                  child: _LedgerRow(
+                    date: _shortDate(expense.expenseDate),
+                    item: expense.title,
+                    amount: showCurrency
+                        ? _formatMoney(expense.totalAmount, expense.currency)
+                        : _formatAmount(expense.totalAmount),
+                  ),
+                ),
               ),
         ],
       ),

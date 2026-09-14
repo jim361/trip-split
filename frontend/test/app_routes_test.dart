@@ -28,6 +28,13 @@ void main() {
       '/trips/$tokyoTripId/itinerary?map=expanded&day=2026-11-26',
     );
     expect(TripLocation.tryParse('/unknown'), isNull);
+    final alternate = TripLocation.tryParse(
+      '/trips/$tokyoTripId/itinerary?day=2026-11-26&plan=B',
+    )!;
+    expect(
+      alternate.toggleMap().canonicalPath,
+      '/trips/$tokyoTripId/itinerary?map=expanded&day=2026-11-26&plan=B',
+    );
   });
 
   testWidgets('390px에서 세 탭과 영수증 하위 화면을 이동한다', (tester) async {
@@ -94,10 +101,23 @@ void main() {
     await tester.tap(find.byTooltip('지도 확대'));
     await tester.pumpAndSettle();
     expect(find.byTooltip('지도 접기'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('itinerary-row-${TokyoFixtureIds.asakusa}')),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('아사쿠사 산책'), findsOneWidget);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('itinerary-day-2026-11-27')),
+    );
     await tester.tap(find.byKey(const ValueKey('itinerary-day-2026-11-27')));
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('itinerary-day-empty-2026-11-27')),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(
       find.byKey(const ValueKey('itinerary-day-empty-2026-11-27')),
       findsOneWidget,
@@ -114,6 +134,24 @@ void main() {
     await tester.tap(find.text('영수증으로 등록'));
     await tester.pumpAndSettle();
     expect(find.text('영수증 검토'), findsOneWidget);
+    for (final key in ['receipt-sample', 'receipt-recognize', 'form-save']) {
+      final button = find.byKey(ValueKey(key));
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('지출 상세'), findsOneWidget);
+    expect(find.text('아사쿠사 식당'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const Key('expense-to-list')));
+    await tester.tap(find.byKey(const Key('expense-to-list')));
+    await tester.pumpAndSettle();
+    expect(find.text('여행 비용'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(const Key('currency-total-JPY'))).data,
+      'JPY 6,250',
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('/map 호환 경로는 확대된 지도 상태를 연다', (tester) async {

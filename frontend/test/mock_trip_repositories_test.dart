@@ -116,4 +116,108 @@ void main() {
     expect(participant.isActive, isFalse);
     expect(participant.updatedAt, 5678);
   });
+
+  test('재정렬은 같은 날짜·계획의 순서만 원자적으로 바꾸고 다른 필드를 보존한다', () async {
+    final repositories = InMemoryTripRepositories(now: () => 9876);
+    addTearDown(repositories.close);
+    final alternate = await repositories.createItineraryItem(
+      tokyoTripId,
+      ItineraryItemDraft(
+        date: '2026-11-25',
+        title: '대안',
+        planId: 'B',
+        order: 7,
+      ),
+    );
+    final stream = StreamIterator(repositories.watchItinerary(tokyoTripId));
+    addTearDown(stream.cancel);
+    await stream.moveNext();
+    final next = stream.moveNext();
+    await Future<void>.delayed(Duration.zero);
+    await repositories.reorderItineraryItems(
+      tokyoTripId,
+      ItineraryOrderDraft(
+        date: '2026-11-25',
+        planId: 'A',
+        itemIds: [
+          TokyoFixtureIds.checkIn,
+          TokyoFixtureIds.arrival,
+          TokyoFixtureIds.transfer,
+        ],
+      ),
+    );
+    expect(await next, isTrue);
+    final day = stream.current
+        .where((item) => item.date == '2026-11-25' && item.planId == 'A')
+        .toList();
+    expect(day.map((item) => item.id), [
+      TokyoFixtureIds.checkIn,
+      TokyoFixtureIds.arrival,
+      TokyoFixtureIds.transfer,
+    ]);
+    expect(day.map((item) => item.order), [0, 1, 2]);
+    for (final item in day) {
+      final original = tokyoTripFixture.itinerary.singleWhere(
+        (other) => other.id == item.id,
+      );
+      expect(item.title, original.title);
+      expect(item.placeId, original.placeId);
+      expect(item.startTime, original.startTime);
+      expect(item.category, original.category);
+      expect(item.updatedAt, 9876);
+      expect(item.updatedBy, tokyoOwnerUid);
+    }
+    expect(
+      stream.current.singleWhere((item) => item.id == alternate.id).order,
+      7,
+    );
+    expect(
+      stream.current
+          .singleWhere((item) => item.id == TokyoFixtureIds.asakusa)
+          .updatedAt,
+      tokyoTripFixture.itinerary
+          .singleWhere((item) => item.id == TokyoFixtureIds.asakusa)
+          .updatedAt,
+    );
+  });
+
+  test('재정렬 중 삭제·다른 날짜나 계획·중복 ID는 일부 저장 없이 거부한다', () async {
+    final repositories = InMemoryTripRepositories();
+    addTearDown(repositories.close);
+    final before = await repositories.watchItinerary(tokyoTripId).first;
+    for (final (plan, ids) in [
+      ('A', [TokyoFixtureIds.checkIn, 'deleted']),
+      ('A', [TokyoFixtureIds.checkIn, TokyoFixtureIds.asakusa]),
+      ('B', [TokyoFixtureIds.checkIn, TokyoFixtureIds.arrival]),
+    ]) {
+      await expectLater(
+        repositories.reorderItineraryItems(
+          tokyoTripId,
+          ItineraryOrderDraft(date: '2026-11-25', planId: plan, itemIds: ids),
+        ),
+        throwsA(isA<AppError>()),
+      );
+      final after = await repositories.watchItinerary(tokyoTripId).first;
+      expect(
+        after.map((item) => (item.id, item.order, item.updatedAt)),
+        before.map((item) => (item.id, item.order, item.updatedAt)),
+      );
+    }
+    expect(
+      () => ItineraryOrderDraft(
+        date: '2026-11-25',
+        planId: 'A',
+        itemIds: ['same', 'same'],
+      ),
+      throwsA(isA<AppError>()),
+    );
+    expect(
+      () => ItineraryOrderDraft(
+        date: '2026-02-30',
+        planId: 'A',
+        itemIds: ['one'],
+      ),
+      throwsA(isA<AppError>()),
+    );
+  });
 }

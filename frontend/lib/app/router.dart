@@ -6,6 +6,7 @@ final class TripLocation {
     required this.destination,
     this.mapExpanded = false,
     this.selectedDate,
+    this.selectedPlan = 'A',
   });
 
   static const defaultTripId = 'tokyo-2026-11';
@@ -14,6 +15,7 @@ final class TripLocation {
   final TripDestination destination;
   final bool mapExpanded;
   final String? selectedDate;
+  final String selectedPlan;
 
   static TripLocation? tryParse(String? routeName) {
     final uri = Uri.tryParse(routeName ?? '/');
@@ -44,6 +46,7 @@ final class TripLocation {
         destination: TripDestination.itinerary,
         mapExpanded: uri.queryParameters['map'] == 'expanded',
         selectedDate: uri.queryParameters['day'],
+        selectedPlan: uri.queryParameters['plan'] == 'B' ? 'B' : 'A',
       ),
       'map' => TripLocation(
         tripId: tripId,
@@ -78,6 +81,8 @@ final class TripLocation {
         'map': 'expanded',
       if (destination == TripDestination.itinerary && selectedDate != null)
         'day': selectedDate!,
+      if (destination == TripDestination.itinerary && selectedPlan == 'B')
+        'plan': selectedPlan,
     };
     final query = queryParameters.isEmpty
         ? ''
@@ -88,10 +93,12 @@ final class TripLocation {
   TripLocation forDestination(TripDestination next) =>
       TripLocation(tripId: tripId, destination: next);
 
-  TripLocation toggleMap({String? selectedDate}) => TripLocation(
-    tripId: tripId,
-    destination: TripDestination.itinerary,
-    mapExpanded: !mapExpanded,
-    selectedDate: selectedDate ?? this.selectedDate,
-  );
+  TripLocation toggleMap({String? selectedDate, String? selectedPlan}) =>
+      TripLocation(
+        tripId: tripId,
+        destination: TripDestination.itinerary,
+        mapExpanded: !mapExpanded,
+        selectedDate: selectedDate ?? this.selectedDate,
+        selectedPlan: selectedPlan ?? this.selectedPlan,
+      );
 }

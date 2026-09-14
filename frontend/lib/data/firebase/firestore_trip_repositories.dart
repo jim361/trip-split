@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../domain/models.dart';
 import '../../domain/repositories.dart';
+import '../../domain/preparation.dart';
 import 'firebase_error_mapper.dart';
 
 /// [TASK-02 · Firestore repository] Widget에서 SDK를 격리하는 공통 계약 구현체입니다.
@@ -11,11 +13,148 @@ final class FirestoreTripRepositories implements TripRepositories {
   FirestoreTripRepositories(
     this._firestore, {
     required String Function() currentUid,
+    FirebaseFunctions? functions,
     // ignore: prefer_initializing_formals
-  }) : _currentUid = currentUid;
+  }) : _currentUid = currentUid,
+       // ignore: prefer_initializing_formals
+       _functions = functions;
 
   final FirebaseFirestore _firestore;
   final String Function() _currentUid;
+  final FirebaseFunctions? _functions;
+  Future<Map<String, dynamic>> _call(String name, Map<String, Object?> input) =>
+      _guard(() async {
+        final functions = _functions;
+        if (functions == null) {
+          throw const AppError(
+            code: AppErrorCode.unavailable,
+            message: '서버 연결 설정을 확인해 주세요.',
+            retryable: false,
+          );
+        }
+        final result = await functions.httpsCallable(name).call<Object?>(input);
+        if (result.data is! Map) throw const FormatException('Callable 응답 형식');
+        return Map<String, dynamic>.from(result.data as Map);
+      });
+  @override
+  Future<List<Trip>> listMyTrips() async {
+    final response = await _call('listMyTrips', {});
+    return (response['trips'] as List).map((value) {
+      final data = Map<String, dynamic>.from(value as Map);
+      return _trip(data['id'] as String, data);
+    }).toList();
+  }
+
+  @override
+  Future<void> updateTrip(String tripId, TripUpdate draft) => _guard(
+    () => _firestore.doc('trips/$tripId').update({
+      ...draft.toJson(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }),
+  );
+  @override
+  Future<void> linkMyParticipant(String tripId, String? participantId) async {
+    await _call('linkMyParticipant', {
+      'tripId': tripId,
+      'participantId': participantId,
+    });
+  }
+
+  @override
+  Stream<List<Reservation>> watchReservations(String tripId) =>
+      _watchCollection(_tripCollection(tripId, 'reservations'), (snapshot) {
+        final data = snapshot.data();
+        return Reservation(
+          id: snapshot.id,
+          tripId: tripId,
+          draft: ReservationDraft.fromJson(data),
+          createdAt: _epoch(data['createdAt']),
+          updatedAt: _epoch(data['updatedAt']),
+          createdBy: data['createdBy'] as String,
+          updatedBy: data['updatedBy'] as String,
+        );
+      });
+  @override
+  Stream<List<ChecklistItem>> watchChecklist(String tripId) =>
+      _watchCollection(_tripCollection(tripId, 'checklistItems'), (snapshot) {
+        final data = snapshot.data();
+        return ChecklistItem(
+          id: snapshot.id,
+          tripId: tripId,
+          draft: ChecklistDraft.fromJson(data),
+          createdAt: _epoch(data['createdAt']),
+          updatedAt: _epoch(data['updatedAt']),
+          createdBy: data['createdBy'] as String,
+          updatedBy: data['updatedBy'] as String,
+        );
+      });
+  @override
+  Future<String> saveReservation(
+    String tripId,
+    ReservationDraft draft, {
+    String? id,
+  }) => _savePreparation(tripId, 'reservations', draft.toJson(), id: id);
+  @override
+  Future<String> saveChecklist(
+    String tripId,
+    ChecklistDraft draft, {
+    String? id,
+  }) => _savePreparation(tripId, 'checklistItems', draft.toJson(), id: id);
+  Future<String> _savePreparation(
+    String tripId,
+    String collection,
+    Map<String, Object> data, {
+    String? id,
+  }) => _guard(() async {
+    final ref = _tripCollection(tripId, collection).doc(id);
+    final uid = _requireUid();
+    if (id == null) {
+      await ref.set({
+        ...data,
+        'createdBy': uid,
+        'updatedBy': uid,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } else {
+      await _firestore.runTransaction((transaction) async {
+        final old = await transaction.get(ref);
+        if (!old.exists) {
+          throw const AppError(
+            code: AppErrorCode.notFound,
+            message: '이미 삭제된 준비 항목입니다.',
+            retryable: false,
+          );
+        }
+        transaction.set(ref, {
+          ...data,
+          'createdBy': old.data()!['createdBy'],
+          'createdAt': old.data()!['createdAt'],
+          'updatedBy': uid,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      });
+    }
+    return ref.id;
+  });
+  @override
+  Future<void> setChecklistCompleted(
+    String tripId,
+    String id,
+    bool completed,
+  ) => _guard(
+    () => _tripCollection(tripId, 'checklistItems').doc(id).update({
+      'isDone': completed,
+      'updatedBy': _requireUid(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }),
+  );
+  @override
+  Future<void> deleteReservation(String tripId, String id) =>
+      _guard(() => _tripCollection(tripId, 'reservations').doc(id).delete());
+  @override
+  Future<void> deleteChecklist(String tripId, String id) =>
+      _guard(() => _tripCollection(tripId, 'checklistItems').doc(id).delete());
 
   @override
   Stream<Trip?> watchTrip(EntityId tripId) => _mapErrors(
@@ -62,6 +201,7 @@ final class FirestoreTripRepositories implements TripRepositories {
     ParticipantDraft draft,
   ) => _guard(() async {
     _rejectDirectParticipantLink(draft);
+    draft.validate();
     final reference = _tripCollection(tripId, 'participants').doc();
     final now = DateTime.now().millisecondsSinceEpoch;
     await reference.set({
@@ -88,6 +228,7 @@ final class FirestoreTripRepositories implements TripRepositories {
     ParticipantDraft draft,
   ) => _guard(() {
     _rejectDirectParticipantLink(draft);
+    draft.validate();
     return _tripCollection(tripId, 'participants').doc(participantId).update({
       ..._participantDraft(draft, deleteNulls: true),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -223,6 +364,40 @@ final class FirestoreTripRepositories implements TripRepositories {
       );
 
   @override
+  Future<void> reorderItineraryItems(
+    EntityId tripId,
+    ItineraryOrderDraft draft,
+  ) => _guard(() async {
+    final uid = _requireUid();
+    final references = [
+      for (final id in draft.itemIds)
+        _tripCollection(tripId, 'itinerary').doc(id),
+    ];
+    // 이동·삭제와 경합하면 재조회한 뒤 거부한다. 일부 순서만 저장하지 않는다.
+    await _firestore.runTransaction((transaction) async {
+      for (final reference in references) {
+        final snapshot = await transaction.get(reference);
+        final data = snapshot.data();
+        if (data == null) {
+          throw const AppError(
+            code: AppErrorCode.notFound,
+            message: '삭제된 일정이 있습니다. 목록을 확인하고 다시 시도해 주세요.',
+            retryable: false,
+          );
+        }
+        draft.checkItem(itineraryItemFromFirestore(tripId, snapshot.id, data));
+      }
+      for (final (order, reference) in references.indexed) {
+        transaction.update(reference, {
+          'order': order,
+          'updatedBy': uid,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+    });
+  });
+
+  @override
   Stream<List<Expense>> watchExpenses(EntityId tripId) =>
       _watchCollection(
         _tripCollection(tripId, 'expenses'),
@@ -236,58 +411,32 @@ final class FirestoreTripRepositories implements TripRepositories {
       );
 
   @override
-  Future<Expense> createExpense(EntityId tripId, ExpenseDraft draft) =>
-      _guard(() async {
-        final reference = _tripCollection(tripId, 'expenses').doc();
-        final now = DateTime.now().millisecondsSinceEpoch;
-        final uid = _requireUid();
-        await reference.set({
-          ..._expenseDraft(draft),
-          'createdBy': uid,
-          'updatedBy': uid,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-        return Expense(
-          id: reference.id,
-          tripId: tripId,
-          title: draft.title,
-          category: draft.category,
-          expenseDate: draft.expenseDate,
-          totalAmount: draft.totalAmount,
-          currency: draft.currency,
-          payer: draft.payer,
-          consumers: draft.consumers,
-          allocationMethod: draft.allocationMethod,
-          allocatedAmounts: draft.allocatedAmounts,
-          receiptItems: draft.receiptItems,
-          source: draft.source,
-          placeId: draft.placeId,
-          itineraryItemId: draft.itineraryItemId,
-          memo: draft.memo,
-          createdBy: uid,
-          updatedBy: uid,
-          createdAt: now,
-          updatedAt: now,
-        );
-      });
+  Future<Expense> createExpense(EntityId tripId, ExpenseDraft draft) async {
+    final result = await _call('createExpense', {
+      'tripId': tripId,
+      'draft': _expenseDraft(draft),
+    });
+    final expense = Map<String, dynamic>.from(result['expense'] as Map);
+    return _expense(tripId, expense['id'] as String, expense);
+  }
 
   @override
   Future<void> updateExpense(
     EntityId tripId,
     EntityId expenseId,
     ExpenseDraft draft,
-  ) => _guard(
-    () => _tripCollection(tripId, 'expenses').doc(expenseId).update({
-      ..._expenseDraft(draft, deleteNulls: true),
-      'updatedBy': _requireUid(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    }),
-  );
+  ) async {
+    await _call('updateExpense', {
+      'tripId': tripId,
+      'expenseId': expenseId,
+      'draft': _expenseDraft(draft),
+    });
+  }
 
   @override
-  Future<void> deleteExpense(EntityId tripId, EntityId expenseId) =>
-      _guard(() => _tripCollection(tripId, 'expenses').doc(expenseId).delete());
+  Future<void> deleteExpense(EntityId tripId, EntityId expenseId) async {
+    await _call('deleteExpense', {'tripId': tripId, 'expenseId': expenseId});
+  }
 
   CollectionReference<Map<String, dynamic>> _tripCollection(
     String tripId,

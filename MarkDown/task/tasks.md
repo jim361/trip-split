@@ -18,7 +18,7 @@
 - OCR은 정산 원장과 한 흐름으로 연결되므로 정산·영수증 담당이 소유한다.
 - 장소 보관함, 준비와 Google API는 일정 및 지도 입력에 결합되므로 장소·일정·지도 담당이 소유한다.
 - 2026-09-13 결정: 두 도메인 담당은 백엔드를 맡고, Flutter feature·순수 Dart 로직·repository·지도 SDK는 사용자가 맡는다. 정산 백엔드는 서버 불변식과 공통 계산 예시를 제공하고 사용자가 Dart 엔진에 같은 결과를 검증한다.
-- 일정 CRUD는 현재 Firestore 직접 쓰기와 Rules로 처리한다. 별도 일정 Callable을 임의로 추가하지 않는다. 준비 데이터 계약은 일정·지도 백엔드가 제안하고 사용자가 모델·repository를 연결한다.
+- 일정 CRUD는 현재 Firestore 직접 쓰기와 Rules로 처리한다. 별도 일정 Callable을 임의로 추가하지 않는다. 준비 데이터 모델·repository·Rules는 2026-09-14 구현했고 일정·지도 백엔드가 후속 검증을 소유한다.
 - 즉시 착수할 작업과 인계 조건은 [개발 시작 안내](../../docs/development-kickoff.md)를 따른다.
 - 각 담당자는 동시에 하나의 구현 작업만 진행한다. 리뷰 대기 작업은 WIP에서 제외할 수 있다.
 
@@ -85,7 +85,8 @@
 
 - 정산·영수증 백엔드: equal/custom 서버 validator → 지출 CRUD Callable → itemized 검증 → mock OCR → 승인된 OCR·번역 provider 순서다.
 - 일정·지도 백엔드: mock 검색·링크 Callable → 일정·장소 저장 검증 → 준비 저장 계약 → 승인된 Google API 순서다.
-- 플랫폼·통합: Flutter 일정 CRUD와 수동 지출·Dart equal/custom → 두 서버 adapter 통합 → itemized·OCR 검토 → 준비·내 여행 목록 → Android `.trip.json` 순서다.
+- 플랫폼·통합: Flutter 일정 CRUD와 수동 지출·Dart equal/custom 이후, 장소 보관함·입력 → 준비 → 참여자 관리·통화별 개인 정산/복사 → 내 여행·공유/설정의 P0 화면을 mock으로 완성한다. 완료된 서버 adapter는 병행 연결하고, P1 itemized·OCR 검토와 Android `.trip.json`은 그 뒤에 진행한다.
+- 각 화면 흐름은 진입·입력·저장·실패 상태, 실제 Flutter 캡처와 API 요청·응답·오류 예시를 묶어 인계한다. 현재 구현 목록과 확정한 추가 wire는 [Flutter 화면 완성·API 인계 명세](../../docs/frontend-api-handoff.md)를 따른다. 제안은 공통 모델·Rules 합의 전 확정 계약으로 취급하지 않는다.
 - 외부 API는 mock 흐름과 실패 상태가 완성된 뒤 연결한다.
 
 ### 단계 D — 통합 체크포인트
@@ -127,3 +128,7 @@
 - OCR은 항목 수정·수동 추가·배분·합계 검증·인식 실패 시 총액 수동 등록을 지원하며, 이미지를 영구 저장하지 않는다.
 - Android handset에서 `일정·지도 / 준비 / 비용`의 정보 구조, system back, 키보드·터치 조작을 확인한다.
 - Flutter Web과 iOS, 백그라운드 위치·Health Connect는 Android MVP 완료 게이트에 포함하지 않는다.
+
+## 2026-09-14 인계 상태
+
+사용자 승인으로 단계 C의 Flutter 화면과 필요한 서버 함수를 함께 구현했다. 장소·준비·참여자·통화별 개인 정산·내 여행/설정·P1 영수증 검토가 추가됐고 총 11개 Callable을 export한다. 기존 Task ID와 역할은 유지한다. Android 내부 지도 SDK, 실제 Google/OCR provider, 두 Android 기기 전체 교차 QA, TASK-08 백업과 TASK-09 출시는 아직 남아 있다. 최신 착수 작업은 [개발 시작 안내](../../docs/development-kickoff.md)를 따른다.

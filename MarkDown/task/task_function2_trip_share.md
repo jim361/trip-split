@@ -47,3 +47,7 @@
 - 여행 생성 시 입력한 예상 인원 기준 Participant가 만들어지고 이후 추가·비활성화할 수 있다.
 - 첫 공유 코드는 만료·횟수 제한 없이 생성되며 재생성 시 기존 코드가 비활성화된다.
 - Auth·Firestore·Functions Emulator에서 서로 다른 익명 uid 두 명이 같은 여행 member가 된다.
+
+## 2026-09-14 공통 화면 구현 인계
+
+내 여행 목록(listMyTrips), 여행 제목/기간 편집, 코드 재생성 확인·복사·Android 공유, 참여자 이름/색상/활성 상태와 본인 연결/해제(linkMyParticipant)를 구현했다. members.uid와 collection-group index를 추가했으며 구형 문서는 재참여 시 uid를 보정한다. [계약·마이그레이션 주의](../../docs/frontend-api-handoff.md)를 따른다. 실제 Google 로그인 설정·운영 배포·Android 전체 QA는 별도다.

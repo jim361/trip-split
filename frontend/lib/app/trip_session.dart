@@ -21,8 +21,9 @@ final class TripSessionController extends ChangeNotifier {
   List<Expense> expenses = const [];
   AppError? error;
   bool _disposed = false;
+  final _loaded = <String>{};
 
-  bool get isLoading => trip == null && error == null;
+  bool get isLoading => error == null && _loaded.length < 6;
 
   void start() {
     _subscriptions
@@ -39,36 +40,42 @@ final class TripSessionController extends ChangeNotifier {
             return;
           }
           trip = value;
+          _loaded.add('trip');
           _notify();
         }, onError: _setError),
       )
       ..add(
         repositories.watchMembers(tripId).listen((value) {
           members = value;
+          _loaded.add('members');
           _notify();
         }, onError: _setError),
       )
       ..add(
         repositories.watchParticipants(tripId).listen((value) {
           participants = value;
+          _loaded.add('participants');
           _notify();
         }, onError: _setError),
       )
       ..add(
         repositories.watchPlaces(tripId).listen((value) {
           places = value;
+          _loaded.add('places');
           _notify();
         }, onError: _setError),
       )
       ..add(
         repositories.watchItinerary(tripId).listen((value) {
           itinerary = value;
+          _loaded.add('itinerary');
           _notify();
         }, onError: _setError),
       )
       ..add(
         repositories.watchExpenses(tripId).listen((value) {
           expenses = value;
+          _loaded.add('expenses');
           _notify();
         }, onError: _setError),
       );

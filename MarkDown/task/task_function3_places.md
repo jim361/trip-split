@@ -51,3 +51,10 @@
 - [ ] 국내 NAVER `PlaceProvider`와 지도 adapter
 - [ ] Google/NAVER 계정 저장 목록 자동 import는 공식 API와 약관이 확인될 때만 검토
 - [ ] 앱 키와 서버 키의 package/API 제한, 예산·quota 정책
+
+## 2026-09-14 구현 인계
+
+- Flutter PlacesPage·PlaceEditPage에서 검색/링크/직접 입력 → 후보 검토 → 생성/편집/삭제, 일정에서 저장된 장소 선택까지 구현했다. 좌표 없는 장소도 허용한다.
+- backend searchPlaces/parsePlaceLink와 FirebasePlaceProvider를 추가했다. query는 string, Auth/member·Google provider·URL 검증을 거쳐 Emulator fixture를 반환한다.
+- 외부 Google 검색·일반 장소 URL 전체 지원·실제 지도 SDK는 미연결이다. 서버 URL 허용 목록과 실패 복구는 [API 명세](../../docs/frontend-api-handoff.md)를 따른다.
+- 장소 삭제의 참조 검사는 화면 기준이며 서버 원자적 삭제 제한을 의미하지 않는다. 기존 누락 참조 복구를 유지한다.

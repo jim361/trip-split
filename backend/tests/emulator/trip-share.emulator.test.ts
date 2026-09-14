@@ -14,6 +14,8 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  onSnapshot,
+  runTransaction,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -389,6 +391,88 @@ describe("members based firestore rules", () => {
       setDoc(doc(memberDb, "trips", tripId, "itinerary", "valid-item"), {
         ...baseItem,
         startTime: "09:30",
+      }),
+    );
+  });
+
+  it("일정 순서 transaction이 다른 멤버에게 함께 반영되고 잘못된 쓰기는 모두 취소된다", async () => {
+    const memberDb = rulesEnvironment.authenticatedContext(memberUid).firestore();
+    const guestUid = "itinerary-guest";
+    await rulesEnvironment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "trips", tripId, "members", guestUid), {
+        role: "editor",
+      });
+    });
+    const guestDb = rulesEnvironment.authenticatedContext(guestUid).firestore();
+    const refs = ["first", "second"].map((id) => doc(memberDb, "trips", tripId, "itinerary", id));
+    for (const [order, ref] of refs.entries()) {
+      await setDoc(ref, {
+        date: "2026-11-25",
+        planId: "B",
+        title: ref.id,
+        order,
+        memo: "순서 변경에도 보존",
+        updatedBy: memberUid,
+        updatedAt: serverTimestamp(),
+      });
+    }
+    let stop = () => {};
+    const observed = new Promise<void>((resolve, reject) => {
+      stop = onSnapshot(
+        collection(guestDb, "trips", tripId, "itinerary"),
+        (snapshot) => {
+          const orders = Object.fromEntries(
+            snapshot.docs.map((item) => [item.id, item.data().order]),
+          );
+          if (orders.first === 1 && orders.second === 0) resolve();
+        },
+        reject,
+      );
+    });
+    try {
+      await assertSucceeds(
+        runTransaction(memberDb, async (transaction) => {
+          for (const ref of refs) {
+            const current = await transaction.get(ref);
+            expect(current.data()).toMatchObject({ date: "2026-11-25", planId: "B" });
+          }
+          refs.forEach((ref, index) =>
+            transaction.update(ref, {
+              order: 1 - index,
+              updatedBy: memberUid,
+              updatedAt: serverTimestamp(),
+            }),
+          );
+        }),
+      );
+      await observed;
+    } finally {
+      stop();
+    }
+    expect(
+      (await getDoc(doc(guestDb, "trips", tripId, "itinerary", "first"))).data(),
+    ).toMatchObject({
+      order: 1,
+      memo: "순서 변경에도 보존",
+      planId: "B",
+      updatedBy: memberUid,
+    });
+    await assertFails(
+      runTransaction(memberDb, async (transaction) => {
+        transaction.update(refs[0]!, { order: 9, updatedAt: serverTimestamp() });
+        transaction.update(refs[1]!, { order: -1, updatedAt: serverTimestamp() });
+      }),
+    );
+    expect((await getDoc(refs[0]!)).data()?.order).toBe(1);
+    expect((await getDoc(refs[1]!)).data()?.order).toBe(0);
+    const outsiderDb = rulesEnvironment.authenticatedContext(outsiderUid).firestore();
+    await assertFails(
+      runTransaction(outsiderDb, async (transaction) => {
+        transaction.update(doc(outsiderDb, "trips", tripId, "itinerary", "first"), {
+          order: 0,
+          updatedBy: outsiderUid,
+          updatedAt: serverTimestamp(),
+        });
       }),
     );
   });

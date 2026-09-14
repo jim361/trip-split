@@ -102,8 +102,8 @@ trips/{tripId}/participants/{participantId}
 
 trips/{tripId}/places/{placeId}
 trips/{tripId}/itinerary/{itemId}
-trips/{tripId}/reservations/{reservationId}       # 목표 계약; 현재 미구현
-trips/{tripId}/checklistItems/{checklistItemId}   # 목표 계약; 현재 미구현
+trips/{tripId}/reservations/{reservationId}       # 제목·유형·상태·선택 URL/메모/일정·감사 정보
+trips/{tripId}/checklistItems/{checklistItemId}   # 제목·scope·완료·담당 Participant·감사 정보
 
 trips/{tripId}/expenses/{expenseId}
   title
@@ -203,21 +203,23 @@ Flutter에서는 immutable Dart class로, backend에서는 TypeScript type으로
 
 ### Callable Function과 담당
 
-| 담당 | Callable Function | 책임 | 2026-08-30 구현 상태 |
+| 담당 | Callable Function | 책임 | 2026-09-14 구현 상태 |
 | --- | --- | --- | --- |
 | 플랫폼·통합 | `createTrip`, `createShareCode`, `joinTrip` | 여행·생성자 멤버 원자적 생성, 공유 코드 생성·검증, 참여 멤버 등록 | 구현·Emulator 테스트 |
-| 정산·영수증 | `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` | 지출 runtime 검증·감사 필드 기록, 이미지 검증, OCR·번역 provider 호출과 `ParsedReceipt` 정규화 | 이름·client/mock 경계만 존재; backend 미구현 |
-| 장소·일정·지도 | `searchPlaces`, `parsePlaceLink` | Google 장소 검색·URL 해석, `Place` 후보 정규화 | provider mock만 존재; backend 미구현 |
+| 정산·영수증 | `createExpense`, `updateExpense`, `deleteExpense`, `parseReceipt` | 지출 runtime 검증·감사 필드 기록, 이미지 검증, OCR·번역 provider 호출과 `ParsedReceipt` 정규화 | 지출 validator·Callable·Flutter adapter 구현, OCR는 Emulator 샘플 |
+| 장소·일정·지도 | `searchPlaces`, `parsePlaceLink` | Google 장소 검색·URL 해석, `Place` 후보 정규화 | Callable·Flutter adapter 구현, Emulator 샘플 / 외부 Google 미연결 |
 
 플랫폼·통합 담당(사용자)은 전체 Flutter 화면·Dart 계산·repository·지도 SDK와 공통 기반을 구현하고 Firebase 초기화, Functions 진입점, 보안 규칙, dependency와 lockfile을 최종 확인한다. 두 백엔드 담당은 각자의 Function 모듈·서버 검증·테스트를 소유한다. 공통 타입이나 Firestore 경로 변경은 `dev`에 푸시하기 전에 세 담당자가 함께 검토한다.
 
 여행 생성·수정과 일정 저장 날짜는 `2000-01-01`부터 `2100-12-31`까지 실제 달력 날짜만 허용한다. 여행의 종료일은 시작일보다 빠를 수 없다. Firestore 직접 쓰기에도 같은 검증을 적용하며, 일정의 날짜를 여행 기간 안으로 제한하는 정책과 자정 경계의 상세 UX는 TASK-04에서 함께 검토한다.
 
+Flutter 일정 재정렬은 `ItineraryOrderDraft(date, planId, itemIds)`를 `ItineraryRepository.reorderItineraryItems`에 전달한다. mock은 한 번의 변경 알림을 보내고 Firestore는 대상 문서의 날짜·계획·존재 여부를 모두 읽은 뒤 순서·감사 필드만 transaction으로 갱신한다. 이동·삭제된 항목이 있으면 전체 요청이 실패하며 offline에서는 재정렬이 실패할 수 있다. UI는 오류를 표시하고 자동 재시도하지 않는다. Firestore 경로·필드와 React CRUD 계약은 바꾸지 않는다.
+
 비용 화면의 개인 요약은 `Participant.linkedUid == 현재 Auth uid`인 유일한 참여자로 계산한다. 연결이 없거나 중복되어 모호하면 개인 요약·송금액을 표시하지 않고 연결 안내와 전체 원장만 표시한다. 비활성 참여자의 기존 원장은 계속 개인 요약에 포함한다.
 
-장소·OCR Callable은 `{ tripId, ...도메인 입력 }`을 받고 Auth와 `trips/{tripId}/members/{uid}`를 확인한 뒤에만 외부 provider를 호출한다. `searchPlaces({ tripId, query })`는 `PlaceCandidate[]`, `parsePlaceLink({ tripId, url })`는 `PlaceCandidate`로 정규화한다. 지출 목록과 실시간 Stream은 멤버 기반 Rules로 읽고, 생성·수정·삭제는 공통 runtime validator를 통과하는 위 Callable만 사용한다. validator가 구현될 때까지 expense의 클라이언트 직접 쓰기 거부 규칙을 유지한다.
+장소·OCR Callable은 `{ tripId, ...도메인 입력 }`을 받고 Auth와 `trips/{tripId}/members/{uid}`를 확인한 뒤에만 외부 provider를 호출한다. `searchPlaces({ tripId, query })`는 `PlaceCandidate[]`, `parsePlaceLink({ tripId, url })`는 `PlaceCandidate`로 정규화한다. 지출 목록과 실시간 Stream은 멤버 기반 Rules로 읽고, 생성·수정·삭제는 공통 runtime validator를 통과하는 위 Callable만 사용한다. validator·지출 Callable을 구현했으며 expense의 클라이언트 직접 쓰기 거부 규칙은 계속 유지한다.
 
-첫 공통 Dart fixture는 고정 ID `tokyo-2026-11`을 사용하고 장소, 일정, 참여자와 JPY 수동 지출을 포함한다. 일본어 항목형 영수증은 별도 mock parser fixture로 제공한다. 준비 모델과 강릉 Dart fixture는 후속이며, 기존 React 강릉 fixture는 KRW·국내 회귀용으로 보존한다. 도메인 fixture는 같은 canonical 타입과 ID 계약을 사용해 불일치를 조기에 찾는다.
+첫 공통 Dart fixture는 고정 ID `tokyo-2026-11`을 사용하고 장소, 일정, 참여자와 JPY 수동 지출을 포함한다. 일본어 항목형 영수증은 별도 mock parser fixture로 제공한다. 준비 모델·repository·Rules는 구현했고 강릉 Dart fixture는 후속이며, 기존 React 강릉 fixture는 KRW·국내 회귀용으로 보존한다. 도메인 fixture는 같은 canonical 타입과 ID 계약을 사용해 불일치를 조기에 찾는다.
 
 ## 6. 인증과 공유 코드 흐름
 
@@ -304,7 +306,7 @@ Flutter repository는 현재 다음 Firestore snapshot을 Dart `Stream`으로 �
 - itinerary
 - expenses
 
-`reservations`와 `checklistItems`는 목표 Firestore 경로만 정해졌고 Dart 모델, repository와 Rules는 아직 없다. 화면별 실제 연결 상태와 전환기 React 불일치는 [`docs/firebase-api-contract.md`](../docs/firebase-api-contract.md)에서 관리한다.
+`reservations`와 `checklistItems`는 Dart 모델, mock/Firestore repository와 Rules를 구현했다. 문서 필드는 최상위에 저장하며 personal scope도 여행 멤버가 공동으로 읽고 편집한다. 상세 필드·enum·감사 정보는 [`docs/frontend-api-handoff.md`](../docs/frontend-api-handoff.md#4-준비-데이터-wire)를 따른다. 화면별 실제 연결 상태와 전환기 React 불일치는 [`docs/firebase-api-contract.md`](../docs/firebase-api-contract.md)에서 관리한다.
 
 지출 변경 시 정산 엔진은 클라이언트에서 다음 값을 순수 함수로 재계산한다.
 
@@ -364,7 +366,7 @@ abstract interface class ReceiptParser {
 }
 ```
 
-Android의 첫 목표 구현체는 Google place provider와 `google_maps_flutter` adapter다. 현재는 두 경계 모두 mock이며 실제 SDK와 Callable은 아직 연결되지 않았다. NAVER는 국내 여행을 시작할 때 별도 adapter로 추가한다. 실제 경로 계산이 채택되기 전에는 `getRoute`를 repository 계약에 미리 넣지 않고 외부 Google Maps 링크만 만든다.
+Android의 첫 목표 구현체는 Google place provider와 `google_maps_flutter` adapter다. 현재 장소 Callable·Flutter adapter는 Emulator 샘플로 연결되었고 실제 Google SDK·외부 검색 provider는 미연결이다. 외부 지도 URL은 Android adapter로 연다. NAVER는 국내 여행을 시작할 때 별도 adapter로 추가한다. 실제 경로 계산이 채택되기 전에는 `getRoute`를 repository 계약에 미리 넣지 않고 외부 Google Maps 링크만 만든다.
 
 `ReceiptImageInput`의 앱 내부 값은 `Uint8List bytes`, `mimeType`과 선택적 파일명이다. Callable wire에서는 제한된 base64 또는 승인된 임시 업로드 방식으로 변환하고 backend가 다시 bytes로 검증한다. OCR provider SDK는 Node.js backend 안에만 존재한다.
 
@@ -423,3 +425,14 @@ Web을 추가할 때는 `MapCapabilities`, 로그인, 파일·카메라와 공�
 - [Firebase Pricing](https://firebase.google.com/pricing)
 - [Google Maps for Flutter](https://developers.google.com/maps/flutter-package)
 - [Google Document AI processors](https://cloud.google.com/document-ai/docs/processors-list)
+
+### 2026-09-14 화면·서버 동시 구현 계약 보충
+
+- 사용자 승인 범위로 장소·준비·참여자·개인 정산·여행 설정·영수증 검토 화면과 필요한 서버 함수를 함께 구현했다. 기존 3인 소유 영역은 유지한다.
+- 공통 Callable `listMyTrips({}) → {trips}`와 `linkMyParticipant({tripId, participantId: string|null}) → {tripId, participantId}`를 추가했다. 기존 9개 이름은 유지한다. linkMyParticipant는 Auth UID 본인만, 여행 내 유일 연결을 transaction으로 적용한다.
+- `members/{uid}.uid`는 문서 ID와 같은 서버 필드다. listMyTrips는 collection-group uid index로 조회한다. 구형 uid 없는 문서는 joinTrip 재참여 시 보정되며 운영 backfill/배포는 별도다.
+- `searchPlaces.query` wire는 string이다. 장소·OCR handler는 Auth/member와 입력을 검증하고 Emulator에서만 샘플을 반환한다. 외부 서비스 미연결은 unavailable이다.
+- 지출 validator는 equal/custom/itemized를 검사한다. 총액 분할은 source=manual, 빈 receiptItems. itemized는 행/조정 합계와 참여자별 집계·총액을 함께 검증한다. 감사 정보는 서버가 기록한다.
+- 준비 예약 type: flight/stay/transport/ticket/other, status: planned/booked/cancelled. 체크리스트 scope: shared/personal. personal은 비공개 권한이 아니다.
+- 장소 참조 중 삭제 제한은 현재 화면 검사다. 서버 원자적 참조 삭제 정책은 후속 검토이며 동시 삭제 시 재선택/해제로 복구한다.
+- [현재 화면·wire 명세](../docs/frontend-api-handoff.md), [실제 연결 상태](../docs/firebase-api-contract.md), [작업 공유](../docs/development-update-2026-09-14.md)를 함께 확인한다.

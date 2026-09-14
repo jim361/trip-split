@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../domain/models.dart';
 import '../../domain/repositories.dart';
+import '../../domain/preparation.dart';
 import 'tokyo_trip_fixture.dart';
 
 typedef EpochClock = EpochMillis Function();
@@ -51,6 +52,8 @@ final class InMemoryTripRepositories implements TripRepositories {
   final Map<EntityId, Place> _places = {};
   final Map<EntityId, ItineraryItem> _itinerary = {};
   final Map<EntityId, Expense> _expenses = {};
+  final Map<String, Reservation> _reservations = {};
+  final Map<String, ChecklistItem> _checklist = {};
   var _nextId = 1;
   var _nextTripId = 1;
   var _nextShareCode = 0;
@@ -59,9 +62,174 @@ final class InMemoryTripRepositories implements TripRepositories {
       _userProfiles[actorUid]?.displayName ?? '여행자 ${_shortUid(actorUid)}';
 
   @override
+  Stream<List<Reservation>> watchReservations(String tripId) async* {
+    List<Reservation> values() =>
+        _reservations.values.where((r) => r.tripId == tripId).toList();
+    yield values();
+    yield* _changes.stream.map((_) => values());
+  }
+
+  @override
+  Stream<List<ChecklistItem>> watchChecklist(String tripId) async* {
+    List<ChecklistItem> values() =>
+        _checklist.values.where((r) => r.tripId == tripId).toList();
+    yield values();
+    yield* _changes.stream.map((_) => values());
+  }
+
+  @override
+  Future<String> saveReservation(
+    String tripId,
+    ReservationDraft draft, {
+    String? id,
+  }) async {
+    _requireTrip(tripId);
+    final old = id == null ? null : _find(_reservations, tripId, id, '예약');
+    if (draft.itineraryItemId != null) {
+      _find(_itinerary, tripId, draft.itineraryItemId!, '일정');
+    }
+    final key = id ?? _id('reservation');
+    _reservations[key] = Reservation(
+      id: key,
+      tripId: tripId,
+      draft: draft,
+      createdAt: old?.createdAt ?? _now(),
+      updatedAt: _now(),
+      createdBy: old?.createdBy ?? actorUid,
+      updatedBy: actorUid,
+    );
+    _changes.add(null);
+    return key;
+  }
+
+  @override
+  Future<String> saveChecklist(
+    String tripId,
+    ChecklistDraft draft, {
+    String? id,
+  }) async {
+    _requireTrip(tripId);
+    final old = id == null ? null : _find(_checklist, tripId, id, '체크리스트');
+    if (draft.assigneeParticipantId != null) {
+      _find(_participants, tripId, draft.assigneeParticipantId!, '참여자');
+    }
+    final key = id ?? _id('checklist');
+    _checklist[key] = ChecklistItem(
+      id: key,
+      tripId: tripId,
+      draft: draft,
+      createdAt: old?.createdAt ?? _now(),
+      updatedAt: _now(),
+      createdBy: old?.createdBy ?? actorUid,
+      updatedBy: actorUid,
+    );
+    _changes.add(null);
+    return key;
+  }
+
+  @override
+  Future<void> setChecklistCompleted(
+    String tripId,
+    String id,
+    bool completed,
+  ) async {
+    final old = _find(_checklist, tripId, id, '체크리스트');
+    await saveChecklist(
+      tripId,
+      ChecklistDraft(
+        title: old.draft.title,
+        scope: old.draft.scope,
+        assigneeParticipantId: old.draft.assigneeParticipantId,
+        isDone: completed,
+      ),
+      id: id,
+    );
+  }
+
+  @override
+  Future<void> deleteReservation(String tripId, String id) async {
+    _find(_reservations, tripId, id, '예약');
+    _reservations.remove(id);
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> deleteChecklist(String tripId, String id) async {
+    _find(_checklist, tripId, id, '체크리스트');
+    _checklist.remove(id);
+    _changes.add(null);
+  }
+
+  @override
   Stream<Trip?> watchTrip(EntityId tripId) async* {
     yield _trip(tripId);
     yield* _changes.stream.map((_) => _trip(tripId));
+  }
+
+  @override
+  Future<List<Trip>> listMyTrips() async =>
+      _trips.values
+          .where((trip) => _members.containsKey(_memberKey(trip.id, actorUid)))
+          .toList()
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+  @override
+  Future<void> updateTrip(String tripId, TripUpdate draft) async {
+    final old = _requireTrip(tripId);
+    _trips[tripId] = Trip(
+      id: old.id,
+      title: draft.title,
+      startDate: draft.startDate,
+      endDate: draft.endDate,
+      countryCode: old.countryCode,
+      timeZone: old.timeZone,
+      mapProvider: old.mapProvider,
+      defaultCurrency: old.defaultCurrency,
+      ownerUid: old.ownerUid,
+      shareCode: old.shareCode,
+      createdAt: old.createdAt,
+      updatedAt: _now(),
+    );
+    _changes.add(null);
+  }
+
+  @override
+  Future<void> linkMyParticipant(String tripId, String? participantId) async {
+    _requireTrip(tripId);
+    if (!_members.containsKey(_memberKey(tripId, actorUid))) {
+      throw const AppError(
+        code: AppErrorCode.permissionDenied,
+        message: '여행 멤버만 연결할 수 있습니다.',
+        retryable: false,
+      );
+    }
+    final target = participantId == null
+        ? null
+        : _find(_participants, tripId, participantId, '참여자');
+    if (target != null &&
+        (!target.isActive ||
+            (target.linkedUid != null && target.linkedUid != actorUid))) {
+      throw const AppError(
+        code: AppErrorCode.conflict,
+        message: '비활성 상태이거나 다른 계정과 연결된 참여자입니다.',
+        retryable: false,
+      );
+    }
+    for (final participant in _participantsFor(tripId)) {
+      if (participant.linkedUid == actorUid ||
+          participant.id == participantId) {
+        _participants[participant.id] = Participant(
+          id: participant.id,
+          tripId: tripId,
+          name: participant.name,
+          color: participant.color,
+          isActive: participant.isActive,
+          createdAt: participant.createdAt,
+          updatedAt: _now(),
+          linkedUid: participant.id == participantId ? actorUid : null,
+        );
+      }
+    }
+    _changes.add(null);
   }
 
   @override
@@ -281,6 +449,7 @@ final class InMemoryTripRepositories implements TripRepositories {
     EntityId tripId,
     ParticipantDraft draft,
   ) async {
+    draft.validate();
     _requireTrip(tripId);
     final timestamp = _now();
     final participant = Participant(
@@ -304,13 +473,14 @@ final class InMemoryTripRepositories implements TripRepositories {
     EntityId participantId,
     ParticipantDraft draft,
   ) async {
+    draft.validate();
     final current = _find(_participants, tripId, participantId, '참여자');
     _participants[participantId] = Participant(
       id: current.id,
       tripId: current.tripId,
       name: draft.name,
       color: draft.color,
-      linkedUid: draft.linkedUid,
+      linkedUid: draft.linkedUid ?? current.linkedUid,
       isActive: draft.isActive,
       createdAt: current.createdAt,
       updatedAt: _now(),
@@ -457,8 +627,46 @@ final class InMemoryTripRepositories implements TripRepositories {
   }
 
   @override
+  Future<void> reorderItineraryItems(
+    EntityId tripId,
+    ItineraryOrderDraft draft,
+  ) async {
+    final items = [
+      for (final id in draft.itemIds) _find(_itinerary, tripId, id, '일정'),
+    ];
+    for (final item in items) {
+      draft.checkItem(item);
+    }
+    final timestamp = _now();
+    for (final (order, item) in items.indexed) {
+      _itinerary[item.id] = ItineraryItem(
+        id: item.id,
+        tripId: item.tripId,
+        date: item.date,
+        planId: item.planId,
+        category: item.category,
+        startTime: item.startTime,
+        endTime: item.endTime,
+        placeId: item.placeId,
+        title: item.title,
+        memo: item.memo,
+        order: order,
+        updatedBy: actorUid,
+        updatedAt: timestamp,
+      );
+    }
+    _changes.add(null);
+  }
+
+  @override
   Future<Expense> createExpense(EntityId tripId, ExpenseDraft draft) async {
     _requireTrip(tripId);
+    draft.validate(
+      tripId: tripId,
+      participants: _participantsFor(tripId),
+      places: _placesFor(tripId),
+      itinerary: _itineraryFor(tripId),
+    );
     final timestamp = _now();
     final expense = _expenseFromDraft(
       id: _id('expense'),
@@ -479,6 +687,13 @@ final class InMemoryTripRepositories implements TripRepositories {
     ExpenseDraft draft,
   ) async {
     final current = _find(_expenses, tripId, expenseId, '지출');
+    draft.validate(
+      tripId: tripId,
+      participants: _participantsFor(tripId),
+      places: _placesFor(tripId),
+      itinerary: _itineraryFor(tripId),
+      previous: current,
+    );
     _expenses[expenseId] = _expenseFromDraft(
       id: current.id,
       tripId: current.tripId,
@@ -492,6 +707,8 @@ final class InMemoryTripRepositories implements TripRepositories {
 
   @override
   Future<void> deleteExpense(EntityId tripId, EntityId expenseId) async {
+    _requireTrip(tripId);
+    if (!_expenses.containsKey(expenseId)) return;
     _find(_expenses, tripId, expenseId, '지출');
     _expenses.remove(expenseId);
     _changes.add(null);
@@ -532,6 +749,8 @@ final class InMemoryTripRepositories implements TripRepositories {
       Place value => value.tripId,
       ItineraryItem value => value.tripId,
       Expense value => value.tripId,
+      Reservation value => value.tripId,
+      ChecklistItem value => value.tripId,
       _ => null,
     };
     if (value == null || valueTripId != tripId) {

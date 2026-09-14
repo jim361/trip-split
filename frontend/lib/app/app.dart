@@ -4,6 +4,10 @@ import '../data/mock/tokyo_trip_fixture.dart';
 import '../domain/repositories.dart';
 import '../features/auth/account_entry_page.dart';
 import '../features/trips/trip_home_page.dart';
+import '../features/places/place_provider.dart';
+import '../features/places/mock_place_provider.dart';
+import '../features/receipts/receipt_parser.dart';
+import '../features/receipts/mock_receipt_parser.dart';
 import '../services/auth_service.dart';
 import '../services/trip_share_service.dart';
 import '../shared/theme/app_theme.dart';
@@ -18,6 +22,9 @@ final class TripSplitApp extends StatelessWidget {
     required this.tripShareService,
     required this.dataSourceLabel,
     this.initialRoute = '/',
+    this.placeProvider,
+    this.placeLinkResolver,
+    this.receiptParser,
     super.key,
   });
 
@@ -26,6 +33,9 @@ final class TripSplitApp extends StatelessWidget {
   final TripShareService tripShareService;
   final String dataSourceLabel;
   final String initialRoute;
+  final PlaceProvider? placeProvider;
+  final PlaceLinkResolver? placeLinkResolver;
+  final ReceiptParser? receiptParser;
 
   @override
   Widget build(BuildContext context) => AuthSessionGate(
@@ -53,6 +63,7 @@ final class TripSplitApp extends StatelessWidget {
       return MaterialPageRoute<void>(
         settings: settings,
         builder: (_) => TripHomePage(
+          repositories: repositories,
           tripShareService: tripShareService,
           dataSourceLabel: dataSourceLabel,
           joinFirst: uri?.queryParameters['join'] == 'true',
@@ -72,8 +83,14 @@ final class TripSplitApp extends StatelessWidget {
     }
     return MaterialPageRoute<void>(
       settings: RouteSettings(name: location.canonicalPath),
-      builder: (_) =>
-          TripRouteHost(location: location, repositories: repositories),
+      builder: (_) => TripRouteHost(
+        location: location,
+        repositories: repositories,
+        placeProvider: placeProvider ?? MockPlaceProvider(),
+        placeLinkResolver: placeLinkResolver ?? MockPlaceProvider(),
+        tripShareService: tripShareService,
+        receiptParser: receiptParser ?? const MockReceiptParser(),
+      ),
     );
   }
 }

@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:trip_split/domain/models.dart';
 
+import '../../domain/repositories.dart';
 import '../../shared/theme/app_theme.dart';
 import '../map/map_render_model.dart';
+import '../places/place_provider.dart';
+import '../places/mock_place_provider.dart';
+import '../places/places_page.dart';
+import '../../platform/android_actions.dart';
+import '../../shared/widgets/edit_frame.dart';
+import 'itinerary_edit_page.dart';
 import 'itinerary_plan_controls.dart';
 import 'trip_timetable.dart' show tripDatesFor;
 
@@ -11,19 +18,27 @@ class ItineraryPage extends StatefulWidget {
   const ItineraryPage({
     super.key,
     required this.trip,
+    required this.repositories,
     required this.places,
     required this.itinerary,
     required this.selectedDate,
+    this.selectedPlan = 'A',
     required this.mapExpanded,
     required this.onToggleMap,
+    this.placeProvider,
+    this.placeLinkResolver,
   });
 
   final Trip trip;
+  final TripRepositories repositories;
   final List<Place> places;
   final List<ItineraryItem> itinerary;
   final String? selectedDate;
+  final String selectedPlan;
   final bool mapExpanded;
-  final ValueChanged<String> onToggleMap;
+  final void Function(String date, String planId) onToggleMap;
+  final PlaceProvider? placeProvider;
+  final PlaceLinkResolver? placeLinkResolver;
 
   @override
   State<ItineraryPage> createState() => _ItineraryPageState();
@@ -32,11 +47,16 @@ class ItineraryPage extends StatefulWidget {
 class _ItineraryPageState extends State<ItineraryPage> {
   String? _selectedDate;
   String _selectedPlan = 'A';
+  ItineraryOrderDraft? _pendingOrder;
+  bool get _moving => _pendingOrder != null;
+  bool _editing = false;
+  AppError? _error;
 
   @override
   void initState() {
     super.initState();
     _selectedDate = widget.selectedDate;
+    _selectedPlan = widget.selectedPlan;
   }
 
   @override
@@ -45,6 +65,9 @@ class _ItineraryPageState extends State<ItineraryPage> {
     if (widget.selectedDate != oldWidget.selectedDate &&
         widget.selectedDate != null) {
       _selectedDate = widget.selectedDate;
+    }
+    if (widget.selectedPlan != oldWidget.selectedPlan) {
+      _selectedPlan = widget.selectedPlan;
     }
   }
 
@@ -57,11 +80,40 @@ class _ItineraryPageState extends State<ItineraryPage> {
         ? ''
         : dates.first;
     _selectedDate = selectedDate;
+    final pending = _pendingOrder;
+    final pendingIds =
+        pending?.date == selectedDate && pending?.planId == _selectedPlan
+        ? pending!.itemIds
+        : const <String>[];
+    final pendingPositions = {
+      for (final entry in pendingIds.indexed) entry.$2: entry.$1,
+    };
     final selectedItinerary =
         widget.itinerary
             .where(
               (item) =>
                   item.planId == _selectedPlan && item.date == selectedDate,
+            )
+            .map(
+              (item) => pendingIds.isEmpty
+                  ? item
+                  : ItineraryItem(
+                      id: item.id,
+                      tripId: item.tripId,
+                      date: item.date,
+                      title: item.title,
+                      order:
+                          pendingPositions[item.id] ??
+                          pendingIds.length + item.order,
+                      updatedAt: item.updatedAt,
+                      updatedBy: item.updatedBy,
+                      planId: item.planId,
+                      category: item.category,
+                      startTime: item.startTime,
+                      endTime: item.endTime,
+                      placeId: item.placeId,
+                      memo: item.memo,
+                    ),
             )
             .toList()
           ..sort((left, right) {
@@ -93,11 +145,67 @@ class _ItineraryPageState extends State<ItineraryPage> {
           tripTitle: widget.trip.title,
           model: mapModel,
           expanded: widget.mapExpanded,
-          onToggle: () => widget.onToggleMap(selectedDate),
+          onToggle: () => widget.onToggleMap(selectedDate, _selectedPlan),
+          onSelect: (id) => _edit(
+            selectedDate,
+            selectedItinerary.firstWhere((item) => item.id == id),
+          ),
+        );
+        final actions = Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              FilledButton.icon(
+                key: const Key('itinerary-add'),
+                onPressed: _moving ? null : () => _edit(selectedDate),
+                icon: const Icon(Icons.add),
+                label: const Text('일정 추가'),
+              ),
+              if (MediaQuery.sizeOf(context).width >=
+                  AppTheme.expandedBreakpoint)
+                _RoutePanelHeader(
+                  onPlaces: _openPlaces,
+                  onMap: () => _openMap(selectedItinerary),
+                ),
+              if (selectedItinerary.length > 1)
+                TextButton.icon(
+                  onPressed: _moving
+                      ? null
+                      : () => _sortByTime(selectedItinerary),
+                  icon: const Icon(Icons.schedule),
+                  label: const Text('시간순으로 정렬'),
+                ),
+              if (selectedItinerary.length > 1) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '일정을 꾹 눌러 끌면 순서를 바꿀 수 있어요.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+              if (_moving) const LinearProgressIndicator(),
+              if (_error case final error?)
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    error.message,
+                    key: const Key('itinerary-order-error'),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         );
         final schedule = _DaySchedule(
+          key: ValueKey('schedule-$selectedDate-$_selectedPlan'),
           date: selectedDate,
           itinerary: selectedItinerary,
+          onEdit: _moving ? null : (item) => _edit(selectedDate, item),
+          onReorder: _moving
+              ? null
+              : (from, to) => _reorder(selectedItinerary, from, to),
         );
 
         if (MediaQuery.sizeOf(context).width >= AppTheme.expandedBreakpoint) {
@@ -127,20 +235,35 @@ class _ItineraryPageState extends State<ItineraryPage> {
                 width: 400,
                 child: ColoredBox(
                   color: Theme.of(context).colorScheme.surface,
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 48),
-                    children: [
-                      Text(
-                        'DAY ${selectedDay.toString().padLeft(2, '0')} / ROUTE',
-                        style: Theme.of(context).textTheme.labelLarge,
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'DAY ${selectedDay.toString().padLeft(2, '0')} / ROUTE',
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                _dateLongLabel(selectedDate),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall,
+                              ),
+                              const SizedBox(height: 20),
+                              actions,
+                            ],
+                          ),
+                        ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _dateLongLabel(selectedDate),
-                        style: Theme.of(context).textTheme.headlineSmall,
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 48),
+                        sliver: schedule,
                       ),
-                      const SizedBox(height: 20),
-                      schedule,
                     ],
                   ),
                 ),
@@ -149,36 +272,203 @@ class _ItineraryPageState extends State<ItineraryPage> {
           );
         }
 
-        return ListView(
+        return CustomScrollView(
           key: const Key('itinerary-compact-layout'),
-          padding: const EdgeInsets.only(bottom: 96),
-          children: [
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                ),
-              ),
+          slivers: [
+            SliverToBoxAdapter(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  heading,
-                  const SizedBox(height: 16),
-                  planSelector,
-                  const SizedBox(height: 12),
-                  dayTabs,
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Theme.of(context).colorScheme.outlineVariant,
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        heading,
+                        const SizedBox(height: 16),
+                        planSelector,
+                        const SizedBox(height: 12),
+                        dayTabs,
+                      ],
+                    ),
+                  ),
+                  map,
+                  _RoutePanelHeader(
+                    onPlaces: _openPlaces,
+                    onMap: () => _openMap(selectedItinerary),
+                  ),
+                  actions,
                 ],
               ),
             ),
-            map,
-            const _RoutePanelHeader(),
-            schedule,
+            SliverPadding(
+              padding: const EdgeInsets.only(bottom: 96),
+              sliver: schedule,
+            ),
           ],
         );
       },
     );
+  }
+
+  Future<void> _edit(String date, [ItineraryItem? item]) async {
+    if (_editing || _moving) return;
+    _editing = true;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    final message = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (context) => ItineraryEditPage(
+          tripId: widget.trip.id,
+          repositories: widget.repositories,
+          date: date,
+          planId: _selectedPlan,
+          places: widget.places,
+          placeProvider: widget.placeProvider,
+          placeLinkResolver: widget.placeLinkResolver,
+          item: item,
+        ),
+      ),
+    );
+    _editing = false;
+    if (mounted && message != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
+
+  Future<void> _openPlaces() async {
+    if (_editing || _moving) return;
+    _editing = true;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (_) => PlacesPage(
+          trip: widget.trip,
+          repositories: widget.repositories,
+          provider: widget.placeProvider ?? MockPlaceProvider(),
+          linkResolver: widget.placeLinkResolver ?? MockPlaceProvider(),
+        ),
+      ),
+    );
+    _editing = false;
+  }
+
+  Future<void> _openMap(List<ItineraryItem> items) async {
+    final places = {for (final p in widget.places) p.id: p};
+    final located = items
+        .map((i) => places[i.placeId])
+        .whereType<Place>()
+        .where((p) => p.lat != null && p.lng != null)
+        .toList();
+    if (located.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('좌표가 연결된 일정을 먼저 추가해 주세요.')));
+      return;
+    }
+    final destination = await showDialog<int>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('외부 지도에서 열 구간'),
+        children: [
+          for (var i = 0; i < located.length; i++)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, i),
+              child: Text(
+                i == 0
+                    ? '${located[i].name} 위치 보기'
+                    : '${located[i - 1].name} → ${located[i].name}',
+              ),
+            ),
+        ],
+      ),
+    );
+    if (destination == null || !mounted) return;
+    final place = located[destination];
+    final query = destination == 0
+        ? {'api': '1', 'query': '${place.lat},${place.lng}'}
+        : {
+            'api': '1',
+            'origin':
+                '${located[destination - 1].lat},${located[destination - 1].lng}',
+            'destination': '${place.lat},${place.lng}',
+          };
+    try {
+      await AndroidActions.openUrl(
+        Uri.https(
+          'www.google.com',
+          destination == 0 ? '/maps/search/' : '/maps/dir/',
+          query,
+        ),
+      );
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(actionError(error))));
+      }
+    }
+  }
+
+  Future<void> _sortByTime(List<ItineraryItem> items) async {
+    if (_moving || _editing) return;
+    if (!await confirmAction(
+          context,
+          '시간순으로 정렬할까요?',
+          '같은 시간은 현재 순서를 유지하고, 시간이 없는 일정은 뒤에 둡니다.',
+        ) ||
+        !mounted) {
+      return;
+    }
+    final original = {
+      for (final (index, item) in items.indexed) item.id: index,
+    };
+    final ordered = [...items]
+      ..sort((a, b) {
+        final time = (a.startTime ?? '99:99').compareTo(b.startTime ?? '99:99');
+        return time != 0 ? time : original[a.id]!.compareTo(original[b.id]!);
+      });
+    await _saveOrder(ordered);
+  }
+
+  Future<void> _reorder(List<ItineraryItem> items, int from, int to) async {
+    if (_moving || _editing || from == to) return;
+    final reordered = [...items];
+    reordered.insert(to, reordered.removeAt(from));
+    await _saveOrder(reordered);
+  }
+
+  Future<void> _saveOrder(List<ItineraryItem> reordered) async {
+    final draft = ItineraryOrderDraft(
+      date: reordered.first.date,
+      planId: reordered.first.planId,
+      itemIds: reordered.map((item) => item.id).toList(),
+    );
+    setState(() {
+      _pendingOrder = draft;
+      _error = null;
+    });
+    try {
+      await widget.repositories.reorderItineraryItems(widget.trip.id, draft);
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _error = error is AppError
+              ? error
+              : const AppError(
+                  code: AppErrorCode.unknown,
+                  message: '순서를 저장하지 못했습니다. 다시 시도해 주세요.',
+                  retryable: false,
+                );
+        });
+      }
+    } finally {
+      if (mounted) setState(() => _pendingOrder = null);
+    }
   }
 }
 
@@ -285,37 +575,57 @@ class _DayTabs extends StatelessWidget {
 }
 
 class _DaySchedule extends StatelessWidget {
-  const _DaySchedule({required this.date, required this.itinerary});
+  const _DaySchedule({
+    super.key,
+    required this.date,
+    required this.itinerary,
+    this.onEdit,
+    this.onReorder,
+  });
 
   final String date;
   final List<ItineraryItem> itinerary;
+  final ValueChanged<ItineraryItem>? onEdit;
+  final ReorderCallback? onReorder;
 
   @override
   Widget build(BuildContext context) {
     if (itinerary.isEmpty) {
-      return Container(
-        key: ValueKey('itinerary-day-empty-$date'),
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          border: Border.all(
-            color: Theme.of(context).colorScheme.onSurface,
-            width: AppTheme.frameStroke,
+      return SliverToBoxAdapter(
+        child: Container(
+          key: ValueKey('itinerary-day-empty-$date'),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.onSurface,
+              width: AppTheme.frameStroke,
+            ),
           ),
+          child: const Text('이 날짜에는 아직 일정이 없습니다.'),
         ),
-        child: const Text('이 날짜에는 아직 일정이 없습니다.'),
       );
     }
 
-    return Column(
-      children: [
-        for (final entry in itinerary.indexed)
-          _DayScheduleRow(
-            item: entry.$2,
-            number: entry.$1 + 1,
-            showTopBorder: entry.$1 == 0,
+    return SliverReorderableList(
+      itemCount: itinerary.length,
+      onReorderItem: (from, to) => onReorder?.call(from, to),
+      proxyDecorator: (child, index, animation) =>
+          Material(elevation: 6, child: child),
+      itemBuilder: (context, index) {
+        final item = itinerary[index];
+        return ReorderableDelayedDragStartListener(
+          key: ValueKey(item.id),
+          index: index,
+          enabled: onReorder != null && itinerary.length > 1,
+          child: _DayScheduleRow(
+            item: item,
+            number: index + 1,
+            showTopBorder: index == 0,
+            onEdit: onEdit == null ? null : () => onEdit!(item),
           ),
-      ],
+        );
+      },
     );
   }
 }
@@ -325,11 +635,13 @@ class _DayScheduleRow extends StatelessWidget {
     required this.item,
     required this.number,
     required this.showTopBorder,
+    this.onEdit,
   });
 
   final ItineraryItem item;
   final int number;
   final bool showTopBorder;
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -337,68 +649,79 @@ class _DayScheduleRow extends StatelessWidget {
     final (categoryLabel, categoryColor) = itineraryCategoryStyle(
       item.category,
     );
-    return Container(
-      key: ValueKey('itinerary-row-${item.id}'),
-      constraints: const BoxConstraints(minHeight: 56),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(
-          top: showTopBorder
-              ? BorderSide(color: colors.outlineVariant)
-              : BorderSide.none,
-          bottom: BorderSide(color: colors.outlineVariant),
-        ),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 64,
-            child: Text(
-              item.startTime ?? '--:--',
-              style: Theme.of(context).textTheme.bodyMedium,
+    return Material(
+      child: InkWell(
+        onTap: onEdit,
+        child: Container(
+          key: ValueKey('itinerary-row-${item.id}'),
+          constraints: const BoxConstraints(minHeight: 56),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            border: Border(
+              top: showTopBorder
+                  ? BorderSide(color: colors.outlineVariant)
+                  : BorderSide.none,
+              bottom: BorderSide(color: colors.outlineVariant),
             ),
           ),
-          Container(
-            width: 24,
-            height: 24,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: categoryColor,
-              border: Border.all(color: colors.onSurface),
-            ),
-            child: Text(
-              number.toString().padLeft(2, '0'),
-              style: Theme.of(context).textTheme.labelSmall,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodyLarge,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 64,
+                child: Text(
+                  item.startTime ?? '--:--',
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                Text(
-                  categoryLabel,
+              ),
+              Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: categoryColor,
+                  border: Border.all(color: colors.onSurface),
+                ),
+                child: Text(
+                  number.toString().padLeft(2, '0'),
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                    Text(
+                      categoryLabel,
+                      style: Theme.of(context).textTheme.labelSmall,
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 12),
+                child: Icon(Icons.drag_handle, color: colors.onSurfaceVariant),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _RoutePanelHeader extends StatelessWidget {
-  const _RoutePanelHeader();
+  const _RoutePanelHeader({required this.onPlaces, required this.onMap});
+  final VoidCallback onPlaces;
+  final VoidCallback onMap;
 
   @override
   Widget build(BuildContext context) => Container(
@@ -414,64 +737,19 @@ class _RoutePanelHeader extends StatelessWidget {
       runSpacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text('오늘의 동선', style: Theme.of(context).textTheme.labelLarge),
-        const _RouteAction(icon: Icons.bookmark_border, label: '장소 보관함'),
-        const _RouteAction(
-          icon: Icons.map_outlined,
-          label: 'Google Maps로 열기',
-          primary: true,
+        OutlinedButton.icon(
+          onPressed: onPlaces,
+          icon: const Icon(Icons.bookmark_border),
+          label: const Text('장소 보관함'),
+        ),
+        FilledButton.icon(
+          onPressed: onMap,
+          icon: const Icon(Icons.map_outlined),
+          label: const Text('지도 열기'),
         ),
       ],
     ),
   );
-}
-
-class _RouteAction extends StatelessWidget {
-  const _RouteAction({
-    required this.icon,
-    required this.label,
-    this.primary = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final bool primary;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final foreground = primary ? colors.onPrimary : colors.onSurface;
-    return Semantics(
-      button: true,
-      label: label,
-      child: Container(
-        height: 32,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: primary ? colors.primary : colors.surface,
-          border: Border.all(
-            color: primary ? colors.primary : colors.onSurface,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14, color: foreground),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.labelSmall
-                    ?.copyWith(color: foreground),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 class _MockMap extends StatelessWidget {
@@ -480,12 +758,14 @@ class _MockMap extends StatelessWidget {
     required this.model,
     required this.expanded,
     required this.onToggle,
+    required this.onSelect,
   });
 
   final String tripTitle;
   final MapRenderModel model;
   final bool expanded;
   final VoidCallback onToggle;
+  final ValueChanged<String> onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -527,26 +807,36 @@ class _MockMap extends StatelessWidget {
                 ),
                 for (final entry in pins.indexed)
                   Positioned(
-                    left: points[entry.$1].dx - 15,
-                    top: points[entry.$1].dy - 15,
+                    left: points[entry.$1].dx - 24,
+                    top: points[entry.$1].dy - 24,
                     child: Tooltip(
                       message: entry.$2.placeName,
-                      child: Container(
-                        key: ValueKey('map-pin-${entry.$2.itineraryItemId}'),
-                        width: 30,
-                        height: 30,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: colors.surface,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: colors.onSurface,
-                            width: AppTheme.frameStroke,
+                      child: SizedBox.square(
+                        dimension: 48,
+                        child: InkWell(
+                          onTap: () => onSelect(entry.$2.itineraryItemId),
+                          child: Center(
+                            child: Container(
+                              key: ValueKey(
+                                'map-pin-${entry.$2.itineraryItemId}',
+                              ),
+                              width: 30,
+                              height: 30,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: colors.surface,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: colors.onSurface,
+                                  width: AppTheme.frameStroke,
+                                ),
+                              ),
+                              child: Text(
+                                entry.$2.number.toString().padLeft(2, '0'),
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          entry.$2.number.toString().padLeft(2, '0'),
-                          style: Theme.of(context).textTheme.labelSmall,
                         ),
                       ),
                     ),

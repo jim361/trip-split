@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/repositories.dart';
+import '../features/settlement/expense_edit_page.dart';
+import '../features/settlement/expense_detail_page.dart';
 import '../features/itinerary/itinerary_page.dart';
 import '../features/preparation/preparation_page.dart';
 import '../features/receipts/receipts_page.dart';
 import '../features/settlement/settlement_page.dart';
+import '../features/settlement/participants_page.dart';
+import '../features/settlement/personal_settlement_page.dart';
+import '../features/places/place_provider.dart';
+import '../services/trip_share_service.dart';
+import '../features/trips/trip_settings_page.dart';
+import '../features/receipts/receipt_parser.dart';
 import '../shared/theme/app_theme.dart';
 import 'auth_session_gate.dart';
 import 'router.dart';
@@ -15,11 +23,19 @@ final class TripRouteHost extends StatefulWidget {
   const TripRouteHost({
     required this.location,
     required this.repositories,
+    required this.placeProvider,
+    required this.placeLinkResolver,
+    required this.tripShareService,
+    required this.receiptParser,
     super.key,
   });
 
   final TripLocation location;
   final TripRepositories repositories;
+  final PlaceProvider placeProvider;
+  final PlaceLinkResolver placeLinkResolver;
+  final TripShareService tripShareService;
+  final ReceiptParser receiptParser;
 
   @override
   State<TripRouteHost> createState() => _TripRouteHostState();
@@ -27,6 +43,7 @@ final class TripRouteHost extends StatefulWidget {
 
 final class _TripRouteHostState extends State<TripRouteHost> {
   late final TripSessionController _session;
+  bool _openingExpense = false;
 
   @override
   void initState() {
@@ -61,34 +78,78 @@ final class _TripRouteHostState extends State<TripRouteHost> {
       final trip = _session.trip!;
       final auth = AuthSessionScope.of(context);
       return TripShell(
+        onSettings: () => Navigator.of(context).push<void>(
+          MaterialPageRoute(
+            builder: (_) => TripSettingsPage(
+              trip: trip,
+              repositories: widget.repositories,
+              shareService: widget.tripShareService,
+            ),
+          ),
+        ),
         location: widget.location,
         tripTitle: trip.title,
         userId: auth.user.uid,
         shareCode: trip.shareCode,
         body: switch (widget.location.destination) {
           TripDestination.itinerary => ItineraryPage(
+            placeProvider: widget.placeProvider,
+            placeLinkResolver: widget.placeLinkResolver,
+            repositories: widget.repositories,
             trip: trip,
             places: _session.places,
             itinerary: _session.itinerary,
             selectedDate: widget.location.selectedDate,
+            selectedPlan: widget.location.selectedPlan,
             mapExpanded: widget.location.mapExpanded,
-            onToggleMap: (selectedDate) =>
-                _open(widget.location.toggleMap(selectedDate: selectedDate)),
+            onToggleMap: (selectedDate, selectedPlan) => _open(
+              widget.location.toggleMap(
+                selectedDate: selectedDate,
+                selectedPlan: selectedPlan,
+              ),
+            ),
           ),
           TripDestination.preparation => PreparationPage(
             trip: trip,
             itinerary: _session.itinerary,
+            repositories: widget.repositories,
+            participants: _session.participants,
           ),
           TripDestination.settlement => SettlementPage(
+            onManageParticipants: () => Navigator.of(context).push<void>(
+              MaterialPageRoute(
+                builder: (_) => ParticipantsPage(
+                  tripId: trip.id,
+                  currentUid: auth.user.uid,
+                  repositories: widget.repositories,
+                ),
+              ),
+            ),
+            onPersonalSettlement: () => Navigator.of(context).push<void>(
+              MaterialPageRoute(
+                builder: (_) => PersonalSettlementPage(
+                  trip: trip,
+                  currentUid: auth.user.uid,
+                  repositories: widget.repositories,
+                ),
+              ),
+            ),
             trip: trip,
             currentUserUid: auth.user.uid,
             participants: _session.participants,
             expenses: _session.expenses,
+            onAddExpense: _addExpense,
+            onOpenExpense: (expense) => _openExpense(expense.id),
             onOpenReceipts: () =>
                 _open(widget.location.forDestination(TripDestination.receipts)),
           ),
           TripDestination.receipts => ReceiptsPage(
             trip: trip,
+            repositories: widget.repositories,
+            currentUid: auth.user.uid,
+            parser: widget.receiptParser,
+            onManualExpense: _addExpense,
+            onExpenseSaved: _showSavedExpense,
             onBackToSettlement: () => _open(
               widget.location.forDestination(TripDestination.settlement),
             ),
@@ -103,6 +164,70 @@ final class _TripRouteHostState extends State<TripRouteHost> {
   void _open(TripLocation location) {
     Navigator.of(context).pushReplacementNamed(location.canonicalPath);
   }
+
+  Future<void> _addExpense() async {
+    if (_openingExpense) return;
+    _openingExpense = true;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    final id = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (context) => ExpenseEditPage(
+          trip: _session.trip!,
+          repositories: widget.repositories,
+          currentUserUid: AuthSessionScope.of(this.context).user.uid,
+          participants: _session.participants,
+        ),
+      ),
+    );
+    _openingExpense = false;
+    if (mounted && id != null) {
+      if (widget.location.destination == TripDestination.receipts) {
+        _showSavedExpense(id);
+      } else {
+        await _openExpense(id);
+      }
+    }
+  }
+
+  void _showSavedExpense(String id) {
+    final navigator = Navigator.of(context);
+    final trip = _session.trip!;
+    final uid = AuthSessionScope.of(context).user.uid;
+    final repositories = widget.repositories;
+    navigator.pushReplacementNamed(
+      widget.location.forDestination(TripDestination.settlement).canonicalPath,
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (navigator.mounted) {
+        navigator.push<void>(
+          MaterialPageRoute(
+            builder: (_) => ExpenseDetailPage(
+              trip: trip,
+              repositories: repositories,
+              expenseId: id,
+              currentUserUid: uid,
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  Future<void> _openExpense(String id) async {
+    if (_openingExpense) return;
+    _openingExpense = true;
+    await Navigator.of(context).push<void>(
+      MaterialPageRoute(
+        builder: (context) => ExpenseDetailPage(
+          trip: _session.trip!,
+          repositories: widget.repositories,
+          expenseId: id,
+          currentUserUid: AuthSessionScope.of(this.context).user.uid,
+        ),
+      ),
+    );
+    _openingExpense = false;
+  }
 }
 
 final class TripShell extends StatelessWidget {
@@ -113,6 +238,7 @@ final class TripShell extends StatelessWidget {
     required this.shareCode,
     required this.body,
     required this.onDestinationSelected,
+    this.onSettings,
     super.key,
   });
 
@@ -122,6 +248,7 @@ final class TripShell extends StatelessWidget {
   final String shareCode;
   final Widget body;
   final ValueChanged<TripDestination> onDestinationSelected;
+  final VoidCallback? onSettings;
 
   int get _selectedIndex => switch (location.destination) {
     TripDestination.itinerary => 0,
@@ -153,6 +280,12 @@ final class TripShell extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          if (onSettings != null)
+            IconButton(
+              tooltip: '여행 설정·공유',
+              onPressed: onSettings,
+              icon: const Icon(Icons.settings_outlined),
+            ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: IconButton(

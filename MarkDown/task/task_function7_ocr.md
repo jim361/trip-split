@@ -169,3 +169,9 @@ type ParseReceiptResponse = {
 - OCR 성공 여부와 무관하게 사용자 명시 확인 전에는 지출이나 정산 결과가 변하지 않는다.
 - OCR 실패 시 전체 금액 기반 수동 등록을 완료할 수 있다.
 - 명시된 Function, 단위, Emulator, E2E, 반응형 UI 테스트가 모두 통과한다.
+
+## 2026-09-14 P1 구현 인계와 남은 검증
+
+Android 카메라·사진/문서 선택 adapter, 메모리 미리보기, 방향 보정·EXIF 제거, 샘플 인식 → 원문/번역 비교 → 항목명/금액/소비자/할인/봉사료/조정·순서 편집 → 합계 검증 → 명시적 지출 저장을 구현했다. itemized/OCR 지출은 같은 검토 화면에서 다시 편집한다. equal/custom 총액 분할은 manual·빈 receiptItems로 저장한다. 미지원 인식 통화는 직접 확인하기 전 저장을 막는다.
+
+parseReceipt는 Auth/member·base64/MIME signature·5 MiB 검증을 수행하는 stateless Emulator handler다. 외부 OCR·번역 서비스·전체 이미지 서버 디코딩·provider timeout/보관 정책은 후속이다. 실제 기기 촬영/Photo Picker·공유와 두 Android 클라이언트 QA는 아직 완료로 표시하지 않는다. 기존 체크리스트는 최종 통합 완료 기준이며 위 구현 이력과 구분한다. [상세 인계](../../docs/frontend-api-handoff.md)를 따른다.

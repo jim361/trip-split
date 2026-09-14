@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trip_split/data/mock/tokyo_trip_fixture.dart';
+import 'package:trip_split/data/mock/in_memory_trip_repositories.dart';
 import 'package:trip_split/domain/models.dart';
 import 'package:trip_split/features/itinerary/itinerary_page.dart';
 import 'package:trip_split/shared/theme/app_theme.dart';
 
 void main() {
   testWidgets('계획 전환은 날짜를 유지하며 목록과 지도에서 다른 안을 제외한다', (tester) async {
+    final repositories = InMemoryTripRepositories();
+    addTearDown(repositories.close);
     const alternate = ItineraryItem(
       id: 'alternate',
       tripId: tokyoTripId,
@@ -24,12 +27,13 @@ void main() {
         theme: AppTheme.light,
         home: Scaffold(
           body: ItineraryPage(
+            repositories: repositories,
             trip: tokyoTripFixture.trip,
             places: tokyoTripFixture.places,
             itinerary: [...tokyoTripFixture.itinerary, alternate],
             selectedDate: '2026-11-25',
             mapExpanded: false,
-            onToggleMap: (_) {},
+            onToggleMap: (_, _) {},
           ),
         ),
       ),
@@ -38,6 +42,12 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('itinerary-plan-B')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('map-pin-alternate')), findsOneWidget);
+    expect(find.text('01 / ITINERARY MAP'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('itinerary-row-alternate')),
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(
       find.byKey(const ValueKey('itinerary-row-alternate')),
       findsOneWidget,
@@ -51,7 +61,6 @@ void main() {
       find.byKey(const ValueKey('itinerary-row-${TokyoFixtureIds.arrival}')),
       findsNothing,
     );
-    expect(find.text('01 / ITINERARY MAP'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }
