@@ -8,7 +8,8 @@
 - Flutter의 지출 create/update/delete는 Callable을 사용한다. Rules의 expense 직접 쓰기 거부는 유지한다.
 - 예약·체크리스트 모델, mock/Firestore repository와 Rules를 구현했다. 기본 mock은 메모리 데이터이며 다른 프로세스와 공유되지 않는다.
 - 장소 검색·링크와 OCR는 인증·권한·입력 검증 후 Emulator에서만 샘플을 반환한다. 외부 Google Places/OCR 서비스는 연결되지 않았으며 Emulator 밖에서는 unavailable이다.
-- Flutter 내부 지도는 mock 표시 모델이고 외부 지도 URL 열기는 Android adapter로 연결했다. 실제 Google Maps SDK와 Places는 현재 Phase B(P0)에 필요한 연결이며 OCR·번역은 B 완료 뒤 C(P1)다.
+- Flutter 내부 지도는 기본 mock이며 `ENABLE_GOOGLE_MAPS=true`에서는 `google_maps_flutter` adapter로 같은 번호·직선 동선을 표시한다. SDK 코드 연결과 실제 키·지도 표시 검증은 구분한다. Places는 여전히 Emulator 샘플이다. OCR·번역은 B 완료 뒤 C(P1)다.
+- `loadTripSnapshot`은 기존 5개 경로의 전체 서버 조회 결과를 Dart 사본으로 반환한다. Firestore 저장 필드나 Callable을 추가하지 않는다. 화면에는 metadata 기반 캐시·쓰기 대기·서버 반영 상태와 구독 재시도를 추가했다.
 - 실제 Firebase 운영 프로젝트·secret 등록·Rules/Functions/index 배포는 이번 작업에 포함하지 않는다.
 
 ## Firestore 경로와 쓰기 주체

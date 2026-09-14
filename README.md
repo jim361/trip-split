@@ -8,6 +8,8 @@
 
 팀 검토용 [GitHub Pages React 목업](https://jim361.github.io/trip-split/)은 UI 참고 자료로 계속 볼 수 있습니다. 현재 Flutter 앱이나 Android 배포본은 아니며 실제 Firebase 프로젝트에는 연결하지 않습니다.
 
+현재 Flutter 화면은 [Android 화면 목록·캡처 갤러리](docs/flutter-screen-catalog.md)에서 확인합니다. 19개 페이지와 주요 상태를 실제 AVD에서 촬영하고 진입 경로·TASK·API·남은 검증을 함께 정리했습니다.
+
 기능을 빼거나 추가하는 팀 회의에서는 [기능 논의 홈](docs/README.md)에서 `일정·지도`와 `정산·영수증` 문서를 탭처럼 이동하며 기능 ID와 결정 상태를 기록할 수 있습니다.
 
 **팀 개발 시작:** [3인 개발 시작 안내](docs/development-kickoff.md)에서 담당별 첫 작업·실행 명령·인계 기준을 확인하세요. 사용자 1명이 프론트·공통·통합, 두 팀원이 일정·지도 백엔드와 정산·영수증 백엔드를 맡습니다.

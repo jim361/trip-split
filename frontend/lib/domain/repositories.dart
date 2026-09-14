@@ -542,8 +542,15 @@ final class ExpenseDraft {
 
 abstract interface class TripsRepository {
   Stream<Trip?> watchTrip(EntityId tripId);
+
+  /// Firebase 구현은 서버 전체 조회에 성공해야 반환합니다. 캐시로 대체하지 않습니다.
+  Future<TripDataSnapshot> loadTripSnapshot(EntityId tripId);
   Future<List<Trip>> listMyTrips();
   Future<void> updateTrip(EntityId tripId, TripUpdate draft);
+}
+
+abstract interface class TripSyncRepository {
+  Stream<TripSyncState> watchSyncState(EntityId tripId);
 }
 
 abstract interface class UserProfilesRepository {

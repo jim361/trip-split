@@ -9,7 +9,8 @@ import '../../domain/preparation.dart';
 import 'firebase_error_mapper.dart';
 
 /// [TASK-02 · Firestore repository] Widget에서 SDK를 격리하는 공통 계약 구현체입니다.
-final class FirestoreTripRepositories implements TripRepositories {
+final class FirestoreTripRepositories
+    implements TripRepositories, TripSyncRepository {
   FirestoreTripRepositories(
     this._firestore, {
     required String Function() currentUid,
@@ -22,6 +23,107 @@ final class FirestoreTripRepositories implements TripRepositories {
   final FirebaseFirestore _firestore;
   final String Function() _currentUid;
   final FirebaseFunctions? _functions;
+
+  @override
+  Future<TripDataSnapshot> loadTripSnapshot(String tripId) => _guard(() async {
+    const options = GetOptions(source: Source.server);
+    final values = await Future.wait<Object>([
+      _firestore.doc('trips/$tripId').get(options),
+      for (final name in ['participants', 'places', 'itinerary', 'expenses'])
+        _tripCollection(tripId, name).get(options),
+    ]).timeout(const Duration(seconds: 30));
+    final trip = values[0] as DocumentSnapshot<Map<String, dynamic>>;
+    final metadata = [
+      trip.metadata,
+      for (final value in values.skip(1))
+        (value as QuerySnapshot<Map<String, dynamic>>).metadata,
+    ];
+    if (metadata.any((m) => m.isFromCache || m.hasPendingWrites)) {
+      throw const AppError(
+        code: AppErrorCode.unavailable,
+        message: '저장 중인 변경이 있습니다. 서버 반영 후 보고서를 다시 불러와 주세요.',
+        retryable: true,
+      );
+    }
+    if (!trip.exists) {
+      throw const AppError(
+        code: AppErrorCode.notFound,
+        message: '여행을 찾을 수 없습니다.',
+        retryable: false,
+      );
+    }
+    List<T> rows<T>(
+      int index,
+      T Function(String, String, Map<String, dynamic>) convert,
+    ) => (values[index] as QuerySnapshot<Map<String, dynamic>>).docs
+        .map((doc) => convert(tripId, doc.id, doc.data()))
+        .toList();
+    return TripDataSnapshot(
+      trip: _trip(trip.id, trip.data()!),
+      capturedAt: DateTime.now().toUtc(),
+      participants: rows(1, _participant),
+      places: rows(2, _place),
+      itinerary: rows(3, itineraryItemFromFirestore),
+      expenses: rows(4, _expense),
+    );
+  });
+
+  @override
+  Stream<TripSyncState> watchSyncState(String tripId) {
+    final states = <int, SnapshotMetadata>{};
+    final subscriptions = <StreamSubscription<Object?>>[];
+    late StreamController<TripSyncState> controller;
+    void update(int index, SnapshotMetadata metadata) {
+      states[index] = metadata;
+      controller.add(
+        states.values.any((m) => m.hasPendingWrites)
+            ? TripSyncState.pending
+            : states.length < 8
+            ? TripSyncState.loading
+            : states.values.any((m) => m.isFromCache)
+            ? TripSyncState.cached
+            : TripSyncState.synced,
+      );
+    }
+
+    controller = StreamController<TripSyncState>(
+      onListen: () {
+        subscriptions.add(
+          _firestore
+              .doc('trips/$tripId')
+              .snapshots(includeMetadataChanges: true)
+              .listen(
+                (s) => update(0, s.metadata),
+                onError: controller.addError,
+              ),
+        );
+        const names = [
+          'members',
+          'participants',
+          'places',
+          'itinerary',
+          'expenses',
+          'reservations',
+          'checklistItems',
+        ];
+        for (final entry in names.indexed) {
+          subscriptions.add(
+            _tripCollection(tripId, entry.$2)
+                .snapshots(includeMetadataChanges: true)
+                .listen(
+                  (s) => update(entry.$1 + 1, s.metadata),
+                  onError: controller.addError,
+                ),
+          );
+        }
+      },
+      onCancel: () async {
+        await Future.wait(subscriptions.map((s) => s.cancel()));
+      },
+    );
+    return _mapErrors(controller.stream.distinct());
+  }
+
   Future<Map<String, dynamic>> _call(String name, Map<String, Object?> input) =>
       _guard(() async {
         final functions = _functions;

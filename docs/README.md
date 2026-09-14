@@ -12,6 +12,8 @@
 
 2026-09-14부터 화면 제작과 서버 인계에는 [Flutter 화면 완성·API 인계 명세](frontend-api-handoff.md)를 함께 사용합니다. 구현된 화면·mock·11개 Callable의 요청·응답·오류와 실제 외부 연결이 남은 부분을 구분합니다.
 
+현재 화면을 찾거나 리뷰할 때는 [Flutter Android 화면 목록](flutter-screen-catalog.md)을 사용합니다. 전체 페이지·주요 상태의 AVD 캡처와 진입 방법·구현 코드·TASK·API를 연결했습니다.
+
 현재는 **Phase B(P0)**입니다. 최소 준비·기본 내 여행 목록·수동 정산·실제 Google 지도/검색을 검증하고, itemized·OCR·번역은 Phase C(P1)에서 이어갑니다. 기존 P1 구현은 보존합니다. 시트 보고서는 사용자의 별도 병행 작업입니다. [단계별 담당과 완료 조건](development-kickoff.md)을 최신 착수 기준으로 사용하며 아래 회의 표의 `MVP`를 즉시 착수 지시로 해석하지 않습니다.
 
 1. 기능을 이야기할 때 문서의 기능 ID를 사용한다.

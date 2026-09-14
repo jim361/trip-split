@@ -58,6 +58,19 @@ final class InMemoryTripRepositories implements TripRepositories {
   var _nextTripId = 1;
   var _nextShareCode = 0;
 
+  @override
+  Future<TripDataSnapshot> loadTripSnapshot(String tripId) async =>
+      TripDataSnapshot(
+        trip: _requireTrip(tripId),
+        capturedAt: DateTime.now().toUtc(),
+        participants: _participants.values
+            .where((p) => p.tripId == tripId)
+            .toList(),
+        places: _places.values.where((p) => p.tripId == tripId).toList(),
+        itinerary: _itinerary.values.where((p) => p.tripId == tripId).toList(),
+        expenses: _expenses.values.where((p) => p.tripId == tripId).toList(),
+      );
+
   String get actorDisplayName =>
       _userProfiles[actorUid]?.displayName ?? '여행자 ${_shortUid(actorUid)}';
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/repositories.dart';
+import '../domain/models.dart';
 import '../features/settlement/expense_edit_page.dart';
 import '../features/settlement/expense_detail_page.dart';
 import '../features/itinerary/itinerary_page.dart';
@@ -18,6 +19,8 @@ import '../shared/theme/app_theme.dart';
 import 'auth_session_gate.dart';
 import 'router.dart';
 import 'trip_session.dart';
+import '../features/map/map_adapter.dart';
+import '../features/sheets/google_sheets_service.dart';
 
 final class TripRouteHost extends StatefulWidget {
   const TripRouteHost({
@@ -27,6 +30,8 @@ final class TripRouteHost extends StatefulWidget {
     required this.placeLinkResolver,
     required this.tripShareService,
     required this.receiptParser,
+    this.mapViewBuilder,
+    this.sheetsService,
     super.key,
   });
 
@@ -36,6 +41,8 @@ final class TripRouteHost extends StatefulWidget {
   final PlaceLinkResolver placeLinkResolver;
   final TripShareService tripShareService;
   final ReceiptParser receiptParser;
+  final MapViewBuilder? mapViewBuilder;
+  final GoogleSheetsService? sheetsService;
 
   @override
   State<TripRouteHost> createState() => _TripRouteHostState();
@@ -69,6 +76,7 @@ final class _TripRouteHostState extends State<TripRouteHost> {
           icon: Icons.cloud_off_outlined,
           title: error.message,
           detail: error.retryable ? '잠시 후 다시 시도해 주세요.' : error.code.wireValue,
+          onRetry: _session.retry,
         );
       }
       if (_session.isLoading) {
@@ -78,12 +86,14 @@ final class _TripRouteHostState extends State<TripRouteHost> {
       final trip = _session.trip!;
       final auth = AuthSessionScope.of(context);
       return TripShell(
+        syncState: _session.syncState,
         onSettings: () => Navigator.of(context).push<void>(
           MaterialPageRoute(
             builder: (_) => TripSettingsPage(
               trip: trip,
               repositories: widget.repositories,
               shareService: widget.tripShareService,
+              sheetsService: widget.sheetsService,
             ),
           ),
         ),
@@ -93,6 +103,7 @@ final class _TripRouteHostState extends State<TripRouteHost> {
         shareCode: trip.shareCode,
         body: switch (widget.location.destination) {
           TripDestination.itinerary => ItineraryPage(
+            mapViewBuilder: widget.mapViewBuilder,
             placeProvider: widget.placeProvider,
             placeLinkResolver: widget.placeLinkResolver,
             repositories: widget.repositories,
@@ -239,6 +250,7 @@ final class TripShell extends StatelessWidget {
     required this.body,
     required this.onDestinationSelected,
     this.onSettings,
+    this.syncState,
     super.key,
   });
 
@@ -249,6 +261,7 @@ final class TripShell extends StatelessWidget {
   final Widget body;
   final ValueChanged<TripDestination> onDestinationSelected;
   final VoidCallback? onSettings;
+  final TripSyncState? syncState;
 
   int get _selectedIndex => switch (location.destination) {
     TripDestination.itinerary => 0,
@@ -267,6 +280,23 @@ final class TripShell extends StatelessWidget {
     );
     return Scaffold(
       appBar: AppBar(
+        bottom: syncState == null
+            ? null
+            : PreferredSize(
+                preferredSize: const Size.fromHeight(32),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(switch (syncState!) {
+                      TripSyncState.loading => '동기화 상태 확인 중',
+                      TripSyncState.cached => '캐시 데이터 · 서버 갱신 확인 중',
+                      TripSyncState.pending => '변경 저장 대기 중 · 서버 완료 전',
+                      TripSyncState.synced => '서버 데이터 반영됨',
+                    }, style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                ),
+              ),
         toolbarHeight: AppTheme.appBarHeight,
         centerTitle: true,
         leading: IconButton(
@@ -402,23 +432,26 @@ final class _MobileDestinationBar extends StatelessWidget {
   Widget build(BuildContext context) => Material(
     key: const Key('trip-mobile-navigation'),
     color: Colors.white,
-    child: Container(
-      height: AppTheme.navigationHeight,
-      decoration: BoxDecoration(border: Border(top: topBorder)),
-      child: Row(
-        children: [
-          for (var index = 0; index < _destinations.length; index++)
-            Expanded(
-              child: _DestinationCell(
-                icon: _destinations[index].$1,
-                selectedIcon: _destinations[index].$2,
-                label: _destinations[index].$3,
-                selected: index == selectedIndex,
-                showDivider: index > 0,
-                onTap: () => onSelected(index),
+    child: SafeArea(
+      top: false,
+      child: Container(
+        height: AppTheme.navigationHeight,
+        decoration: BoxDecoration(border: Border(top: topBorder)),
+        child: Row(
+          children: [
+            for (var index = 0; index < _destinations.length; index++)
+              Expanded(
+                child: _DestinationCell(
+                  icon: _destinations[index].$1,
+                  selectedIcon: _destinations[index].$2,
+                  label: _destinations[index].$3,
+                  selected: index == selectedIndex,
+                  showDivider: index > 0,
+                  onTap: () => onSelected(index),
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     ),
   );
@@ -487,11 +520,13 @@ final class _LoadState extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.detail,
+    required this.onRetry,
   });
 
   final IconData icon;
   final String title;
   final String detail;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -506,6 +541,7 @@ final class _LoadState extends StatelessWidget {
             Text(title, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(detail, textAlign: TextAlign.center),
+            TextButton(onPressed: onRetry, child: const Text('다시 불러오기')),
           ],
         ),
       ),

@@ -2,29 +2,30 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 import '../data/firebase/firebase_error_mapper.dart';
 import '../domain/models.dart';
 import 'auth_service.dart';
+import 'google_account_service.dart';
 
 final class FirebaseAuthService implements AuthService {
   FirebaseAuthService({
     required FirebaseAuth auth,
     required FirebaseFirestore firestore,
-    GoogleSignIn? googleSignIn,
+    GoogleAccountService? googleAccount,
     this.googleServerClientId,
     // ignore: prefer_initializing_formals
   }) : _auth = auth,
        // ignore: prefer_initializing_formals
        _firestore = firestore,
-       _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
+       _googleAccount =
+           googleAccount ??
+           GoogleAccountService(serverClientId: googleServerClientId);
 
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
-  final GoogleSignIn _googleSignIn;
+  final GoogleAccountService _googleAccount;
   final String? googleServerClientId;
-  bool _googleInitialized = false;
 
   @override
   Stream<AuthUser?> authStateChanges() => _auth
@@ -72,11 +73,7 @@ final class FirebaseAuthService implements AuthService {
         return _toAuthUser(current);
       }
 
-      if (!_googleInitialized) {
-        await _googleSignIn.initialize(serverClientId: googleServerClientId);
-        _googleInitialized = true;
-      }
-      final account = await _googleSignIn.authenticate();
+      final account = await _googleAccount.authenticate();
       final idToken = account.authentication.idToken;
       if (idToken == null || idToken.isEmpty) {
         throw const AppError(

@@ -37,6 +37,28 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 try {
                     when (call.method) {
+                        "loadSheetRecovery" -> {
+                            val file = android.util.AtomicFile(File(filesDir, "sheet_export_recovery.json"))
+                            val value = try { file.openRead().bufferedReader(Charsets.UTF_8).use { it.readText() } }
+                                catch (_: java.io.FileNotFoundException) { null }
+                            result.success(value)
+                        }
+                        "saveSheetRecovery" -> {
+                            val file = android.util.AtomicFile(File(filesDir, "sheet_export_recovery.json"))
+                            val value = call.argument<String>("value")
+                            if (value == null) file.delete()
+                            else {
+                                val stream = file.startWrite()
+                                try {
+                                    stream.write(value.toByteArray(Charsets.UTF_8))
+                                    file.finishWrite(stream)
+                                } catch (error: Exception) {
+                                    file.failWrite(stream)
+                                    throw error
+                                }
+                            }
+                            result.success(null)
+                        }
                         "shareText" -> {
                             val text = requireNotNull(call.argument<String>("text"))
                             startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {

@@ -4,6 +4,8 @@
 
 현재 이 폴더에는 Flutter·Dart Android 앱 기반과 React·Vite 팀 공유 목업이 임시 공존합니다. Flutter가 기본 제품이며, 각 세로 기능이 동등한 흐름을 제공하기 전에는 기존 React 목업을 삭제하지 않습니다.
 
+[Flutter Android 화면 목록·캡처](../docs/flutter-screen-catalog.md)에서 19개 페이지의 진입 경로·API·남은 검증과 Android 캡처 재실행 방법을 확인할 수 있습니다.
+
 ## Flutter Android 실행
 
 ```bash
@@ -74,10 +76,11 @@ npm run dev
 
 ## 남은 Flutter 경계
 
-- Android Emulator에서 Flutter 클라이언트→로컬 Emulator 전체 수직 조각 확인
-- runtime validator와 `createExpense`·`updateExpense`·`deleteExpense` 서버 저장 경계 구현 뒤 Firestore expense command 연결
-- member 참조와 여행 내 유일성을 보장하는 Participant `linkedUid` 연결 Callable
-- `android`: Maps 설정과 Android 전용 capability
+- Android Emulator 두 앱의 공유·일정·지출 갱신·오프라인·재시작 기본 흐름은 [검증 기록](../docs/android-emulator-qa.md) 참조. 나머지 도메인 전체 Android QA는 후속 진행
+- 실제 Google Maps 키·OAuth 환경으로 지도 표시와 Sheets 생성·열기 확인
+- 두 Android 기기의 카메라·Photo Picker·공유·오프라인/재접속 QA
 - `web`: 후속 Flutter Web 진입점
 
 Flutter Widget과 controller도 Firebase, Google Maps와 OCR SDK를 직접 호출하지 않습니다.
+
+2026-09-14: 지출 Callable·본인 참여자 연결은 이미 구현돼 있다. 이번 추가 구현은 `lib/platform/google_map_adapter.dart`, `lib/features/sheets`, repository 전체 조회·동기화 상태다. 여행 설정의 **시트 내보내기**에서 mock 미리보기를 확인한다. 실제 연결에는 로컬 dart defines의 `ENABLE_GOOGLE_MAPS`, `GOOGLE_MAPS_API_KEY`, `ENABLE_GOOGLE_SHEETS`, `GOOGLE_SERVER_CLIENT_ID`를 사용한다. 기본 예제는 외부 연결을 끈 상태다. [통합·기기 검증 안내](../docs/integration-update-2026-09-14.md)를 참고한다.

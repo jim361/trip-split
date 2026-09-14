@@ -6,17 +6,21 @@ import '../../domain/repositories.dart';
 import '../../platform/android_actions.dart';
 import '../../services/trip_share_service.dart';
 import '../../shared/widgets/edit_frame.dart';
+import '../sheets/google_sheets_service.dart';
+import '../sheets/trip_sheets_page.dart';
 
 class TripSettingsPage extends StatefulWidget {
   const TripSettingsPage({
     required this.trip,
     required this.repositories,
     required this.shareService,
+    this.sheetsService,
     super.key,
   });
   final Trip trip;
   final TripRepositories repositories;
   final TripShareService shareService;
+  final GoogleSheetsService? sheetsService;
   @override
   State<TripSettingsPage> createState() => _TripSettingsPageState();
 }
@@ -101,6 +105,22 @@ class _TripSettingsPageState extends State<TripSettingsPage> {
           const Text('기간 밖의 기존 일정도 유지되며 일정 목록에서 계속 확인할 수 있습니다.'),
           Text(
             '${widget.trip.countryCode} · ${widget.trip.defaultCurrency} · ${widget.trip.timeZone}',
+          ),
+          const Divider(),
+          OutlinedButton.icon(
+            onPressed: _busy
+                ? null
+                : () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(
+                      builder: (_) => TripSheetsPage(
+                        tripId: widget.trip.id,
+                        repositories: widget.repositories,
+                        service: widget.sheetsService,
+                      ),
+                    ),
+                  ),
+            icon: const Icon(Icons.table_chart_outlined),
+            label: const Text('시트 내보내기'),
           ),
           const Divider(),
           Text('공유 코드', style: Theme.of(context).textTheme.titleLarge),

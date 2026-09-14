@@ -4,6 +4,7 @@ import 'package:trip_split/domain/models.dart';
 import '../../domain/repositories.dart';
 import '../../shared/theme/app_theme.dart';
 import '../map/map_render_model.dart';
+import '../map/map_adapter.dart';
 import '../places/place_provider.dart';
 import '../places/mock_place_provider.dart';
 import '../places/places_page.dart';
@@ -27,6 +28,7 @@ class ItineraryPage extends StatefulWidget {
     required this.onToggleMap,
     this.placeProvider,
     this.placeLinkResolver,
+    this.mapViewBuilder,
   });
 
   final Trip trip;
@@ -39,6 +41,7 @@ class ItineraryPage extends StatefulWidget {
   final void Function(String date, String planId) onToggleMap;
   final PlaceProvider? placeProvider;
   final PlaceLinkResolver? placeLinkResolver;
+  final MapViewBuilder? mapViewBuilder;
 
   @override
   State<ItineraryPage> createState() => _ItineraryPageState();
@@ -142,6 +145,8 @@ class _ItineraryPageState extends State<ItineraryPage> {
           onSelected: (plan) => setState(() => _selectedPlan = plan),
         );
         final map = _MockMap(
+          mapViewBuilder: widget.mapViewBuilder,
+          viewId: '${widget.trip.id}/$selectedDate/$_selectedPlan',
           tripTitle: widget.trip.title,
           model: mapModel,
           expanded: widget.mapExpanded,
@@ -759,6 +764,8 @@ class _MockMap extends StatelessWidget {
     required this.expanded,
     required this.onToggle,
     required this.onSelect,
+    this.mapViewBuilder,
+    this.viewId = '',
   });
 
   final String tripTitle;
@@ -766,13 +773,17 @@ class _MockMap extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggle;
   final ValueChanged<String> onSelect;
+  final MapViewBuilder? mapViewBuilder;
+  final String viewId;
 
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: '$tripTitle 일정 위치를 표시할 Google 지도 자리',
+      label: mapViewBuilder == null
+          ? '$tripTitle 일정 위치를 표시할 Google 지도 자리'
+          : '$tripTitle 일정 지도',
       container: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -796,51 +807,61 @@ class _MockMap extends StatelessWidget {
             ];
             return Stack(
               children: [
-                Positioned.fill(
-                  child: CustomPaint(
-                    painter: _MapGridPainter(
-                      roadColor: colors.outlineVariant,
-                      routeColor: colors.onSurface,
-                      routePoints: points,
+                if (mapViewBuilder != null)
+                  Positioned.fill(
+                    child: mapViewBuilder!(
+                      viewId: viewId,
+                      model: model,
+                      onSelect: onSelect,
+                    ),
+                  )
+                else
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _MapGridPainter(
+                        roadColor: colors.outlineVariant,
+                        routeColor: colors.onSurface,
+                        routePoints: points,
+                      ),
                     ),
                   ),
-                ),
-                for (final entry in pins.indexed)
-                  Positioned(
-                    left: points[entry.$1].dx - 24,
-                    top: points[entry.$1].dy - 24,
-                    child: Tooltip(
-                      message: entry.$2.placeName,
-                      child: SizedBox.square(
-                        dimension: 48,
-                        child: InkWell(
-                          onTap: () => onSelect(entry.$2.itineraryItemId),
-                          child: Center(
-                            child: Container(
-                              key: ValueKey(
-                                'map-pin-${entry.$2.itineraryItemId}',
-                              ),
-                              width: 30,
-                              height: 30,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: colors.surface,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: colors.onSurface,
-                                  width: AppTheme.frameStroke,
+                if (mapViewBuilder == null)
+                  for (final entry in pins.indexed)
+                    Positioned(
+                      left: points[entry.$1].dx - 24,
+                      top: points[entry.$1].dy - 24,
+                      child: Tooltip(
+                        message: entry.$2.placeName,
+                        child: SizedBox.square(
+                          dimension: 48,
+                          child: InkWell(
+                            onTap: () => onSelect(entry.$2.itineraryItemId),
+                            child: Center(
+                              child: Container(
+                                key: ValueKey(
+                                  'map-pin-${entry.$2.itineraryItemId}',
                                 ),
-                              ),
-                              child: Text(
-                                entry.$2.number.toString().padLeft(2, '0'),
-                                style: Theme.of(context).textTheme.labelSmall,
+                                width: 30,
+                                height: 30,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: colors.surface,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: colors.onSurface,
+                                    width: AppTheme.frameStroke,
+                                  ),
+                                ),
+                                child: Text(
+                                  entry.$2.number.toString().padLeft(2, '0'),
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
                 Positioned(
                   top: 12,
                   right: 12,
@@ -880,7 +901,9 @@ class _MockMap extends StatelessWidget {
                       border: Border.all(color: colors.onSurface),
                     ),
                     child: Text(
-                      _mapStatusText(model),
+                      mapViewBuilder == null
+                          ? _mapStatusText(model)
+                          : '직선 동선 ${model.segments.length}구간 · 지도 제외 ${model.missingLocations.length}건',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall,

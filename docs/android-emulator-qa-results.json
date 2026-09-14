@@ -1,0 +1,54 @@
+{
+  "recordedAt": "2026-09-14T12:00:09.0416774Z",
+  "project": "demo-trip-split",
+  "androidApi": 36,
+  "devices": ["TripSplit_Owner_API36", "TripSplit_Guest_API36"],
+  "results": [
+    {
+      "role": "owner",
+      "phase": "flow",
+      "uid": "JO1QJnGnEPKNY5mz32wh6teUPr3W",
+      "passed": true
+    },
+    {
+      "role": "guest",
+      "phase": "flow",
+      "uid": "0YJFa9lpGsHM5tUpi9ep2IVmaNgd",
+      "passed": true
+    },
+    {
+      "role": "owner",
+      "phase": "restart",
+      "uid": "JO1QJnGnEPKNY5mz32wh6teUPr3W",
+      "passed": true
+    },
+    {
+      "role": "guest",
+      "phase": "restart",
+      "uid": "0YJFa9lpGsHM5tUpi9ep2IVmaNgd",
+      "passed": true
+    }
+  ],
+  "state": {
+    "startedAt": "2026-09-14T11:34:49.711Z",
+    "ownerUid": "JO1QJnGnEPKNY5mz32wh6teUPr3W",
+    "shareCode": "LAX7VUKF",
+    "tripId": "sId5rmkGAgoNaMgtxGOc",
+    "ownerReady": true,
+    "guestUid": "0YJFa9lpGsHM5tUpi9ep2IVmaNgd",
+    "guestJoined": true,
+    "guestExpenseCreated": true,
+    "ownerExpenseUpdated": true,
+    "guestExpenseUpdateSeen": true,
+    "checklistReady": true,
+    "guestNetworkEnabled": true,
+    "guestOfflinePending": true,
+    "offlineOwnerWriteDone": true,
+    "guestReconnected": true,
+    "guestFlowVerified": true,
+    "ownerFlowVerified": true,
+    "setupComplete": true,
+    "ownerRestartVerified": true,
+    "guestRestartVerified": true
+  }
+}

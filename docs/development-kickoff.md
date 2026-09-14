@@ -6,7 +6,9 @@
 
 - [화면·API 인계](frontend-api-handoff.md): 화면 제작 순서, 구현된 11개 Callable, 준비 데이터 wire, 오류와 재시도.
 - [Firebase 연결 감사](firebase-api-contract.md): 구현/Emulator와 실제 외부 연결 구분.
-- [시트 내보내기](sheet-export.md): 고정 일정·지출 샘플과 Flutter 중심 출력 방향. 현재 샘플·문서 준비 단계다.
+- [시트 내보내기](sheet-export.md): 고정 샘플, 구현된 Flutter 출력·미리보기·OAuth 생성·복구 코드와 실제 연결 전 검증 항목.
+- [2026-09-14 추가 통합](integration-update-2026-09-14.md): Google 지도 adapter·시트 출력·구독 상태와 공통 계약 검증. 실기기 QA는 사용자 요청으로 이번 작업에서 제외했다.
+- [Android 두 앱 검증](android-emulator-qa.md): 실제 Flutter 앱 두 개의 공유·일정·equal 지출 갱신·오프라인·재접속·재시작 통과 기록과 재현 절차. 전체 도메인·실기기 QA와 구분한다.
 - [작업 인덱스](../MarkDown/task/tasks.md), [기술 계약](../MarkDown/tech.md), [작업 공유·캡처](development-update-2026-09-14.md).
 - 일정 CRUD·길게 끌어 재정렬, 수동 비용, 장소, 준비, 참여자, 개인 정산, 여행 설정·공유, itemized/OCR 검토까지 Flutter에 연결했다. 동일 기능을 처음부터 다시 만들지 않고 최신 dev의 구현을 읽고 이어서 작업한다.
 

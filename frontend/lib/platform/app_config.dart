@@ -31,6 +31,8 @@ final class AppConfig {
     this.firebaseMessagingSenderId = '000000000000',
     this.firebaseProjectId = 'demo-trip-split',
     this.googleServerClientId,
+    this.enableGoogleMaps = false,
+    this.enableGoogleSheets = false,
   });
 
   factory AppConfig.fromEnvironment() => AppConfig(
@@ -75,6 +77,8 @@ final class AppConfig {
       defaultValue: 'demo-trip-split',
     ),
     googleServerClientId: _emptyToNull(_googleServerClientId),
+    enableGoogleMaps: const bool.fromEnvironment('ENABLE_GOOGLE_MAPS'),
+    enableGoogleSheets: const bool.fromEnvironment('ENABLE_GOOGLE_SHEETS'),
   );
 
   final AppDataSource dataSource;
@@ -89,6 +93,8 @@ final class AppConfig {
   final String firebaseMessagingSenderId;
   final String firebaseProjectId;
   final String? googleServerClientId;
+  final bool enableGoogleMaps;
+  final bool enableGoogleSheets;
 
   bool get usesDemoFirebaseProject => firebaseProjectId == 'demo-trip-split';
 }

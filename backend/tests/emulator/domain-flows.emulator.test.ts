@@ -17,6 +17,7 @@ import {
   updateDoc,
   deleteDoc,
   serverTimestamp,
+  onSnapshot,
 } from "firebase/firestore";
 import { getFunctions, connectFunctionsEmulator, httpsCallable } from "firebase/functions";
 import { beforeAll, beforeEach, afterEach, afterAll, it, expect } from "vitest";
@@ -97,6 +98,113 @@ afterEach(async () => {
 });
 afterAll(async () => {
   await environment.cleanup();
+});
+
+it("두 인증 클라이언트의 구독에 장소·일정·준비·설정과 지출 CRUD가 반영된다", async () => {
+  const { owner, guest, tripId, ids } = await setup();
+  const seen = new Map<string, Record<string, unknown>[]>();
+  const errors: unknown[] = [];
+  const stops = [
+    "places",
+    "itinerary",
+    "reservations",
+    "checklistItems",
+    "expenses",
+    "participants",
+  ].map((name) =>
+    onSnapshot(
+      collection(guest.db, "trips", tripId, name),
+      (snapshot) => {
+        seen.set(
+          name,
+          snapshot.docs.map((d) => ({ id: d.id, ...d.data() })),
+        );
+      },
+      (error) => errors.push(error),
+    ),
+  );
+  stops.push(
+    onSnapshot(
+      doc(guest.db, "trips", tripId),
+      (snapshot) => {
+        seen.set("trip", [snapshot.data() ?? {}]);
+      },
+      (error) => errors.push(error),
+    ),
+  );
+  const uid = owner.auth.currentUser!.uid;
+  const reference = (name: string, id: string) => doc(owner.db, "trips", tripId, name, id);
+  try {
+    await expect.poll(() => seen.size).toBe(7);
+    expect(guest.auth.currentUser!.uid).not.toBe(uid);
+    await setDoc(reference("places", "sync-place"), {
+      name: "동기화 장소",
+      provider: "manual",
+      source: "manual",
+      lat: 35.7,
+      lng: 139.7,
+      addedBy: uid,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+    await setDoc(reference("itinerary", "sync-item"), {
+      date: "2026-11-25",
+      planId: "B",
+      category: "activity",
+      title: "시간 미정 일정",
+      order: 0,
+      placeId: "sync-place",
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    });
+    await setDoc(reference("reservations", "sync-reservation"), {
+      title: "식당 예약",
+      type: "other",
+      status: "planned",
+      ...audit(uid),
+    });
+    await setDoc(reference("checklistItems", "sync-checklist"), {
+      title: "여권",
+      scope: "personal",
+      isDone: false,
+      ...audit(uid),
+    });
+    await owner.call("linkMyParticipant", { tripId, participantId: ids[0] });
+    await updateDoc(doc(owner.db, "trips", tripId), {
+      title: "갱신된 여행",
+      updatedAt: serverTimestamp(),
+    });
+    await expect.poll(() => seen.get("places")?.[0]?.name).toBe("동기화 장소");
+    await expect.poll(() => seen.get("itinerary")?.[0]?.planId).toBe("B");
+    await expect.poll(() => seen.get("reservations")?.[0]?.title).toBe("식당 예약");
+    await expect.poll(() => seen.get("checklistItems")?.[0]?.scope).toBe("personal");
+    await expect
+      .poll(() => seen.get("participants")?.find((p) => p.id === ids[0])?.linkedUid)
+      .toBe(uid);
+    await expect.poll(() => seen.get("trip")?.[0]?.title).toBe("갱신된 여행");
+    const saved = await owner.call<{ expense: { id: string } }>("createExpense", {
+      tripId,
+      draft: draft(ids),
+    });
+    await expect.poll(() => seen.get("expenses")?.[0]?.totalAmount).toBe(3000);
+    await owner.call("updateExpense", {
+      tripId,
+      expenseId: saved.expense.id,
+      draft: { ...draft(ids), title: "변경된 점심" },
+    });
+    await expect.poll(() => seen.get("expenses")?.[0]?.title).toBe("변경된 점심");
+    await owner.call("deleteExpense", { tripId, expenseId: saved.expense.id });
+    await expect.poll(() => seen.get("expenses")?.length).toBe(0);
+    await updateDoc(reference("checklistItems", "sync-checklist"), {
+      isDone: true,
+      updatedAt: serverTimestamp(),
+      updatedBy: uid,
+    });
+    await expect.poll(() => seen.get("checklistItems")?.[0]?.isDone).toBe(true);
+    expect(errors).toEqual([]);
+  } finally {
+    stops.forEach((stop) => stop());
+  }
 });
 
 it("내 여행 목록은 인증 UID만 사용하고 참여 전후 목록과 기존 멤버 UID 보정을 반영한다", async () => {

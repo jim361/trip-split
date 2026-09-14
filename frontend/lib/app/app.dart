@@ -14,6 +14,8 @@ import '../shared/theme/app_theme.dart';
 import 'auth_session_gate.dart';
 import 'router.dart';
 import 'trip_shell.dart';
+import '../features/map/map_adapter.dart';
+import '../features/sheets/google_sheets_service.dart';
 
 final class TripSplitApp extends StatelessWidget {
   const TripSplitApp({
@@ -25,6 +27,8 @@ final class TripSplitApp extends StatelessWidget {
     this.placeProvider,
     this.placeLinkResolver,
     this.receiptParser,
+    this.mapViewBuilder,
+    this.sheetsService,
     super.key,
   });
 
@@ -36,6 +40,8 @@ final class TripSplitApp extends StatelessWidget {
   final PlaceProvider? placeProvider;
   final PlaceLinkResolver? placeLinkResolver;
   final ReceiptParser? receiptParser;
+  final MapViewBuilder? mapViewBuilder;
+  final GoogleSheetsService? sheetsService;
 
   @override
   Widget build(BuildContext context) => AuthSessionGate(
@@ -84,6 +90,8 @@ final class TripSplitApp extends StatelessWidget {
     return MaterialPageRoute<void>(
       settings: RouteSettings(name: location.canonicalPath),
       builder: (_) => TripRouteHost(
+        mapViewBuilder: mapViewBuilder,
+        sheetsService: sheetsService,
         location: location,
         repositories: repositories,
         placeProvider: placeProvider ?? MockPlaceProvider(),

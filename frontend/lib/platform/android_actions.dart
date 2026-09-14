@@ -5,6 +5,10 @@ import '../features/receipts/receipt_parser.dart';
 /// Android 시스템 UI와의 경계. Widget은 Intent/파일 SDK를 직접 호출하지 않습니다.
 class AndroidActions {
   static const _channel = MethodChannel('trip_split/android_actions');
+  static Future<String?> loadSheetRecovery() =>
+      _channel.invokeMethod<String>('loadSheetRecovery');
+  static Future<void> saveSheetRecovery(String? value) =>
+      _channel.invokeMethod<void>('saveSheetRecovery', {'value': value});
   static Future<void> shareText(String text) =>
       _channel.invokeMethod<void>('shareText', {'text': text});
   static Future<void> openUrl(Uri url) =>

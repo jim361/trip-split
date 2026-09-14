@@ -1,6 +1,6 @@
 # Google Sheets 여행 보고서 내보내기
 
-> 2026-09-14. 사용자 요청으로 정리한 개발 방향과 고정 샘플 인계다. 현재는 샘플·문서만 준비됐으며 내보내기 화면, 시트 생성 코드, 실제 Google 연결은 미구현이다.
+> 2026-09-14 추가 구현. Flutter 옵션·미리보기, 전체 조회, 보고서 배치·정산, OAuth·Sheets 생성과 실패 복구 코드를 연결했다. 실제 Google 계정의 문서 생성과 Android 실기기 검증은 아직 수행하지 않았다. [통합 기록](integration-update-2026-09-14.md)을 함께 확인한다.
 
 실행 단계: 고정 샘플 양식·미리보기는 사용자 담당으로 Phase B(P0)와 병행할 수 있다. 기존 데이터·정산 연결 뒤 Google OAuth·실제 생성을 검증하며 B/C 출시 통과 조건으로 추가하지 않는다. 기존 시트를 앱에 가져오는 기능은 별도 후속 후보다. 공통 통합 확인을 우선하고 [단계별 개발 안내](development-kickoff.md)를 따른다.
 
@@ -49,11 +49,11 @@
 
 ## Google 연결
 
-현재 `FirebaseAuthService`는 Google ID token으로 Firebase 계정을 연결한다. Sheets API 접근 토큰을 발급받거나 시트 생성 권한을 요청하는 구현은 아직 없다.
+`GoogleAccountService`가 Google SDK를 한 번 초기화한다. `FirebaseAuthService`의 ID token 계정 연결과 Sheets의 `drive.file` 추가 권한 요청을 분리했다. Sheets 버튼은 Firebase UID를 변경하거나 계정을 자동 연결하지 않는다. 접근 토큰은 메모리에만 유지하며 사용자의 재시도 때 이전 토큰을 무효화하고 권한을 다시 요청한다.
 
 내보내기 시 사용자 동작으로 `drive.file` 범위의 권한을 요청하고 승인된 접근 토큰으로 시트를 만든다. Firebase 로그인 성공만으로 이 권한이 있다고 판단하지 않는다. 앱에 service account 비밀키나 OAuth client secret을 넣지 않는다.
 
-실제 연결 전 Google Cloud의 Sheets API·Android OAuth 설정이 필요하다. 운영 프로젝트 설정·권한 동의·외부 생성은 별도 연결 단계에서 처리하며 이번 커밋은 해당 작업을 수행하지 않는다.
+실제 연결 전 Google Cloud의 Sheets API·Android OAuth 설정이 필요하다. `GOOGLE_SERVER_CLIENT_ID`와 `ENABLE_GOOGLE_SHEETS=true`를 로컬 dart defines에 설정하면 생성 버튼이 활성화된다. 운영 프로젝트 설정·권한 동의·외부 생성은 이번 로컬 작업에서 수행하지 않았다.
 
 참고: [Google Sheets 생성 API](https://developers.google.com/workspace/sheets/api/reference/rest/v4/spreadsheets/create), [파일별 접근 범위](https://developers.google.com/workspace/sheets/api/scopes), [Flutter Google 추가 권한 요청](https://pub.dev/packages/google_sign_in#authorization).
 
@@ -71,14 +71,29 @@
 - [x] 첫 탭의 셀·링크·기본 서식 추출과 출처 보존
 - [x] 일정·예상 비용·실제 지출 샘플 및 날짜/합계 차이 기록
 - [x] Flutter 중심 구현 경계와 두 백엔드 담당의 기존 역할 유지
-- [ ] 샘플을 보고서 입력 모델로 매핑하고 양식 재현
-- [ ] 내보내기 옵션·미리보기·저장 상태 화면
-- [ ] 3일/10일 여행·많은 지출·긴 메모·시간 미정·다음 날 귀국편 검증
-- [ ] 기존 repository 전체 조회와 Dart 정산 결과 연결
-- [ ] Google OAuth·Sheets 생성 service와 실패 복구 연결
+- [x] 샘플을 테스트 입력으로 매핑하고 가로 날짜·시간표·색상·일별 지출 양식 구현
+- [x] 내보내기 옵션·미리보기·저장 상태 화면
+- [x] 3일/10일 여행·40건 지출·긴 메모·시간 미정·다음 날 귀국편 자동 검증
+- [x] 기존 repository 전체 조회와 Dart 정산 결과 연결
+- [x] Google OAuth·Sheets 생성 service와 실패 복구 코드 및 요청 대역 테스트 연결
 - [ ] Android 실기기에서 새 문서 생성·열기 확인
 
 관련 작업은 [TASK-08](../MarkDown/task/task_function8_backup_export.md)에서 추적한다. 백업 파일 완료 기준과 보고서 완료 기준은 각각 확인한다.
+
+## 구현과 재현
+
+여행 설정·공유 → **시트 내보내기** → 날짜·A/B 선택 → **미리보기** 순서로 연다. 기본 mock에서도 옵션과 두 탭의 미리보기를 사용할 수 있다. Google 연결을 켠 경우에만 생성 버튼으로 권한을 요청한다.
+
+- `lib/features/sheets/trip_sheet_report.dart`: `일정·지출`과 `지출·정산` 두 탭. 일정에 실제 입력된 시작 시각 범위와 시간 미정 영역을 표시하고 저장 순서 번호를 보존한다. 날짜 열은 여행 전체와 기간 외 일정을 포함한다. 선택 날짜는 일정 필터이며 전체 지출을 줄이지 않는다.
+- `loadTripSnapshot`: trip·participants·places·itinerary·expenses 전체를 읽는다. Firebase는 `Source.server`만 허용하고 조회 실패·대기 중 쓰기가 있으면 출력하지 않는다. 사본 조회 완료 시각을 표시한다. 여러 컬렉션의 원자적 snapshot은 아니다.
+- `google_sheets_service.dart`: 빈 문서 생성 후 같은 ID에 값·서식을 기록한다. 응답 유실 때 자동 재생성하지 않는다. 내용 쓰기 실패는 같은 ID와 사본으로 재시도한다. 사용자가 Drive를 확인하고 새로 시작하는 동작도 별도로 둔다.
+- Android 내부 저장소의 `sheet_export_recovery.json`에 복구 ID·보고서 사본을 원자적으로 저장한다. 토큰·원본 영수증 이미지는 저장하지 않는다. 성공 또는 명시적 새 시작 시 사본을 지운다. 기존 Android cloud backup/기기 전송 제외 정책을 유지한다.
+- 숫자 금액·별도 통화, 날짜 serial과 서식을 사용한다. 제목·메모는 `stringValue`로 쓰므로 `=`로 시작하는 사용자 문자열도 수식으로 실행되지 않는다. 일정의 안전한 지도 URL은 셀 링크로 전달한다.
+- 1~366일 여행을 지원한다. 기존 시트 수정·동기화나 원본 샘플의 상시 가져오기는 구현하지 않았다. 원본 샘플의 미기재 결제자는 출력에서 추정하지 않으며 합산 회귀에만 명시적인 합성 분담자를 사용한다.
+
+![Flutter 시트 미리보기](screenshots/2026-09-14/14-sheet-preview.png)
+
+캡처는 실제 Flutter Widget의 mock 데이터 렌더링이며 Google Sheets 앱이나 Android 실기기 캡처가 아니다.
 
 ## 병행하지 않는 후속 논의
 

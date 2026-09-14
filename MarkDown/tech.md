@@ -31,6 +31,8 @@ Flutter 앱은 장소·일정·준비·비용을 편집하는 Widget과 상태�
 
 Android Firestore 영속 캐시는 마지막 동기화 데이터와 latency-compensated write를 제공한다. UI는 캐시 데이터, 동기화 대기와 실패를 구분한다. 여러 기기의 같은 문서 충돌은 기본적으로 last-write-wins이며 고급 병합 UI는 후속이다. Google 장소 검색과 OCR Callable은 온라인 기능으로 두고 재시도 가능한 오류와 수동 fallback을 제공한다.
 
+2026-09-14 추가 통합: `TripDataSnapshot`은 여행·참여자·장소·일정·지출의 불변 출력 사본이며 Firestore 저장 타입이 아니다. `loadTripSnapshot`의 Firebase 구현은 서버 전체 조회 후 반환하고 캐시·미확정 쓰기로 대체하지 않는다. `TripSyncRepository`는 SDK metadata를 Dart 상태로 노출한다. 기존 Firestore ID·Rules·11개 Callable export는 유지한다. `GoogleMapAdapter`와 Sheets OAuth/HTTP는 platform/service 경계에 두며 기본 mock 실행에서는 외부 호출을 하지 않는다. [통합 기록](../docs/integration-update-2026-09-14.md)을 따른다.
+
 ## 3. Firebase 사용 범위
 
 - Firebase App Distribution 또는 로컬 APK: Android 검증 배포. 실제 배포는 별도 승인 후 수행

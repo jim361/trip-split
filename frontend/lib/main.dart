@@ -18,12 +18,27 @@ import 'services/firebase_auth_service.dart';
 import 'services/mock_auth_service.dart';
 import 'services/trip_share_service.dart';
 import 'shared/theme/app_theme.dart';
+import 'platform/google_map_adapter.dart';
+import 'platform/android_actions.dart';
+import 'services/google_account_service.dart';
+import 'features/sheets/google_sheets_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     final config = AppConfig.fromEnvironment();
-    final dependencies = await _AppDependencies.create(config);
+    final googleAccount = GoogleAccountService(
+      serverClientId: config.googleServerClientId,
+    );
+    final dependencies = await _AppDependencies.create(config, googleAccount);
+    final maps = config.enableGoogleMaps ? GoogleMapAdapter() : null;
+    final sheets = config.enableGoogleSheets
+        ? GoogleSheetsService(
+            authorize: googleAccount.authorizeSheets,
+            loadRecovery: AndroidActions.loadSheetRecovery,
+            saveRecovery: AndroidActions.saveSheetRecovery,
+          )
+        : null;
     runApp(
       TripSplitApp(
         repositories: dependencies.repositories,
@@ -33,6 +48,8 @@ Future<void> main() async {
         placeProvider: dependencies.placeProvider,
         placeLinkResolver: dependencies.placeLinkResolver,
         receiptParser: dependencies.receiptParser,
+        mapViewBuilder: maps?.build,
+        sheetsService: sheets,
       ),
     );
   } catch (error) {
@@ -57,7 +74,10 @@ final class _AppDependencies {
   final PlaceLinkResolver placeLinkResolver;
   final ReceiptParser receiptParser;
 
-  static Future<_AppDependencies> create(AppConfig config) async {
+  static Future<_AppDependencies> create(
+    AppConfig config,
+    GoogleAccountService googleAccount,
+  ) async {
     if (config.dataSource == AppDataSource.mock) {
       final repositories = InMemoryTripRepositories();
       return _AppDependencies(
@@ -81,6 +101,7 @@ final class _AppDependencies {
         auth: client.auth,
         firestore: client.firestore,
         googleServerClientId: config.googleServerClientId,
+        googleAccount: googleAccount,
       ),
       tripShareService: FirebaseTripShareService(client.functions),
       placeProvider: FirebasePlaceProvider(client.functions),

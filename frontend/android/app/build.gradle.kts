@@ -1,7 +1,19 @@
+import java.util.Base64
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val dartDefines = (project.findProperty("dart-defines") as? String)
+    ?.split(",")?.mapNotNull { value ->
+        val pair = String(Base64.getDecoder().decode(value), Charsets.UTF_8).split("=", limit = 2)
+        if (pair.size == 2) pair[0] to pair[1] else null
+    }?.toMap() ?: emptyMap()
+val mapsKey = dartDefines["GOOGLE_MAPS_API_KEY"].orEmpty()
+if (dartDefines["ENABLE_GOOGLE_MAPS"] == "true" && mapsKey.isBlank()) {
+    throw GradleException("ENABLE_GOOGLE_MAPS requires GOOGLE_MAPS_API_KEY in local dart defines")
 }
 
 android {
@@ -16,6 +28,7 @@ android {
 
     defaultConfig {
         applicationId = "com.jim361.tripsplit"
+        manifestPlaceholders["googleMapsApiKey"] = mapsKey
         minSdk = 24
         targetSdk = 36
         // Uses the version code from pubspec.yaml. When using split APKs, 1000 * ABI_VERSION

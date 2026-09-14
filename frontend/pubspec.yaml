@@ -14,9 +14,12 @@ dependencies:
   firebase_core: ^4.14.0
   flutter:
     sdk: flutter
+  google_maps_flutter: 2.18.0
   google_sign_in: ^7.2.0
 
 dev_dependencies:
+  integration_test:
+    sdk: flutter
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

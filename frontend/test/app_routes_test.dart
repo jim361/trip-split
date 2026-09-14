@@ -9,6 +9,31 @@ import 'package:trip_split/services/trip_share_service.dart';
 import 'package:trip_split/shared/theme/app_theme.dart';
 
 void main() {
+  testWidgets('하단 메뉴는 Android 시스템 제스처 영역 위에 표시된다', (tester) async {
+    tester.view.padding = FakeViewPadding(bottom: 24);
+    tester.view.viewPadding = FakeViewPadding(bottom: 24);
+    addTearDown(() {
+      tester.view.resetPadding();
+      tester.view.resetViewPadding();
+    });
+    await _pumpRoute(
+      tester,
+      size: const Size(390, 844),
+      initialRoute: '/trips/$tokyoTripId/itinerary',
+    );
+    for (final title in ['일정·지도', '준비', '비용']) {
+      final label = find.descendant(
+        of: find.byKey(const Key('trip-mobile-navigation')),
+        matching: find.text(title),
+      );
+      expect(tester.getBottomRight(label).dy, lessThanOrEqualTo(820));
+    }
+    await tester.tap(find.text('비용'));
+    await tester.pumpAndSettle();
+    expect(find.text('여행 비용'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   test('기본·호환 경로를 canonical 여행 위치로 해석한다', () {
     expect(TripLocation.tryParse('/')?.tripId, tokyoTripId);
 

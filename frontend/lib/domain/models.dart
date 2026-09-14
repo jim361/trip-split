@@ -5,6 +5,30 @@ typedef LocalDate = String;
 typedef CurrencyAmount = int;
 typedef CurrencyCode = String;
 
+/// 보고서용 전체 조회 결과. 컬렉션 간 원자적 시점은 보장하지 않습니다.
+final class TripDataSnapshot {
+  TripDataSnapshot({
+    required this.trip,
+    required this.capturedAt,
+    required List<Participant> participants,
+    required List<Place> places,
+    required List<ItineraryItem> itinerary,
+    required List<Expense> expenses,
+  }) : participants = List.unmodifiable(participants),
+       places = List.unmodifiable(places),
+       itinerary = List.unmodifiable(itinerary),
+       expenses = List.unmodifiable(expenses);
+
+  final Trip trip;
+  final DateTime capturedAt;
+  final List<Participant> participants;
+  final List<Place> places;
+  final List<ItineraryItem> itinerary;
+  final List<Expense> expenses;
+}
+
+enum TripSyncState { loading, cached, pending, synced }
+
 enum AppErrorCode {
   unauthenticated('unauthenticated'),
   permissionDenied('permission-denied'),

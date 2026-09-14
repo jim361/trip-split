@@ -7,6 +7,43 @@ import 'package:trip_split/features/itinerary/itinerary_page.dart';
 import 'package:trip_split/shared/theme/app_theme.dart';
 
 void main() {
+  testWidgets('지도 adapter에는 선택 날짜·계획의 전체 번호와 직선 동선을 전달한다', (tester) async {
+    final repositories = InMemoryTripRepositories();
+    addTearDown(repositories.close);
+    String? viewId;
+    var numbers = <int>[];
+    var segmentCount = -1;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: ItineraryPage(
+            repositories: repositories,
+            trip: tokyoTripFixture.trip,
+            places: tokyoTripFixture.places,
+            itinerary: tokyoTripFixture.itinerary,
+            selectedDate: '2026-11-25',
+            mapExpanded: false,
+            onToggleMap: (_, _) {},
+            mapViewBuilder:
+                ({required viewId, required model, required onSelect}) {
+                  numbers = model.pins.map((p) => p.number).toList();
+                  segmentCount = model.segments.length;
+                  return Text(viewId, key: const Key('sdk-map-boundary'));
+                },
+          ),
+        ),
+      ),
+    );
+    viewId = tester
+        .widget<Text>(find.byKey(const Key('sdk-map-boundary')))
+        .data;
+    expect(viewId, '$tokyoTripId/2026-11-25/A');
+    expect(numbers, [1, 2, 3]);
+    expect(segmentCount, 2);
+    expect(find.textContaining('Google 지도 연동 예정'), findsNothing);
+  });
+
   testWidgets('계획 전환은 날짜를 유지하며 목록과 지도에서 다른 안을 제외한다', (tester) async {
     final repositories = InMemoryTripRepositories();
     addTearDown(repositories.close);
