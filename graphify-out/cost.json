@@ -1,0 +1,41 @@
+{
+  "runs": [
+    {
+      "date": "2026-09-14T11:03:17.354889+00:00",
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "files": 246,
+      "usage_status": "unavailable"
+    },
+    {
+      "date": "2026-09-14T12:42:04.692536+00:00",
+      "files": 24,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usage_status": "unavailable",
+      "built_at_commit": "305d729765c4dec212bd16d906b693039c789d33"
+    },
+    {
+      "date": "2026-09-14T15:35:36.272770+00:00",
+      "files": 115,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usage_status": "unavailable",
+      "base_commit": "e6e706191c82fc6027331a958a50aff165de9874",
+      "source_sha256": "16fd4fcc35dcc172631571e04a045ca7cf25909434e94474ba672d71c68723f8"
+    },
+    {
+      "date": "2026-09-14T15:49:51.361530+00:00",
+      "files": 4,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "usage_status": "unavailable",
+      "base_commit": "3d9f7e969fb84c008cf35f1802de4254f25e9a06",
+      "source_sha256": "f70237bea7bede1c3a39411e52349dfa90ab6f9ea2d6375380fa6b860badf4ab"
+    }
+  ],
+  "total_input_tokens": 0,
+  "total_output_tokens": 0,
+  "note": "현재 세션 및 작업자 실제 토큰 계측값 미제공. 0은 라이브러리 호환 placeholder이며 무료 사용이나 실제 0 토큰을 뜻하지 않는다.",
+  "usage_status": "unavailable"
+}

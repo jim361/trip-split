@@ -1,0 +1,43 @@
+name: 기능 개발 작업
+description: 기존 TASK ID로 담당 범위와 완료 기준을 정합니다.
+body:
+  - type: dropdown
+    id: task
+    attributes:
+      label: TASK ID
+      options:
+        - TASK-01
+        - TASK-02
+        - TASK-03
+        - TASK-04
+        - TASK-05
+        - TASK-06
+        - TASK-07
+        - TASK-08
+        - TASK-09
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: 담당 역할
+      options:
+        - 프론트·공통·통합
+        - 일정·지도 백엔드
+        - 정산·영수증 백엔드
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 구현 범위와 인계 계약
+      description: 수정 경로, 입력·출력·오류 예시, 공유 파일 변경과 의존 작업을 적습니다.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 기준과 검증
+      description: 사용자 동작과 성공·실패 테스트, Emulator·Android 확인 범위를 적습니다.
+    validations:
+      required: true

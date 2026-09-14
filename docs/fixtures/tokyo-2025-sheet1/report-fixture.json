@@ -1,0 +1,4555 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "tokyo-2025-sheet1",
+  "purpose": "sheet-report-rendering-reference",
+  "source": {
+    "url": "https://docs.google.com/spreadsheets/d/1Sp5FFWU-obtYqaDh1Uo8g6ojOl9jjHeH9FE3hFK0FZU/edit?gid=0#gid=0",
+    "workbookTitle": "25년 2월 도쿄 투어 일정 시트",
+    "tabName": "최영락",
+    "tabIndex": 0,
+    "gid": 0,
+    "extractedOn": "2026-09-14",
+    "range": "A1:U72",
+    "worksheetXmlSha256": "f7dd5bd1dc3c35062f240e481b2a11937061f51fc40285e43bca0398522c8031"
+  },
+  "trip": {
+    "title": "25년 2월 도쿄 투어 일정 시트",
+    "startDate": "2025-02-02",
+    "endDate": "2025-02-10",
+    "timeZone": "Asia/Tokyo"
+  },
+  "normalization": {
+    "year": "문서 제목의 25년과 B1:I1의 요일에 맞춰 샘플만 2025년으로 해석. 원본 B2:I2는 2024년이며 source-cells.json에 그대로 보존.",
+    "timeZone": "도쿄 여행이라는 문서 문맥에 따라 Asia/Tokyo를 샘플 기준으로 지정.",
+    "planId": "원본 첫 탭은 A/B 표기가 없음. 샘플 편의를 위해 A로 지정하며 다른 탭을 B안으로 합치지 않음.",
+    "times": "startTime/endTime은 직접 기입된 두 항공편에만 설정. 나머지는 grid.startTime으로 배치 위치만 보존하며 실제 출발·종료 시각으로 확정하지 않음.",
+    "grouping": "연속 셀의 문장 조각·같은 장소 반복을 묶음. sourceCells로 역추적. I14/I16:I17 조각은 의미를 보충하지 않고 검토 표시.",
+    "category": "K1:K5 범례 색상에 따른 샘플 분류. 실제 방문·예약 완료를 의미하지 않음.",
+    "actualCurrency": "엔 표시가 없는 지출은 같은 JPY 장부 문맥으로 해석하고 currencyBasis에 표시. I열 지출 날짜는 I2의 열 위치로 해석.",
+    "settlement": "결제자·참여자·분담 방식은 원본에 충분하지 않아 null. 이 자료만으로 공동 정산 결과를 만들 수 없음."
+  },
+  "calendarColumns": [
+    {
+      "column": "B",
+      "sourceDateCell": "B2",
+      "rawSerial": 45324,
+      "rawDate": "2024-02-02",
+      "sampleDate": "2025-02-02",
+      "weekdayLabel": "일"
+    },
+    {
+      "column": "C",
+      "sourceDateCell": "C2",
+      "rawSerial": 45325,
+      "rawDate": "2024-02-03",
+      "sampleDate": "2025-02-03",
+      "weekdayLabel": "월"
+    },
+    {
+      "column": "D",
+      "sourceDateCell": "D2",
+      "rawSerial": 45326,
+      "rawDate": "2024-02-04",
+      "sampleDate": "2025-02-04",
+      "weekdayLabel": "화"
+    },
+    {
+      "column": "E",
+      "sourceDateCell": "E2",
+      "rawSerial": 45327,
+      "rawDate": "2024-02-05",
+      "sampleDate": "2025-02-05",
+      "weekdayLabel": "수"
+    },
+    {
+      "column": "F",
+      "sourceDateCell": "F2",
+      "rawSerial": 45328,
+      "rawDate": "2024-02-06",
+      "sampleDate": "2025-02-06",
+      "weekdayLabel": "목"
+    },
+    {
+      "column": "G",
+      "sourceDateCell": "G2",
+      "rawSerial": 45329,
+      "rawDate": "2024-02-07",
+      "sampleDate": "2025-02-07",
+      "weekdayLabel": "금"
+    },
+    {
+      "column": "H",
+      "sourceDateCell": "H2",
+      "rawSerial": 45330,
+      "rawDate": "2024-02-08",
+      "sampleDate": "2025-02-08",
+      "weekdayLabel": "토"
+    },
+    {
+      "column": "I",
+      "sourceDateCell": "I2",
+      "rawSerial": 45331,
+      "rawDate": "2024-02-09",
+      "sampleDate": "2025-02-09",
+      "weekdayLabel": "일"
+    }
+  ],
+  "itinerary": [
+    {
+      "id": "sheet1-itinerary-b5",
+      "date": "2025-02-02",
+      "planId": "A",
+      "order": 0,
+      "title": "인천 ~ 나리타",
+      "category": "flight",
+      "startTime": "08:45",
+      "endTime": "11:20",
+      "timeBasis": "explicit-cell-time",
+      "sourceCells": ["B5", "B6", "B7", "B8"],
+      "sourceTexts": ["인천 ~ 나리타", 0.3645833333333333, "~", 0.4722222222222222],
+      "sourceLinks": [],
+      "grid": {
+        "column": "B",
+        "firstRow": 5,
+        "lastRow": 8,
+        "startTime": "08:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-b9",
+      "date": "2025-02-02",
+      "planId": "A",
+      "order": 1,
+      "title": "2터미널 ~ 게이세이우에노",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "ambiguous-window-text",
+      "sourceCells": ["B9", "B10"],
+      "sourceTexts": ["2터미널 ~ 게이세이우에노", "11:42~13:06 사이"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "B",
+        "firstRow": 9,
+        "lastRow": 10,
+        "startTime": "12:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false,
+      "timeWindowText": "11:42~13:06 사이"
+    },
+    {
+      "id": "sheet1-itinerary-b11",
+      "date": "2025-02-02",
+      "planId": "A",
+      "order": 2,
+      "title": "짐 맡기기",
+      "category": "stay",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["B11"],
+      "sourceTexts": ["짐 맡기기"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "B",
+        "firstRow": 11,
+        "lastRow": 11,
+        "startTime": "14:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-b12",
+      "date": "2025-02-02",
+      "planId": "A",
+      "order": 3,
+      "title": "센소지",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["B12"],
+      "sourceTexts": ["센소지"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "B",
+        "firstRow": 12,
+        "lastRow": 12,
+        "startTime": "15:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-b13",
+      "date": "2025-02-02",
+      "planId": "A",
+      "order": 4,
+      "title": "늦점 - 이치란 (아사쿠사)",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["B13"],
+      "sourceTexts": ["늦점 - 이치란 (아사쿠사)"],
+      "sourceLinks": [
+        {
+          "cell": "B13",
+          "url": "https://maps.app.goo.gl/3yJpBK6vz7bc9s2Z7"
+        }
+      ],
+      "grid": {
+        "column": "B",
+        "firstRow": 13,
+        "lastRow": 13,
+        "startTime": "16:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-b14",
+      "date": "2025-02-02",
+      "planId": "A",
+      "order": 5,
+      "title": "스카이트리",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["B14"],
+      "sourceTexts": ["스카이트리"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "B",
+        "firstRow": 14,
+        "lastRow": 14,
+        "startTime": "17:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-b17",
+      "date": "2025-02-02",
+      "planId": "A",
+      "order": 6,
+      "title": "늦저 - 야키토리 [우에노]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["B17"],
+      "sourceTexts": ["늦저 - 야키토리 [우에노]"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "B",
+        "firstRow": 17,
+        "lastRow": 17,
+        "startTime": "20:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c4",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 0,
+      "title": "우에노 ~ 쓰키지 시장",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C4"],
+      "sourceTexts": ["우에노 ~ 쓰키지 시장"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 4,
+        "lastRow": 4,
+        "startTime": "07:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c5",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 1,
+      "title": "아침 - 호로몬동(쓰키지)",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C5"],
+      "sourceTexts": ["아침 - 호로몬동(쓰키지)"],
+      "sourceLinks": [
+        {
+          "cell": "C5",
+          "url": "https://maps.app.goo.gl/bm7TgAYuLepEhGpU8"
+        }
+      ],
+      "grid": {
+        "column": "C",
+        "firstRow": 5,
+        "lastRow": 5,
+        "startTime": "08:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c6",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 2,
+      "title": "쓰키지 시장 구경",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C6"],
+      "sourceTexts": ["쓰키지 시장 구경"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 6,
+        "lastRow": 6,
+        "startTime": "09:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c7",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 3,
+      "title": "하마리큐 은사 정원",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C7"],
+      "sourceTexts": ["하마리큐 은사 정원"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 7,
+        "lastRow": 7,
+        "startTime": "10:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c8",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 4,
+      "title": "점심 - 오야꼬동(신바시)",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C8"],
+      "sourceTexts": ["점심 - 오야꼬동(신바시)"],
+      "sourceLinks": [
+        {
+          "cell": "C8",
+          "url": "https://maps.app.goo.gl/HWuH2GHFbB1NQSup8"
+        }
+      ],
+      "grid": {
+        "column": "C",
+        "firstRow": 8,
+        "lastRow": 8,
+        "startTime": "11:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c9",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 5,
+      "title": "긴자",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C9"],
+      "sourceTexts": ["긴자"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 9,
+        "lastRow": 9,
+        "startTime": "12:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c10",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 6,
+      "title": "도쿄역 탐방",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C10", "C11"],
+      "sourceTexts": ["도쿄역", "탐방"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 10,
+        "lastRow": 11,
+        "startTime": "13:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c12",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 7,
+      "title": "오테마치 -> 오나리몬",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C12"],
+      "sourceTexts": ["오테마치 -> 오나리몬"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 12,
+        "lastRow": 12,
+        "startTime": "15:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c13",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 8,
+      "title": "도쿄타워 구경",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C13", "C14"],
+      "sourceTexts": ["도쿄타워\n", "구경"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 13,
+        "lastRow": 14,
+        "startTime": "16:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c15",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 9,
+      "title": "아자부다이",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C15"],
+      "sourceTexts": ["아자부다이"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 15,
+        "lastRow": 15,
+        "startTime": "18:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c16",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 10,
+      "title": "롯폰기? 아마도?",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C16", "C17"],
+      "sourceTexts": ["롯폰기?", "아마도?"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "C",
+        "firstRow": 16,
+        "lastRow": 17,
+        "startTime": "19:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": true
+    },
+    {
+      "id": "sheet1-itinerary-c18",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 11,
+      "title": "저녁 - 교자, 차항[오카치마치]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C18"],
+      "sourceTexts": ["저녁 - 교자, 차항[오카치마치]"],
+      "sourceLinks": [
+        {
+          "cell": "C18",
+          "url": "https://maps.app.goo.gl/fZ1n3ViJZWuH13n77"
+        }
+      ],
+      "grid": {
+        "column": "C",
+        "firstRow": 18,
+        "lastRow": 18,
+        "startTime": "21:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-c19",
+      "date": "2025-02-03",
+      "planId": "A",
+      "order": 12,
+      "title": "저녁 - 야키소바집[오카치마치]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["C19"],
+      "sourceTexts": ["저녁 - 야키소바집[오카치마치]"],
+      "sourceLinks": [
+        {
+          "cell": "C19",
+          "url": "https://maps.app.goo.gl/fTzvs4RAoXw6BCJM8"
+        }
+      ],
+      "grid": {
+        "column": "C",
+        "firstRow": 19,
+        "lastRow": 19,
+        "startTime": "22:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d5",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 0,
+      "title": "췤아웃",
+      "category": "stay",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D5"],
+      "sourceTexts": ["췤아웃"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 5,
+        "lastRow": 5,
+        "startTime": "08:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d6",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 1,
+      "title": "우에노 공원",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D6", "D7"],
+      "sourceTexts": ["우에노", "공원"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 6,
+        "lastRow": 7,
+        "startTime": "09:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d8",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 2,
+      "title": "점심[1] - 규카츠(우에노)",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D8"],
+      "sourceTexts": ["점심[1] - 규카츠(우에노)"],
+      "sourceLinks": [
+        {
+          "cell": "D8",
+          "url": "https://maps.app.goo.gl/es1vKFXxwJ493txy6"
+        }
+      ],
+      "grid": {
+        "column": "D",
+        "firstRow": 8,
+        "lastRow": 8,
+        "startTime": "11:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d9",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 3,
+      "title": "숙소 이동",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D9"],
+      "sourceTexts": ["숙소 이동"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 9,
+        "lastRow": 9,
+        "startTime": "12:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d10",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 4,
+      "title": "점심[2] - 카레 [시모키타자와]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D10"],
+      "sourceTexts": ["점심[2] - 카레 [시모키타자와]"],
+      "sourceLinks": [
+        {
+          "cell": "D10",
+          "url": "https://maps.app.goo.gl/EVZNoqCh6rZm4A8A8"
+        }
+      ],
+      "grid": {
+        "column": "D",
+        "firstRow": 10,
+        "lastRow": 10,
+        "startTime": "13:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d11",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 5,
+      "title": "시모키타자와",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D11", "D12"],
+      "sourceTexts": ["시모키타자와", "시모키타자와"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 11,
+        "lastRow": 12,
+        "startTime": "14:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d13",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 6,
+      "title": "시부야",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D13"],
+      "sourceTexts": ["시부야"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 13,
+        "lastRow": 13,
+        "startTime": "16:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d14",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 7,
+      "title": "저녁 - 토리카츠 [시부야]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D14"],
+      "sourceTexts": ["저녁 - 토리카츠 [시부야]"],
+      "sourceLinks": [
+        {
+          "cell": "D14",
+          "url": "https://maps.app.goo.gl/FiirUX876QbfEgzr8"
+        }
+      ],
+      "grid": {
+        "column": "D",
+        "firstRow": 14,
+        "lastRow": 14,
+        "startTime": "17:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d15",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 8,
+      "title": "시부야",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D15", "D16"],
+      "sourceTexts": ["시부야", "시부야"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 15,
+        "lastRow": 16,
+        "startTime": "18:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d17",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 9,
+      "title": "시부야스카이",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D17"],
+      "sourceTexts": ["시부야스카이"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 17,
+        "lastRow": 17,
+        "startTime": "20:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d18",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 10,
+      "title": "야식 - 야키토리 [시부야]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D18"],
+      "sourceTexts": ["야식 - 야키토리 [시부야]"],
+      "sourceLinks": [
+        {
+          "cell": "D18",
+          "url": "https://maps.app.goo.gl/12s8iM9pzFNrEj788"
+        }
+      ],
+      "grid": {
+        "column": "D",
+        "firstRow": 18,
+        "lastRow": 18,
+        "startTime": "21:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-d19",
+      "date": "2025-02-04",
+      "planId": "A",
+      "order": 11,
+      "title": "신주쿠 골든가이, 가부키쵸",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["D19"],
+      "sourceTexts": ["신주쿠 골든가이, 가부키쵸"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "D",
+        "firstRow": 19,
+        "lastRow": 19,
+        "startTime": "22:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-e6",
+      "date": "2025-02-05",
+      "planId": "A",
+      "order": 0,
+      "title": "이케부 -> 오차노미즈",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["E6"],
+      "sourceTexts": ["이케부 -> 오차노미즈"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "E",
+        "firstRow": 6,
+        "lastRow": 6,
+        "startTime": "09:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-e7",
+      "date": "2025-02-05",
+      "planId": "A",
+      "order": 1,
+      "title": "오차노미즈 투어",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["E7", "E8"],
+      "sourceTexts": ["오차노미즈 투어"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "E",
+        "firstRow": 7,
+        "lastRow": 8,
+        "startTime": "10:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-e9",
+      "date": "2025-02-05",
+      "planId": "A",
+      "order": 2,
+      "title": "점심 - 토리파이탄[오차노미즈]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["E9"],
+      "sourceTexts": ["점심 - 토리파이탄[오차노미즈]"],
+      "sourceLinks": [
+        {
+          "cell": "E9",
+          "url": "https://maps.app.goo.gl/qF6pchvwLZhNS98h9"
+        }
+      ],
+      "grid": {
+        "column": "E",
+        "firstRow": 9,
+        "lastRow": 9,
+        "startTime": "12:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-e10",
+      "date": "2025-02-05",
+      "planId": "A",
+      "order": 3,
+      "title": "아키바 투어",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["E10"],
+      "sourceTexts": ["아키바 투어"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "E",
+        "firstRow": 10,
+        "lastRow": 10,
+        "startTime": "13:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-e15",
+      "date": "2025-02-05",
+      "planId": "A",
+      "order": 4,
+      "title": "저녁 - 치바짱 (아키바)",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["E15"],
+      "sourceTexts": ["저녁 - 치바짱 (아키바)"],
+      "sourceLinks": [
+        {
+          "cell": "E15",
+          "url": "https://maps.app.goo.gl/c91qNzVR2fpxwvAL7"
+        }
+      ],
+      "grid": {
+        "column": "E",
+        "firstRow": 15,
+        "lastRow": 15,
+        "startTime": "18:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f5",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 0,
+      "title": "이케부 -> 니노와",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F5"],
+      "sourceTexts": ["이케부 -> 니노와"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "F",
+        "firstRow": 5,
+        "lastRow": 5,
+        "startTime": "08:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f6",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 1,
+      "title": "노면 열차 · 니노와바시 - 스가모 까지만",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F6", "F7"],
+      "sourceTexts": ["노면 열차", "니노와바시 - 스가모 까지만"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "F",
+        "firstRow": 6,
+        "lastRow": 7,
+        "startTime": "09:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f8",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 2,
+      "title": "스가모 한접시?",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F8"],
+      "sourceTexts": ["스가모 한접시?"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "F",
+        "firstRow": 8,
+        "lastRow": 8,
+        "startTime": "11:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": true
+    },
+    {
+      "id": "sheet1-itinerary-f9",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 3,
+      "title": "점심 - 초밥집[스가모]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F9"],
+      "sourceTexts": ["점심 - 초밥집[스가모]"],
+      "sourceLinks": [
+        {
+          "cell": "F9",
+          "url": "https://maps.app.goo.gl/TiXJR3nrUbVPTWzG7"
+        }
+      ],
+      "grid": {
+        "column": "F",
+        "firstRow": 9,
+        "lastRow": 9,
+        "startTime": "12:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f10",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 4,
+      "title": "스가모 ->하라주쿠",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F10"],
+      "sourceTexts": [" 스가모 ->하라주쿠"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "F",
+        "firstRow": 10,
+        "lastRow": 10,
+        "startTime": "13:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f11",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 5,
+      "title": "하라주쿠 투어",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F11"],
+      "sourceTexts": ["하라주쿠 투어"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "F",
+        "firstRow": 11,
+        "lastRow": 11,
+        "startTime": "14:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f13",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 6,
+      "title": "하라주쿠 -> 스테이크",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F13"],
+      "sourceTexts": ["하라주쿠 -> 스테이크"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "F",
+        "firstRow": 13,
+        "lastRow": 13,
+        "startTime": "16:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f14",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 7,
+      "title": "저녁 - 스테이크 [메구로구]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F14"],
+      "sourceTexts": ["저녁 - 스테이크 [메구로구]"],
+      "sourceLinks": [
+        {
+          "cell": "F14",
+          "url": "https://maps.app.goo.gl/gHWfdHiWUhSoikuf7"
+        }
+      ],
+      "grid": {
+        "column": "F",
+        "firstRow": 14,
+        "lastRow": 14,
+        "startTime": "17:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f15",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 8,
+      "title": "스테이크 - 이케부",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F15"],
+      "sourceTexts": ["스테이크 - 이케부"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "F",
+        "firstRow": 15,
+        "lastRow": 15,
+        "startTime": "18:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-f19",
+      "date": "2025-02-06",
+      "planId": "A",
+      "order": 9,
+      "title": "저녁2 - 도삭면 [이케부]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["F19"],
+      "sourceTexts": ["저녁2 - 도삭면 [이케부]"],
+      "sourceLinks": [
+        {
+          "cell": "F19",
+          "url": "https://maps.app.goo.gl/WofjxFt4c7zH8KjU7"
+        }
+      ],
+      "grid": {
+        "column": "F",
+        "firstRow": 19,
+        "lastRow": 19,
+        "startTime": "22:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g5",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 0,
+      "title": "아침 - 정식집 (신주쿠)",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G5"],
+      "sourceTexts": ["아침 - 정식집 (신주쿠)"],
+      "sourceLinks": [
+        {
+          "cell": "G5",
+          "url": "https://maps.app.goo.gl/jxHp87nCh7xenqYq8"
+        }
+      ],
+      "grid": {
+        "column": "G",
+        "firstRow": 5,
+        "lastRow": 5,
+        "startTime": "08:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g6",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 1,
+      "title": "신주쿠 공원",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G6", "G7"],
+      "sourceTexts": ["신주쿠 공원", "신주쿠 공원"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "G",
+        "firstRow": 6,
+        "lastRow": 7,
+        "startTime": "09:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g8",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 2,
+      "title": "아점 - 톤친칸 (신주쿠)",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G8"],
+      "sourceTexts": ["아점 - 톤친칸 (신주쿠)"],
+      "sourceLinks": [
+        {
+          "cell": "G8",
+          "url": "https://maps.app.goo.gl/wG2qXy9EHbv5D2tr9"
+        }
+      ],
+      "grid": {
+        "column": "G",
+        "firstRow": 8,
+        "lastRow": 8,
+        "startTime": "11:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g9",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 3,
+      "title": "신주쿠",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G9", "G10", "G11"],
+      "sourceTexts": ["신주쿠", "신주쿠", "신주쿠"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "G",
+        "firstRow": 9,
+        "lastRow": 11,
+        "startTime": "12:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g12",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 4,
+      "title": "점심 - 하나미짱 [기타산도역]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G12"],
+      "sourceTexts": ["점심 - 하나미짱 [기타산도역]"],
+      "sourceLinks": [
+        {
+          "cell": "G12",
+          "url": "https://maps.app.goo.gl/S7HmL71qoznbysrQA"
+        }
+      ],
+      "grid": {
+        "column": "G",
+        "firstRow": 12,
+        "lastRow": 12,
+        "startTime": "15:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g13",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 5,
+      "title": "신주쿠",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G13", "G14"],
+      "sourceTexts": ["신주쿠", "신주쿠"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "G",
+        "firstRow": 13,
+        "lastRow": 14,
+        "startTime": "16:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g15",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 6,
+      "title": "이케부",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G15"],
+      "sourceTexts": ["이케부"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "G",
+        "firstRow": 15,
+        "lastRow": 15,
+        "startTime": "18:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g16",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 7,
+      "title": "저녁 - 라멘[이케부]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G16"],
+      "sourceTexts": ["저녁 - 라멘[이케부]"],
+      "sourceLinks": [
+        {
+          "cell": "G16",
+          "url": "https://maps.app.goo.gl/4UgNyPzKs8A5GHxx9"
+        }
+      ],
+      "grid": {
+        "column": "G",
+        "firstRow": 16,
+        "lastRow": 16,
+        "startTime": "19:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g17",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 8,
+      "title": "이케부",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G17", "G18"],
+      "sourceTexts": ["이케부", "이케부"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "G",
+        "firstRow": 17,
+        "lastRow": 18,
+        "startTime": "20:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-g19",
+      "date": "2025-02-07",
+      "planId": "A",
+      "order": 9,
+      "title": "야식 - 몬자야키 [이케부]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["G19"],
+      "sourceTexts": ["야식 - 몬자야키 [이케부]"],
+      "sourceLinks": [
+        {
+          "cell": "G19",
+          "url": "https://maps.app.goo.gl/dYrToFMdRwSugVog6"
+        }
+      ],
+      "grid": {
+        "column": "G",
+        "firstRow": 19,
+        "lastRow": 19,
+        "startTime": "22:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-h5",
+      "date": "2025-02-08",
+      "planId": "A",
+      "order": 0,
+      "title": "췤아웃",
+      "category": "stay",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["H5"],
+      "sourceTexts": ["췤아웃"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "H",
+        "firstRow": 5,
+        "lastRow": 5,
+        "startTime": "08:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-h6",
+      "date": "2025-02-08",
+      "planId": "A",
+      "order": 1,
+      "title": "이케부 ~ 에노시마",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["H6"],
+      "sourceTexts": ["이케부 ~ 에노시마"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "H",
+        "firstRow": 6,
+        "lastRow": 6,
+        "startTime": "09:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-h7",
+      "date": "2025-02-08",
+      "planId": "A",
+      "order": 2,
+      "title": "에노시마 섬 ㄱㄱ",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["H7", "H8", "H9", "H10"],
+      "sourceTexts": [
+        "에노시마 섬 ㄱㄱ",
+        "에노시마 섬 ㄱㄱ",
+        "에노시마 섬 ㄱㄱ",
+        "에노시마 섬 ㄱㄱ"
+      ],
+      "sourceLinks": [],
+      "grid": {
+        "column": "H",
+        "firstRow": 7,
+        "lastRow": 10,
+        "startTime": "10:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-h11",
+      "date": "2025-02-08",
+      "planId": "A",
+      "order": 3,
+      "title": "자유 행동",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["H11", "H12"],
+      "sourceTexts": ["자유", "행동"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "H",
+        "firstRow": 11,
+        "lastRow": 12,
+        "startTime": "14:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-h13",
+      "date": "2025-02-08",
+      "planId": "A",
+      "order": 4,
+      "title": "온천?",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["H13"],
+      "sourceTexts": ["온천?"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "H",
+        "firstRow": 13,
+        "lastRow": 13,
+        "startTime": "16:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": true
+    },
+    {
+      "id": "sheet1-itinerary-h15",
+      "date": "2025-02-08",
+      "planId": "A",
+      "order": 5,
+      "title": "저녁 - 생선라멘 [에노시마]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["H15"],
+      "sourceTexts": ["저녁 - 생선라멘 [에노시마]"],
+      "sourceLinks": [
+        {
+          "cell": "H15",
+          "url": "https://maps.app.goo.gl/Ktv7z4YLCYTkFKYR6"
+        }
+      ],
+      "grid": {
+        "column": "H",
+        "firstRow": 15,
+        "lastRow": 15,
+        "startTime": "18:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-h16",
+      "date": "2025-02-08",
+      "planId": "A",
+      "order": 6,
+      "title": "일루미네이션",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["H16", "H17", "H18"],
+      "sourceTexts": ["일루", "미네", "이션"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "H",
+        "firstRow": 16,
+        "lastRow": 18,
+        "startTime": "19:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-i4",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 0,
+      "title": "일출 봐야지",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I4"],
+      "sourceTexts": ["일출 봐야지"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 4,
+        "lastRow": 4,
+        "startTime": "07:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-i7",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 1,
+      "title": "췤아웃",
+      "category": "stay",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I7"],
+      "sourceTexts": ["췤아웃"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 7,
+        "lastRow": 7,
+        "startTime": "10:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-i8",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 2,
+      "title": "에노시마 ~ 가와사키",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I8"],
+      "sourceTexts": ["에노시마 ~ 가와사키"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 8,
+        "lastRow": 8,
+        "startTime": "11:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-i9",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 3,
+      "title": "점심 - 스시로 [가와사키]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I9"],
+      "sourceTexts": ["점심 - 스시로 [가와사키]"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 9,
+        "lastRow": 9,
+        "startTime": "12:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-i10",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 4,
+      "title": "자유행동",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I10", "I11", "I12", "I13"],
+      "sourceTexts": ["자", "유", "행", "동"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 10,
+        "lastRow": 13,
+        "startTime": "13:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-i14",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 5,
+      "title": "자",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I14"],
+      "sourceTexts": ["자"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 14,
+        "lastRow": 14,
+        "startTime": "17:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": true
+    },
+    {
+      "id": "sheet1-itinerary-i15",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 6,
+      "title": "저녁 - 야키니꾸 [가와사키]",
+      "category": "meal",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I15"],
+      "sourceTexts": ["저녁 - 야키니꾸 [가와사키]"],
+      "sourceLinks": [
+        {
+          "cell": "I15",
+          "url": "https://maps.app.goo.gl/N3jBAsNXSa7WXEZL8"
+        }
+      ],
+      "grid": {
+        "column": "I",
+        "firstRow": 15,
+        "lastRow": 15,
+        "startTime": "18:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": false
+    },
+    {
+      "id": "sheet1-itinerary-i16",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 7,
+      "title": "행동",
+      "category": "activity",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I16", "I17"],
+      "sourceTexts": ["행", "동"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 16,
+        "lastRow": 17,
+        "startTime": "19:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": true
+    },
+    {
+      "id": "sheet1-itinerary-i19",
+      "date": "2025-02-09",
+      "planId": "A",
+      "order": 8,
+      "title": "가와사키 ~ 하네다?",
+      "category": "transport",
+      "startTime": null,
+      "endTime": null,
+      "timeBasis": "grid-position-only",
+      "sourceCells": ["I19"],
+      "sourceTexts": ["가와사키 ~ 하네다?"],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 19,
+        "lastRow": 19,
+        "startTime": "22:00",
+        "dayOffset": 0
+      },
+      "placeId": null,
+      "needsReview": true
+    },
+    {
+      "id": "sheet1-itinerary-i21",
+      "date": "2025-02-10",
+      "planId": "A",
+      "order": 0,
+      "title": "하네다 ~ 인천",
+      "category": "flight",
+      "startTime": "01:55",
+      "endTime": "04:40",
+      "timeBasis": "explicit-date-and-cell-time",
+      "sourceCells": ["I21", "I22", "I23", "I24", "I25"],
+      "sourceTexts": [
+        "2월 10일 하네다 공항",
+        "하네다 ~ 인천",
+        0.0798611111111111,
+        "~",
+        0.19444444444444445
+      ],
+      "sourceLinks": [],
+      "grid": {
+        "column": "I",
+        "firstRow": 21,
+        "lastRow": 25,
+        "startTime": "00:00",
+        "dayOffset": 1
+      },
+      "placeId": null,
+      "needsReview": false
+    }
+  ],
+  "scheduleChangeNotes": [
+    {
+      "id": "sheet1-change-note-b19",
+      "date": "2025-02-02",
+      "sourceCells": ["B19", "B20", "B21", "B22"],
+      "text": "비행기 지연으로 인한 일정 변경\n3시에 체크인 후 센소지, 스카이트리\n바나나 카페에서 바나나쥬스\n야키토리먹기 ㅇㅇ;;",
+      "kind": "schedule-change-note",
+      "appliedToItinerary": false
+    }
+  ],
+  "estimatedExpenses": [
+    {
+      "id": "sheet1-estimate-b34",
+      "date": "2025-02-02",
+      "sourceCell": "B34",
+      "sourceText": "간식 - 멘치카츠 [350円]",
+      "amount": 350,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b35",
+      "date": "2025-02-02",
+      "sourceCell": "B35",
+      "sourceText": "점심 - 이치란 라멘 [1400円]",
+      "amount": 1400,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b36",
+      "date": "2025-02-02",
+      "sourceCell": "B36",
+      "sourceText": "간식 - 바나나카페 [1300円]",
+      "amount": 1300,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b37",
+      "date": "2025-02-02",
+      "sourceCell": "B37",
+      "sourceText": "저녁 - 야키토리 [4000円]",
+      "amount": 4000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c34",
+      "date": "2025-02-03",
+      "sourceCell": "C34",
+      "sourceText": "우에노~쓰키지(180円)",
+      "amount": 180,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c35",
+      "date": "2025-02-03",
+      "sourceCell": "C35",
+      "sourceText": "호로몬동 + 온센타마고[1000円]",
+      "amount": 1000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c36",
+      "date": "2025-02-03",
+      "sourceCell": "C36",
+      "sourceText": "계란말이 [100円]",
+      "amount": 100,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c37",
+      "date": "2025-02-03",
+      "sourceCell": "C37",
+      "sourceText": "하마리큐 은사 정원 [300円]",
+      "amount": 300,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c38",
+      "date": "2025-02-03",
+      "sourceCell": "C38",
+      "sourceText": "오야꼬동+가라아게[3000円]",
+      "amount": 3000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c39",
+      "date": "2025-02-03",
+      "sourceCell": "C39",
+      "sourceText": "대충 신바시~도쿄역[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c40",
+      "date": "2025-02-03",
+      "sourceCell": "C40",
+      "sourceText": "오테마치 ~  오나리몬 [180円]",
+      "amount": 180,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c41",
+      "date": "2025-02-03",
+      "sourceCell": "C41",
+      "sourceText": "아자부다이힐스 전망대[1000円]",
+      "amount": 1000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c42",
+      "date": "2025-02-03",
+      "sourceCell": "C42",
+      "sourceText": "롯폰기역~오카치마치[210円]",
+      "amount": 210,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c43",
+      "date": "2025-02-03",
+      "sourceCell": "C43",
+      "sourceText": "교자, 차항 [1500円]",
+      "amount": 1500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c44",
+      "date": "2025-02-03",
+      "sourceCell": "C44",
+      "sourceText": "야키소바 [1500円]",
+      "amount": 1500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d34",
+      "date": "2025-02-04",
+      "sourceCell": "D34",
+      "sourceText": "규카츠 [2530円]",
+      "amount": 2530,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d35",
+      "date": "2025-02-04",
+      "sourceCell": "D35",
+      "sourceText": "우에노~이케부[180円]",
+      "amount": 180,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d36",
+      "date": "2025-02-04",
+      "sourceCell": "D36",
+      "sourceText": "이케부~시모키타자와[340円]",
+      "amount": 340,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d37",
+      "date": "2025-02-04",
+      "sourceCell": "D37",
+      "sourceText": "건식카레[1500円]",
+      "amount": 1500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d38",
+      "date": "2025-02-04",
+      "sourceCell": "D38",
+      "sourceText": "시모키타자와~시부야[140円]",
+      "amount": 140,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d39",
+      "date": "2025-02-04",
+      "sourceCell": "D39",
+      "sourceText": "시모키타자와투어[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d40",
+      "date": "2025-02-04",
+      "sourceCell": "D40",
+      "sourceText": "토리카츠[1500円]",
+      "amount": 1500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d41",
+      "date": "2025-02-04",
+      "sourceCell": "D41",
+      "sourceText": "야키토리[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d42",
+      "date": "2025-02-04",
+      "sourceCell": "D42",
+      "sourceText": "시부야~이케부[210円]",
+      "amount": 210,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d43",
+      "date": "2025-02-04",
+      "sourceCell": "D43",
+      "sourceText": "신주쿠를 간다면? [1000円]",
+      "amount": 1000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e34",
+      "date": "2025-02-05",
+      "sourceCell": "E34",
+      "sourceText": "이케부~오차노미즈[210円]",
+      "amount": 210,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e35",
+      "date": "2025-02-05",
+      "sourceCell": "E35",
+      "sourceText": "점심[1500円]예상",
+      "amount": 1500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e36",
+      "date": "2025-02-05",
+      "sourceCell": "E36",
+      "sourceText": "아키바투어[5000円]예상",
+      "amount": 5000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e37",
+      "date": "2025-02-05",
+      "sourceCell": "E37",
+      "sourceText": "저녁[2000円]예상",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e38",
+      "date": "2025-02-05",
+      "sourceCell": "E38",
+      "sourceText": "아키바~이케부[210円]",
+      "amount": 210,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f34",
+      "date": "2025-02-06",
+      "sourceCell": "F34",
+      "sourceText": "이케부~니노와[180円]",
+      "amount": 180,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f35",
+      "date": "2025-02-06",
+      "sourceCell": "F35",
+      "sourceText": "노면 열차 패스[400円]",
+      "amount": 400,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f36",
+      "date": "2025-02-06",
+      "sourceCell": "F36",
+      "sourceText": "대충 노면전차 여행[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f37",
+      "date": "2025-02-06",
+      "sourceCell": "F37",
+      "sourceText": "스가모 스시집 [2500円]",
+      "amount": 2500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f38",
+      "date": "2025-02-06",
+      "sourceCell": "F38",
+      "sourceText": "니시와세다~하라주쿠[180円]",
+      "amount": 180,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f39",
+      "date": "2025-02-06",
+      "sourceCell": "F39",
+      "sourceText": "대충 하라주쿠 여행[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f40",
+      "date": "2025-02-06",
+      "sourceCell": "F40",
+      "sourceText": "크래프트 콜라 [1500円]",
+      "amount": 1500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f41",
+      "date": "2025-02-06",
+      "sourceCell": "F41",
+      "sourceText": "하라주쿠 ~ 스테이크집[400円]",
+      "amount": 400,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f42",
+      "date": "2025-02-06",
+      "sourceCell": "F42",
+      "sourceText": "스테이크[2500円]",
+      "amount": 2500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f43",
+      "date": "2025-02-06",
+      "sourceCell": "F43",
+      "sourceText": "스테이크집~이케부[400円]",
+      "amount": 400,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f44",
+      "date": "2025-02-06",
+      "sourceCell": "F44",
+      "sourceText": "도삭면 [1300円]",
+      "amount": 1300,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g34",
+      "date": "2025-02-07",
+      "sourceCell": "G34",
+      "sourceText": "이케부~신주쿠[170円]",
+      "amount": 170,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g35",
+      "date": "2025-02-07",
+      "sourceCell": "G35",
+      "sourceText": "톤친칸[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g36",
+      "date": "2025-02-07",
+      "sourceCell": "G36",
+      "sourceText": "신주쿠공원[500円]",
+      "amount": 500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g37",
+      "date": "2025-02-07",
+      "sourceCell": "G37",
+      "sourceText": "신주쿠~닌텐도여행[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g38",
+      "date": "2025-02-07",
+      "sourceCell": "G38",
+      "sourceText": "하나미짱 라멘[1500円]",
+      "amount": 1500,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g39",
+      "date": "2025-02-07",
+      "sourceCell": "G39",
+      "sourceText": "시부야 ~ 이케부[210円]",
+      "amount": 210,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g40",
+      "date": "2025-02-07",
+      "sourceCell": "G40",
+      "sourceText": "라멘 이케부[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g41",
+      "date": "2025-02-07",
+      "sourceCell": "G41",
+      "sourceText": "몬자야키[2000円]",
+      "amount": 2000,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h34",
+      "date": "2025-02-08",
+      "sourceCell": "H34",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h35",
+      "date": "2025-02-08",
+      "sourceCell": "H35",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h36",
+      "date": "2025-02-08",
+      "sourceCell": "H36",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h37",
+      "date": "2025-02-08",
+      "sourceCell": "H37",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h38",
+      "date": "2025-02-08",
+      "sourceCell": "H38",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h39",
+      "date": "2025-02-08",
+      "sourceCell": "H39",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h40",
+      "date": "2025-02-08",
+      "sourceCell": "H40",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h41",
+      "date": "2025-02-08",
+      "sourceCell": "H41",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h42",
+      "date": "2025-02-08",
+      "sourceCell": "H42",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h43",
+      "date": "2025-02-08",
+      "sourceCell": "H43",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h44",
+      "date": "2025-02-08",
+      "sourceCell": "H44",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h45",
+      "date": "2025-02-08",
+      "sourceCell": "H45",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i34",
+      "date": "2025-02-09",
+      "sourceCell": "I34",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i35",
+      "date": "2025-02-09",
+      "sourceCell": "I35",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i36",
+      "date": "2025-02-09",
+      "sourceCell": "I36",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i37",
+      "date": "2025-02-09",
+      "sourceCell": "I37",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i38",
+      "date": "2025-02-09",
+      "sourceCell": "I38",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i39",
+      "date": "2025-02-09",
+      "sourceCell": "I39",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i40",
+      "date": "2025-02-09",
+      "sourceCell": "I40",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i41",
+      "date": "2025-02-09",
+      "sourceCell": "I41",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i42",
+      "date": "2025-02-09",
+      "sourceCell": "I42",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i43",
+      "date": "2025-02-09",
+      "sourceCell": "I43",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i44",
+      "date": "2025-02-09",
+      "sourceCell": "I44",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i45",
+      "date": "2025-02-09",
+      "sourceCell": "I45",
+      "sourceText": "에노시마 예상[900円]",
+      "amount": 900,
+      "currency": "JPY",
+      "kind": "estimate"
+    }
+  ],
+  "estimatePlaceholders": [
+    {
+      "id": "sheet1-estimate-b38",
+      "date": "2025-02-02",
+      "sourceCell": "B38",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b39",
+      "date": "2025-02-02",
+      "sourceCell": "B39",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b40",
+      "date": "2025-02-02",
+      "sourceCell": "B40",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b41",
+      "date": "2025-02-02",
+      "sourceCell": "B41",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b42",
+      "date": "2025-02-02",
+      "sourceCell": "B42",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b43",
+      "date": "2025-02-02",
+      "sourceCell": "B43",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b44",
+      "date": "2025-02-02",
+      "sourceCell": "B44",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b45",
+      "date": "2025-02-02",
+      "sourceCell": "B45",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-b46",
+      "date": "2025-02-02",
+      "sourceCell": "B46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c45",
+      "date": "2025-02-03",
+      "sourceCell": "C45",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-c46",
+      "date": "2025-02-03",
+      "sourceCell": "C46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d44",
+      "date": "2025-02-04",
+      "sourceCell": "D44",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d45",
+      "date": "2025-02-04",
+      "sourceCell": "D45",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-d46",
+      "date": "2025-02-04",
+      "sourceCell": "D46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e39",
+      "date": "2025-02-05",
+      "sourceCell": "E39",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e40",
+      "date": "2025-02-05",
+      "sourceCell": "E40",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e41",
+      "date": "2025-02-05",
+      "sourceCell": "E41",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e42",
+      "date": "2025-02-05",
+      "sourceCell": "E42",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e43",
+      "date": "2025-02-05",
+      "sourceCell": "E43",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e44",
+      "date": "2025-02-05",
+      "sourceCell": "E44",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e45",
+      "date": "2025-02-05",
+      "sourceCell": "E45",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-e46",
+      "date": "2025-02-05",
+      "sourceCell": "E46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f45",
+      "date": "2025-02-06",
+      "sourceCell": "F45",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-f46",
+      "date": "2025-02-06",
+      "sourceCell": "F46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g42",
+      "date": "2025-02-07",
+      "sourceCell": "G42",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g43",
+      "date": "2025-02-07",
+      "sourceCell": "G43",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g44",
+      "date": "2025-02-07",
+      "sourceCell": "G44",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g45",
+      "date": "2025-02-07",
+      "sourceCell": "G45",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-g46",
+      "date": "2025-02-07",
+      "sourceCell": "G46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-h46",
+      "date": "2025-02-08",
+      "sourceCell": "H46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    },
+    {
+      "id": "sheet1-estimate-i46",
+      "date": "2025-02-09",
+      "sourceCell": "I46",
+      "sourceText": "[0円]",
+      "amount": 0,
+      "currency": "JPY",
+      "kind": "estimate"
+    }
+  ],
+  "reservedPrices": [
+    {
+      "sourceCell": "B29",
+      "title": "스카이라이너",
+      "amount": 18000,
+      "currency": "KRW",
+      "sourceText": "스카이라이너 18000원"
+    },
+    {
+      "sourceCell": "B30",
+      "title": "시부야스카이",
+      "amount": 22000,
+      "currency": "KRW",
+      "sourceText": "시부야스카이 22000원"
+    }
+  ],
+  "recordedExpenses": [
+    {
+      "id": "sheet1-expense-b56",
+      "date": "2025-02-02",
+      "dateBasis": "expense-header",
+      "title": "에비앙",
+      "amount": 140,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [140],
+      "sourceCell": "B56",
+      "sourceText": "에비앙 140엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-b57",
+      "date": "2025-02-02",
+      "dateBasis": "expense-header",
+      "title": "물",
+      "amount": 100,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [100],
+      "sourceCell": "B57",
+      "sourceText": "물 100엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-b58",
+      "date": "2025-02-02",
+      "dateBasis": "expense-header",
+      "title": "바나나팩토리",
+      "amount": 1137,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [1137],
+      "sourceCell": "B58",
+      "sourceText": "바나나팩토리 1137엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-b59",
+      "date": "2025-02-02",
+      "dateBasis": "expense-header",
+      "title": "멘치카츠",
+      "amount": 350,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [350],
+      "sourceCell": "B59",
+      "sourceText": "멘치카츠 350엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-b60",
+      "date": "2025-02-02",
+      "dateBasis": "expense-header",
+      "title": "오타이산 A",
+      "amount": 668,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [668],
+      "sourceCell": "B60",
+      "sourceText": "오타이산 A 668엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-b61",
+      "date": "2025-02-02",
+      "dateBasis": "expense-header",
+      "title": "세븐일레븐",
+      "amount": 392,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [392],
+      "sourceCell": "B61",
+      "sourceText": "세븐일레븐 392엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c56",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "이치란 라멘",
+      "amount": 1230,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [1230],
+      "sourceCell": "C56",
+      "sourceText": "이치란 라멘 1230엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c57",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "편의점 대충",
+      "amount": 400,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [400],
+      "sourceCell": "C57",
+      "sourceText": "편의점 대충 400",
+      "isApproximate": true,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c58",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "에비앙",
+      "amount": 140,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [140],
+      "sourceCell": "C58",
+      "sourceText": "에비앙 140",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c59",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "규카츠",
+      "amount": 3670,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [3670],
+      "sourceCell": "C59",
+      "sourceText": "규카츠 3670",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c60",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "우에노-도쿄",
+      "amount": 167,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [167],
+      "sourceCell": "C60",
+      "sourceText": "우에노-도쿄 167",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c61",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "유니클로",
+      "amount": 5980,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [5980],
+      "sourceCell": "C61",
+      "sourceText": "유니클로 5980",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c62",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "긴자 - 다이몬",
+      "amount": 178,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [178],
+      "sourceCell": "C62",
+      "sourceText": "긴자 - 다이몬 178",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c63",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "아자부다이",
+      "amount": 1350,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1350],
+      "sourceCell": "C63",
+      "sourceText": "아자부다이 1350",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c64",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "아자부 - 나카오카치마치",
+      "amount": 209,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [209],
+      "sourceCell": "C64",
+      "sourceText": "아자부 - 나카오카치마치 209",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c65",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "야키소바",
+      "amount": 1400,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1400],
+      "sourceCell": "C65",
+      "sourceText": "야키소바 1400",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c66",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "물",
+      "amount": 181,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [181],
+      "sourceCell": "C66",
+      "sourceText": "물 181엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-c67",
+      "date": "2025-02-03",
+      "dateBasis": "expense-header",
+      "title": "샤워 타올",
+      "amount": 200,
+      "currency": "JPY",
+      "currencyBasis": "explicit",
+      "kind": "recorded-spend",
+      "amountTerms": [200],
+      "sourceCell": "C67",
+      "sourceText": "샤워 타올 200엔",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d56",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "물",
+      "amount": 181,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [181],
+      "sourceCell": "D56",
+      "sourceText": "물 181",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d57",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "코인라커",
+      "amount": 900,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [900],
+      "sourceCell": "D57",
+      "sourceText": "코인라커 900",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d58",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "츠케멘",
+      "amount": 1380,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1380],
+      "sourceCell": "D58",
+      "sourceText": "츠케멘 1380",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d59",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "개꿀잼구경비",
+      "amount": 1300,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1300],
+      "sourceCell": "D59",
+      "sourceText": "개꿀잼구경비 1300",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d60",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "우에노 - 이케부",
+      "amount": 178,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [178],
+      "sourceCell": "D60",
+      "sourceText": "우에노 - 이케부 178",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d61",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "편의점",
+      "amount": 654,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [654],
+      "sourceCell": "D61",
+      "sourceText": "편의점 654",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d62",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "이케부 - 시부야",
+      "amount": 178,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [178],
+      "sourceCell": "D62",
+      "sourceText": "이케부 - 시부야 178",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d63",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "시부야 토리카츠",
+      "amount": 1100,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1100],
+      "sourceCell": "D63",
+      "sourceText": "시부야 토리카츠 1100",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d64",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "시부야 - 이케부",
+      "amount": 178,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [178],
+      "sourceCell": "D64",
+      "sourceText": "시부야 - 이케부 178",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-d65",
+      "date": "2025-02-04",
+      "dateBasis": "expense-header",
+      "title": "맥날",
+      "amount": 1850,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1850],
+      "sourceCell": "D65",
+      "sourceText": "맥날 1850",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e56",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "편의점",
+      "amount": 1801,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1801],
+      "sourceCell": "E56",
+      "sourceText": "편의점 1801",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e57",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "이케부-시모키타자와",
+      "amount": 345,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [345],
+      "sourceCell": "E57",
+      "sourceText": "이케부-시모키타자와 345",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e58",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "시모키타자와 카레",
+      "amount": 1500,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1500],
+      "sourceCell": "E58",
+      "sourceText": "시모키타자와 카레 1500",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e59",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "시모키타자와 - 오차노미즈",
+      "amount": 345,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [345],
+      "sourceCell": "E59",
+      "sourceText": "시모키타자와 - 오차노미즈 345",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e60",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "애니메이트",
+      "amount": 880,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [880],
+      "sourceCell": "E60",
+      "sourceText": "애니메이트 880",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e61",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "크레인 및 마이마이",
+      "amount": 1200,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1200],
+      "sourceCell": "E61",
+      "sourceText": "크레인 및 마이마이 1200",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e62",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "저녁 치바짱",
+      "amount": 3130,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [3130],
+      "sourceCell": "E62",
+      "sourceText": "저녁 치바짱 3130",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-e63",
+      "date": "2025-02-05",
+      "dateBasis": "expense-header",
+      "title": "아키바-이케부",
+      "amount": 208,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [208],
+      "sourceCell": "E63",
+      "sourceText": "아키바-이케부 208",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f56",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "카페",
+      "amount": 1100,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1100],
+      "sourceCell": "F56",
+      "sourceText": "카페 1100",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f57",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "이케부-미나미센쥬",
+      "amount": 178,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [178],
+      "sourceCell": "F57",
+      "sourceText": "이케부-미나미센쥬 178",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f58",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "노면전차 1일패스",
+      "amount": 400,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [400],
+      "sourceCell": "F58",
+      "sourceText": "노면전차 1일패스 400",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f59",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "편의점",
+      "amount": 149,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [149],
+      "sourceCell": "F59",
+      "sourceText": "편의점 149",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f60",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "점심 초밥",
+      "amount": 4500,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [4500],
+      "sourceCell": "F60",
+      "sourceText": "점심 초밥 4500",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f61",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "오쓰카 - 이케부",
+      "amount": 146,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [146],
+      "sourceCell": "F61",
+      "sourceText": "오쓰카 - 이케부 146",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f62",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "돈키",
+      "amount": 636,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [636],
+      "sourceCell": "F62",
+      "sourceText": "돈키 636",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f63",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "면세돈키",
+      "amount": 10871,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [10871],
+      "sourceCell": "F63",
+      "sourceText": "면세돈키 10871",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f64",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "이케부 - 메구로구",
+      "amount": 203,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [203],
+      "sourceCell": "F64",
+      "sourceText": "이케부 - 메구로구 203",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f65",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "메구로구역 버스",
+      "amount": 230,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [230],
+      "sourceCell": "F65",
+      "sourceText": "메구로구역 버스 230",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f66",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "메구로구 - 이케부",
+      "amount": 203,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [203],
+      "sourceCell": "F66",
+      "sourceText": "메구로구 - 이케부 203",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f67",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "리베라 스테이크",
+      "amount": 3100,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [3100],
+      "sourceCell": "F67",
+      "sourceText": "리베라 스테이크 3100",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f68",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "슈퍼",
+      "amount": 803,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [803],
+      "sourceCell": "F68",
+      "sourceText": "슈퍼 803",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-f69",
+      "date": "2025-02-06",
+      "dateBasis": "expense-header",
+      "title": "도삭면",
+      "amount": 1150,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1150],
+      "sourceCell": "F69",
+      "sourceText": "도삭면 1150",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g56",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "이케부 - 신주쿠",
+      "amount": 167,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [167],
+      "sourceCell": "G56",
+      "sourceText": "이케부 - 신주쿠 167",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g57",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "톤친칸",
+      "amount": 1500,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1500],
+      "sourceCell": "G57",
+      "sourceText": "톤친칸 1500",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g58",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "크레인",
+      "amount": 400,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [400],
+      "sourceCell": "G58",
+      "sourceText": "크레인 400",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g59",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "신주쿠 - 하라주쿠",
+      "amount": 146,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [146],
+      "sourceCell": "G59",
+      "sourceText": "신주쿠 - 하라주쿠 146",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g60",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "수제 콜라",
+      "amount": 600,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [600],
+      "sourceCell": "G60",
+      "sourceText": "수제 콜라 600",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g61",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "수제 콜라 자판기",
+      "amount": 720,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [720],
+      "sourceCell": "G61",
+      "sourceText": "수제 콜라 자판기 720(이코카)",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g62",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "카페",
+      "amount": 1500,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1500],
+      "sourceCell": "G62",
+      "sourceText": "카페 1500",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g63",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "시부야 파르코",
+      "amount": 880,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [880],
+      "sourceCell": "G63",
+      "sourceText": "시부야 파르코  880",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g64",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "시부야 - 이케부",
+      "amount": 178,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [178],
+      "sourceCell": "G64",
+      "sourceText": "시부야 - 이케부 178",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g65",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "세븐",
+      "amount": 865,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [865],
+      "sourceCell": "G65",
+      "sourceText": "세븐 865",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g66",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "저녁",
+      "amount": 2230,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [2230],
+      "sourceCell": "G66",
+      "sourceText": "저녁 2230",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g67",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "돈키",
+      "amount": 3336,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1128, 2208],
+      "sourceCell": "G67",
+      "sourceText": "돈키 1128 + 2208",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g68",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "편의점",
+      "amount": 707,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [707],
+      "sourceCell": "G68",
+      "sourceText": "편의점 707",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-g69",
+      "date": "2025-02-07",
+      "dateBasis": "expense-header",
+      "title": "수하물 무게 추가",
+      "amount": 2300,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [2300],
+      "sourceCell": "G69",
+      "sourceText": "수하물 무게 추가 2300",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h56",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "이케부 - 오후나",
+      "amount": 945,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [945],
+      "sourceCell": "H56",
+      "sourceText": "이케부 - 오후나 945",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h57",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "오후나 - 쇼난 에노시마 모노레일",
+      "amount": 320,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [320],
+      "sourceCell": "H57",
+      "sourceText": "오후나 - 쇼난 에노시마 모노레일 320",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h58",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "점심",
+      "amount": 1550,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1550],
+      "sourceCell": "H58",
+      "sourceText": "점심 1550",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h59",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "크레페",
+      "amount": 750,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [750],
+      "sourceCell": "H59",
+      "sourceText": "크레페 750",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h60",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "온천",
+      "amount": 1500,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1500],
+      "sourceCell": "H60",
+      "sourceText": "온천 1500",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h61",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "우유 2개",
+      "amount": 300,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [300],
+      "sourceCell": "H61",
+      "sourceText": "우유 2개 300",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h62",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "세븐",
+      "amount": 213,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [213],
+      "sourceCell": "H62",
+      "sourceText": "세븐 213",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h63",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "저녁",
+      "amount": 1430,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1430],
+      "sourceCell": "H63",
+      "sourceText": "저녁 1430",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h64",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "일루미네이션",
+      "amount": 500,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [500],
+      "sourceCell": "H64",
+      "sourceText": "일루미네이션 500",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h65",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "콘스프",
+      "amount": 150,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [150],
+      "sourceCell": "H65",
+      "sourceText": "콘스프 150",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h66",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "아이스크림",
+      "amount": 184,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [184],
+      "sourceCell": "H66",
+      "sourceText": "아이스크림 184",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-h67",
+      "date": "2025-02-08",
+      "dateBasis": "expense-header",
+      "title": "온천 왕복",
+      "amount": 440,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [440],
+      "sourceCell": "H67",
+      "sourceText": "온천 왕복 440",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i56",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "에노시마 - 후지사와",
+      "amount": 167,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [167],
+      "sourceCell": "I56",
+      "sourceText": "에노시마 - 후지사와 167",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i57",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "후지사와 가와사키",
+      "amount": 594,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [594],
+      "sourceCell": "I57",
+      "sourceText": "후지사와 가와사키 594",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i58",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "코인라커",
+      "amount": 700,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [700],
+      "sourceCell": "I58",
+      "sourceText": "코인라커 700",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i59",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "세븐",
+      "amount": 420,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [420],
+      "sourceCell": "I59",
+      "sourceText": "세븐 420",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i60",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "점심 마파두부",
+      "amount": 1180,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1180],
+      "sourceCell": "I60",
+      "sourceText": "점심 마파두부 1180",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i61",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "오락",
+      "amount": 200,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [200],
+      "sourceCell": "I61",
+      "sourceText": "오락 200",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i62",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "GU 옷",
+      "amount": 1290,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [1290],
+      "sourceCell": "I62",
+      "sourceText": "GU 옷 1290",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i63",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "웬디스(나, 한)",
+      "amount": 2660,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [2660],
+      "sourceCell": "I63",
+      "sourceText": "웬디스(나, 한) 2660",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i65",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "애니메이트",
+      "amount": 440,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [440],
+      "sourceCell": "I65",
+      "sourceText": "애니메이트 440",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i66",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "야키니꾸",
+      "amount": 3000,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [3000],
+      "sourceCell": "I66",
+      "sourceText": "야키니꾸 3000",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    },
+    {
+      "id": "sheet1-expense-i67",
+      "date": "2025-02-09",
+      "dateBasis": "grid-column",
+      "title": "뽑기",
+      "amount": 300,
+      "currency": "JPY",
+      "currencyBasis": "inferred-from-jpy-ledger",
+      "kind": "recorded-spend",
+      "amountTerms": [300],
+      "sourceCell": "I67",
+      "sourceText": "뽑기 300...",
+      "isApproximate": false,
+      "payerParticipantId": null,
+      "consumerParticipantIds": null
+    }
+  ],
+  "receivedReimbursements": [
+    {
+      "id": "sheet1-reimbursement-i64",
+      "date": "2025-02-09",
+      "sourceCell": "I64",
+      "sourceText": "12000 임한 원화 지급받음",
+      "amount": 12000,
+      "currency": "KRW",
+      "kind": "received-reimbursement",
+      "linkedExpenseId": null
+    }
+  ],
+  "referenceLists": [
+    {
+      "label": "숙소 후보",
+      "items": [
+        {
+          "sourceCell": "C29",
+          "text": "우에노 캡슐 호텔",
+          "url": "https://maps.app.goo.gl/Ef7KeqCjHt9ayxx8A"
+        },
+        {
+          "sourceCell": "C30",
+          "text": "이케부 숙소",
+          "url": "https://maps.app.goo.gl/sKQGKnBjFVRwKWCT9"
+        },
+        {
+          "sourceCell": "C31",
+          "text": "에노시마 호텔",
+          "url": "https://maps.app.goo.gl/SryM4imZKzSQhrBG9"
+        }
+      ]
+    },
+    {
+      "label": "액티비티 후보",
+      "items": [
+        {
+          "sourceCell": "D29",
+          "text": "에노시마 온천",
+          "url": "https://maps.app.goo.gl/yLDxxcUCvY336Snh7"
+        }
+      ]
+    },
+    {
+      "label": "식당 후보",
+      "items": [
+        {
+          "sourceCell": "E29",
+          "text": "오차노미즈 라멘집",
+          "url": "https://maps.app.goo.gl/qF6pchvwLZhNS98h9"
+        },
+        {
+          "sourceCell": "E30",
+          "text": "아키바 몬자야끼",
+          "url": "https://maps.app.goo.gl/uWE9Py4YNFkwNfVZ6"
+        },
+        {
+          "sourceCell": "E31",
+          "text": "아키바 치킨라멘",
+          "url": "https://maps.app.goo.gl/3JPVQKpsnLave3VQ9"
+        },
+        {
+          "sourceCell": "F29",
+          "text": "오카치마치 교자집",
+          "url": "https://maps.app.goo.gl/2GLf2x1risvauBCZ8"
+        },
+        {
+          "sourceCell": "F30",
+          "text": "오카치마치 야키소바집",
+          "url": "https://maps.app.goo.gl/fTzvs4RAoXw6BCJM8"
+        },
+        {
+          "sourceCell": "F31",
+          "text": "스카이트리 콜라보 카페?",
+          "url": null
+        }
+      ]
+    },
+    {
+      "label": "간식 후보",
+      "items": [
+        {
+          "sourceCell": "G29",
+          "text": "간식 - 크래프트 콜라[하라주쿠]",
+          "url": "https://maps.app.goo.gl/zSmhdz9fi2Q1Re6N7"
+        },
+        {
+          "sourceCell": "G30",
+          "text": "간식 - 바나나카페",
+          "url": "https://maps.app.goo.gl/nTp77esxHQEtzjtJ9"
+        },
+        {
+          "sourceCell": "G31",
+          "text": "간식 - 멘치카츠(센소지)",
+          "url": "https://maps.app.goo.gl/zjTM4cxrqKhozzh48"
+        }
+      ]
+    },
+    {
+      "label": "탈락",
+      "items": [
+        {
+          "sourceCell": "I29",
+          "text": "저녁 - 카모라멘[오카치마치]",
+          "url": "https://maps.app.goo.gl/fZ1n3ViJZWuH13n77"
+        }
+      ]
+    },
+    {
+      "label": "시간표 밖의 장소 메모",
+      "items": [
+        {
+          "sourceCell": "L13",
+          "text": "이케부 오사카식 오코노미야끼, 몬자야끼",
+          "url": "https://maps.app.goo.gl/aSwuoBHUpS9Byitw9"
+        },
+        {
+          "sourceCell": "L16",
+          "text": "카모라멘[오카치마치]",
+          "url": "https://maps.app.goo.gl/fZ1n3ViJZWuH13n77"
+        },
+        {
+          "sourceCell": "L17",
+          "text": "간식 - 바나나카페",
+          "url": "https://maps.app.goo.gl/nTp77esxHQEtzjtJ9"
+        },
+        {
+          "sourceCell": "L18",
+          "text": "간식 - 멘치카츠(센소지)",
+          "url": "https://maps.app.goo.gl/zjTM4cxrqKhozzh48"
+        },
+        {
+          "sourceCell": "L19",
+          "text": "저녁 - 라멘 [시부야]",
+          "url": "https://maps.app.goo.gl/E3aaU6B3SFGBgKdc7"
+        }
+      ]
+    }
+  ],
+  "reconciliation": {
+    "basis": "상세 셀 금액을 그대로 더한 검산값. 오류를 고쳤거나 최종 정산을 확정한 금액이 아님.",
+    "actualDaily": [
+      {
+        "date": "2025-02-02",
+        "detailCount": 6,
+        "detailSumJPY": 2787,
+        "sourceTotalCell": "B63",
+        "sourceTotalJPY": 2787,
+        "differenceJPY": 0
+      },
+      {
+        "date": "2025-02-03",
+        "detailCount": 12,
+        "detailSumJPY": 15105,
+        "sourceTotalCell": "C69",
+        "sourceTotalJPY": 15105,
+        "differenceJPY": 0
+      },
+      {
+        "date": "2025-02-04",
+        "detailCount": 10,
+        "detailSumJPY": 7899,
+        "sourceTotalCell": "D69",
+        "sourceTotalJPY": 7899,
+        "differenceJPY": 0
+      },
+      {
+        "date": "2025-02-05",
+        "detailCount": 8,
+        "detailSumJPY": 9409,
+        "sourceTotalCell": "E69",
+        "sourceTotalJPY": 8909,
+        "differenceJPY": 500
+      },
+      {
+        "date": "2025-02-06",
+        "detailCount": 14,
+        "detailSumJPY": 23669,
+        "sourceTotalCell": "F71",
+        "sourceTotalJPY": 23269,
+        "differenceJPY": 400
+      },
+      {
+        "date": "2025-02-07",
+        "detailCount": 14,
+        "detailSumJPY": 15529,
+        "sourceTotalCell": "G71",
+        "sourceTotalJPY": 15544,
+        "differenceJPY": -15
+      },
+      {
+        "date": "2025-02-08",
+        "detailCount": 12,
+        "detailSumJPY": 8282,
+        "sourceTotalCell": "H71",
+        "sourceTotalJPY": 8282,
+        "differenceJPY": 0
+      },
+      {
+        "date": "2025-02-09",
+        "detailCount": 11,
+        "detailSumJPY": 10951,
+        "sourceTotalCell": "I71",
+        "sourceTotalJPY": 9751,
+        "differenceJPY": 1200
+      }
+    ],
+    "actualDetailSumJPY": 93631,
+    "sourceDailyTotalsSumJPY": 91546,
+    "sourceGrandTotal": {
+      "sourceCell": "B72",
+      "amount": 92146,
+      "currency": "JPY"
+    },
+    "estimatedDetailSumJPY": 83680,
+    "sourceEstimatedGrandTotal": {
+      "sourceCell": "B49",
+      "amount": 93680,
+      "currency": "JPY",
+      "unlabelledAdditionalAmount": 10000
+    },
+    "unclassifiedSummary": [
+      {
+        "sourceCell": "B53",
+        "value": 5181
+      },
+      {
+        "sourceCell": "C53",
+        "value": 88010
+      },
+      {
+        "sourceCell": "D53",
+        "value": 1882
+      },
+      {
+        "sourceCell": "E53",
+        "value": "총액 95073"
+      }
+    ]
+  },
+  "issues": [
+    {
+      "code": "YEAR_MISMATCH",
+      "sourceCells": ["B2:I2"],
+      "detail": "날짜 셀은 2024년, 문서 제목과 요일은 2025년. 샘플은 2025년을 채택."
+    },
+    {
+      "code": "RETURN_NEXT_DAY",
+      "sourceCells": ["I21:I25"],
+      "detail": "2/9 열에 2/10 귀국편이 있음. 샘플에서는 2025-02-10 01:55~04:40."
+    },
+    {
+      "code": "CHANGE_NOTE_NOT_APPLIED",
+      "sourceCells": ["B19:B22"],
+      "detail": "지연 후 일정 변경 메모는 계획 일정과 별도로 보존하고 자동 덮어쓰지 않음."
+    },
+    {
+      "code": "FRAGMENTED_TEXT",
+      "sourceCells": ["I14", "I16:I17"],
+      "detail": "원문은 자 / 행 / 동. 단어를 보충하지 않고 검토 대상으로 보존."
+    },
+    {
+      "code": "DETAIL_TOTAL_MISMATCH",
+      "sourceCells": ["E62", "E69", "F58", "F71", "G65", "G71", "I63", "I71", "B72"],
+      "detail": "일별·전체 합계와 상세 셀 금액이 다름. reconciliation 참조."
+    },
+    {
+      "code": "REIMBURSEMENT_NOT_SPEND",
+      "sourceCells": ["I64"],
+      "detail": "12,000 KRW를 지급받았다는 메모. 지출에 합산하지 않으며 연결 지출 미확정."
+    },
+    {
+      "code": "UNLABELLED_SUMMARY",
+      "sourceCells": ["B53:E53", "B49"],
+      "detail": "상단 요약의 의미·통화, 예상 합계에 추가한 10,000 JPY의 용도가 명시되지 않음."
+    }
+  ]
+}

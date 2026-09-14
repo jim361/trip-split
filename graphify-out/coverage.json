@@ -1,0 +1,27 @@
+{
+  "code": {
+    "expected": 197,
+    "represented": 192,
+    "missing": [
+      ".codex/hooks.json",
+      "backend/firestore.indexes.json",
+      "docs/fixtures/tokyo-2025-sheet1/report-fixture.json",
+      "docs/fixtures/tokyo-2025-sheet1/source-cells.json",
+      "firebase.json"
+    ]
+  },
+  "document": {
+    "expected": 50,
+    "represented": 50,
+    "missing": []
+  },
+  "image": {
+    "expected": 79,
+    "represented": 79,
+    "missing": []
+  },
+  "rules": {
+    "expected": 1,
+    "represented": 1
+  }
+}
