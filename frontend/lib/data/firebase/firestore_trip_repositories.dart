@@ -238,7 +238,9 @@ final class FirestoreTripRepositories
               retryable: false,
             );
           }
-          previousItineraryItemId = _optionalText(old.data()!['itineraryItemId']);
+          previousItineraryItemId = _optionalText(
+            old.data()!['itineraryItemId'],
+          );
         }
         if (previousItineraryItemId != itineraryItemId) {
           if (itineraryItemId != null) {
@@ -252,7 +254,10 @@ final class FirestoreTripRepositories
         }
         transaction.set(ref, {
           ...data,
-          if (old != null) 'createdBy': old.data()!['createdBy'] else 'createdBy': uid,
+          if (old != null)
+            'createdBy': old.data()!['createdBy']
+          else
+            'createdBy': uid,
           if (old != null)
             'createdAt': old.data()!['createdAt']
           else
@@ -565,7 +570,9 @@ final class FirestoreTripRepositories
               retryable: false,
             );
           }
-          draft.checkItem(itineraryItemFromFirestore(tripId, snapshot.id, data));
+          draft.checkItem(
+            itineraryItemFromFirestore(tripId, snapshot.id, data),
+          );
         }
         for (final (order, reference) in references.indexed) {
           transaction.update(reference, {
@@ -689,7 +696,11 @@ final class FirestoreTripRepositories
       return [
         for (final snapshot in snapshots)
           switch (snapshot.data()) {
-            final data? => itineraryItemFromFirestore(tripId, snapshot.id, data),
+            final data? => itineraryItemFromFirestore(
+              tripId,
+              snapshot.id,
+              data,
+            ),
             null => null,
           },
       ];

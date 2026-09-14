@@ -270,10 +270,10 @@
     "semantic_hash": "0c1d88d19df9ec18bdda7a0f5db67445"
   },
   "frontend/lib/data/firebase/firestore_trip_repositories.dart": {
-    "mtime": 1789398182.597373,
-    "seen": 1789399977.6160169,
-    "ast_hash": "271650731c35dcc404779f6030890938",
-    "semantic_hash": "271650731c35dcc404779f6030890938"
+    "mtime": 1789400626.69126,
+    "seen": 1789400991.2900388,
+    "ast_hash": "eb7cb053ad75d7a8ef17d0a498915366",
+    "semantic_hash": "eb7cb053ad75d7a8ef17d0a498915366"
   },
   "frontend/lib/data/mock/in_memory_trip_repositories.dart": {
     "mtime": 1789390965.5499794,
@@ -942,10 +942,10 @@
     "semantic_hash": "bdd2532297619bcfea68d84f2f215cc6"
   },
   "frontend/test/firestore_itinerary_mapping_test.dart": {
-    "mtime": 1789398589.8786385,
-    "seen": 1789399977.6160169,
-    "ast_hash": "2ff727c20294e1cd2fdae31382c3047c",
-    "semantic_hash": "2ff727c20294e1cd2fdae31382c3047c"
+    "mtime": 1789400626.9802265,
+    "seen": 1789400991.2900388,
+    "ast_hash": "74e64db95f147d077208f7dccbbd3bba",
+    "semantic_hash": "74e64db95f147d077208f7dccbbd3bba"
   },
   "frontend/test/itinerary_edit_page_test.dart": {
     "mtime": 1789380538.733651,
@@ -1056,111 +1056,111 @@
     "semantic_hash": "75fdd5fb558a605e67e9d8dc0ee9ff32"
   },
   ".github/ISSUE_TEMPLATE/domain-task.yml": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6379354,
+    "seen": 1789400991.2900388,
     "ast_hash": "3eb487b09809e5240f5c8046527471f9",
     "semantic_hash": "3eb487b09809e5240f5c8046527471f9"
   },
   ".github/workflows/ci.yml": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.638936,
+    "seen": 1789400991.2900388,
     "ast_hash": "8475f7525c243f3765a9960657fbe342",
     "semantic_hash": "8475f7525c243f3765a9960657fbe342"
   },
   ".github/workflows/deploy-pages.yml": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.638936,
+    "seen": 1789400991.2900388,
     "ast_hash": "86a353acab0c292958f820e50bac9952",
     "semantic_hash": "86a353acab0c292958f820e50bac9952"
   },
   "AGENTS.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6400495,
+    "seen": 1789400991.2900388,
     "ast_hash": "b1ccf26ec83f5975df3d0c275687ba97",
     "semantic_hash": "b1ccf26ec83f5975df3d0c275687ba97"
   },
   "MarkDown/decision_history.md": {
     "mtime": 1789384342.2656672,
-    "seen": 1789388465.1430016,
-    "ast_hash": "c8ec9cbae9f9322dc749c42e5fef8328",
+    "seen": 1789400991.2900388,
+    "ast_hash": "b5ec57c0700e903c268f394ae3d8ee71",
     "semantic_hash": "b5ec57c0700e903c268f394ae3d8ee71"
   },
   "MarkDown/design.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6410532,
+    "seen": 1789400991.2900388,
     "ast_hash": "734435636ed3927ed9945b909aded1f8",
     "semantic_hash": "734435636ed3927ed9945b909aded1f8"
   },
   "MarkDown/firebase_feature_evolution.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6420536,
+    "seen": 1789400991.2900388,
     "ast_hash": "84bd68376e6ffb27ca99b99a0b1becc5",
     "semantic_hash": "84bd68376e6ffb27ca99b99a0b1becc5"
   },
   "MarkDown/product.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6420536,
+    "seen": 1789400991.2900388,
     "ast_hash": "8718f74e1e26c26b17dc3b5cb231f980",
     "semantic_hash": "8718f74e1e26c26b17dc3b5cb231f980"
   },
   "MarkDown/requirements.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "7ace7ea71dd0ea87d39010b2033e3b18",
+    "seen": 1789400991.2900388,
+    "ast_hash": "0e5f2b532b40008d35edb7cb88a75abb",
     "semantic_hash": "0e5f2b532b40008d35edb7cb88a75abb"
   },
   "MarkDown/stitch_prompts.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6430535,
+    "seen": 1789400991.2900388,
     "ast_hash": "97831b440de89ee10ba284bcc3c57029",
     "semantic_hash": "97831b440de89ee10ba284bcc3c57029"
   },
   "MarkDown/structure.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.644054,
+    "seen": 1789400991.2900388,
     "ast_hash": "61d4a83f3142820b0b17fae0f01d2bf2",
     "semantic_hash": "61d4a83f3142820b0b17fae0f01d2bf2"
   },
   "MarkDown/task/task_function1_project_setup.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.644054,
+    "seen": 1789400991.2900388,
     "ast_hash": "89bce91dcdcd01a62a902df7a5f73796",
     "semantic_hash": "89bce91dcdcd01a62a902df7a5f73796"
   },
   "MarkDown/task/task_function2_trip_share.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "99f3bd195a2d2c85f178b5c4703d764e",
+    "seen": 1789400991.2900388,
+    "ast_hash": "fdf8b1cabe6745d478c730a4aa7bbecf",
     "semantic_hash": "fdf8b1cabe6745d478c730a4aa7bbecf"
   },
   "MarkDown/task/task_function3_places.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6450534,
+    "seen": 1789400991.2900388,
     "ast_hash": "bbc79613571edec8d56c77ae9eec58f7",
     "semantic_hash": "bbc79613571edec8d56c77ae9eec58f7"
   },
   "MarkDown/task/task_function4_itinerary.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "bb0441719733d96b56d14e2b4ad4805c",
+    "seen": 1789400991.2900388,
+    "ast_hash": "be59f03eaefadbd13a0d6190172ec70c",
     "semantic_hash": "be59f03eaefadbd13a0d6190172ec70c"
   },
   "MarkDown/task/task_function5_map.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6450534,
+    "seen": 1789400991.2900388,
     "ast_hash": "1b6ff2998bdc361fcbab39a5b016f84c",
     "semantic_hash": "1b6ff2998bdc361fcbab39a5b016f84c"
   },
   "MarkDown/task/task_function6_settlement.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "ef0b297a61913d8c38991954ccb9745b",
+    "seen": 1789400991.2900388,
+    "ast_hash": "7afd8082f894a64d66085abeb8f89edb",
     "semantic_hash": "7afd8082f894a64d66085abeb8f89edb"
   },
   "MarkDown/task/task_function7_ocr.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "54cb3c4f35829d5a30acab5de8b113c4",
+    "seen": 1789400991.2900388,
+    "ast_hash": "08db17b8b80df9056a953746cda40b08",
     "semantic_hash": "08db17b8b80df9056a953746cda40b08"
   },
   "MarkDown/task/task_function8_backup_export.md": {
@@ -1171,14 +1171,14 @@
   },
   "MarkDown/task/task_function9_polish_release.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "951b3c1e055151e8c631a32bd52d0eee",
+    "seen": 1789400991.2900388,
+    "ast_hash": "c8bedc0862ca42ce0a710be000c4f8c1",
     "semantic_hash": "c8bedc0862ca42ce0a710be000c4f8c1"
   },
   "MarkDown/task/tasks.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "2bb29228884f6b928a29b64a507df4d5",
+    "seen": 1789400991.2900388,
+    "ast_hash": "acf81919318e3788336d9a035f431b90",
     "semantic_hash": "acf81919318e3788336d9a035f431b90"
   },
   "MarkDown/tech.md": {
@@ -1200,8 +1200,8 @@
     "semantic_hash": "5393e2f3ed1a241d9e27cdff76ea77b4"
   },
   "design.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6581297,
+    "seen": 1789400991.2900388,
     "ast_hash": "4e5ac055a1e053c25caaedb2053422af",
     "semantic_hash": "4e5ac055a1e053c25caaedb2053422af"
   },
@@ -1213,8 +1213,8 @@
   },
   "docs/android-release-checklist.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "94f84c3443197bd7830a0235162f8a4d",
+    "seen": 1789400991.2900388,
+    "ast_hash": "9d5e17d76c82f9271ebc30e99d150ec8",
     "semantic_hash": "9d5e17d76c82f9271ebc30e99d150ec8"
   },
   "docs/development-kickoff.md": {
@@ -1225,8 +1225,8 @@
   },
   "docs/development-update-2026-09-14.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "4a17a02b11ff3d00cdff5bbe8fa53511",
+    "seen": 1789400991.2900388,
+    "ast_hash": "5fa807e164f62b51acfecf4378739ed7",
     "semantic_hash": "5fa807e164f62b51acfecf4378739ed7"
   },
   "docs/firebase-api-contract.md": {
@@ -1236,15 +1236,15 @@
     "semantic_hash": "3a819db9d7c18ada155a67340b74af17"
   },
   "docs/fixtures/tokyo-2025-sheet1/README.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6611295,
+    "seen": 1789400991.2900388,
     "ast_hash": "8a28951005d777e40121b7a7d5558583",
     "semantic_hash": "8a28951005d777e40121b7a7d5558583"
   },
   "docs/flutter-android-migration.md": {
     "mtime": 1789384342.2678516,
-    "seen": 1789388465.1430016,
-    "ast_hash": "3d6ceb4753d6137054c2f5e2fd63679d",
+    "seen": 1789400991.2900388,
+    "ast_hash": "ff36a79977fe4e29801a14a5d19f50b8",
     "semantic_hash": "ff36a79977fe4e29801a14a5d19f50b8"
   },
   "docs/frontend-api-handoff.md": {
@@ -1254,32 +1254,32 @@
     "semantic_hash": "bb54accaac7b8611dac9d2984d0475f4"
   },
   "docs/itinerary-map.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6631298,
+    "seen": 1789400991.2900388,
     "ast_hash": "07be11b195f2722d5e5b5147a1e947be",
     "semantic_hash": "07be11b195f2722d5e5b5147a1e947be"
   },
   "docs/mockup-review.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6631298,
+    "seen": 1789400991.2900388,
     "ast_hash": "625736ef6c9fe4845050cdeedaf6fbe4",
     "semantic_hash": "625736ef6c9fe4845050cdeedaf6fbe4"
   },
   "docs/platform-handoff.md": {
     "mtime": 1789384342.2749276,
-    "seen": 1789388465.1430016,
-    "ast_hash": "d898ac7b2f2d6b29ae5fdecac682f2e8",
+    "seen": 1789400991.2900388,
+    "ast_hash": "2a1119abb980375e19ad3cc361e66a55",
     "semantic_hash": "2a1119abb980375e19ad3cc361e66a55"
   },
   "docs/project-scope-review.md": {
     "mtime": 1789384342.2749276,
-    "seen": 1789388465.1430016,
-    "ast_hash": "b5f175ed4783186833cf615d8eee19f7",
+    "seen": 1789400991.2900388,
+    "ast_hash": "f08ed1e37fb893aee4590b30280c4c97",
     "semantic_hash": "f08ed1e37fb893aee4590b30280c4c97"
   },
   "docs/settlement-receipts.md": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "806eba52013b44b747df5634072cd755",
     "semantic_hash": "806eba52013b44b747df5634072cd755"
   },
@@ -1296,14 +1296,14 @@
     "semantic_hash": "030776c042d4a367c0971880108c1c26"
   },
   "frontend/analysis_options.yaml": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "6d8f6971c39ae322cb4c36bc511d2523",
     "semantic_hash": "6d8f6971c39ae322cb4c36bc511d2523"
   },
   "frontend/index.html": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6857617,
+    "seen": 1789400991.2900388,
     "ast_hash": "3fb8b69be4f6380d4682838cbf1ed93c",
     "semantic_hash": "3fb8b69be4f6380d4682838cbf1ed93c"
   },
@@ -1314,171 +1314,171 @@
     "semantic_hash": "d590b7eb6ba79ec5fc35367d75df383d"
   },
   "docs/mockups/itinerary-map-expanded.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6641302,
+    "seen": 1789400991.2900388,
     "ast_hash": "12de5d8cb3ff90a8b4d3974272e73466",
     "semantic_hash": "12de5d8cb3ff90a8b4d3974272e73466"
   },
   "docs/mockups/itinerary-map-mobile.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6641302,
+    "seen": 1789400991.2900388,
     "ast_hash": "fec4b395ecbeb056592cb40b4bf7acbd",
     "semantic_hash": "fec4b395ecbeb056592cb40b4bf7acbd"
   },
   "docs/mockups/tokyo-cost-mobile.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.66513,
+    "seen": 1789400991.2900388,
     "ast_hash": "cf470aa8e9fe68c007522f2bdab6538f",
     "semantic_hash": "cf470aa8e9fe68c007522f2bdab6538f"
   },
   "docs/mockups/tokyo-create-form-mobile.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.66513,
+    "seen": 1789400991.2900388,
     "ast_hash": "b910c8f9e76844aed456959f6fde8bd2",
     "semantic_hash": "b910c8f9e76844aed456959f6fde8bd2"
   },
   "docs/mockups/tokyo-create-mobile.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6661298,
+    "seen": 1789400991.2900388,
     "ast_hash": "9ab26d1879c71243b41ee41c910bbaf8",
     "semantic_hash": "9ab26d1879c71243b41ee41c910bbaf8"
   },
   "docs/mockups/tokyo-itinerary-mobile.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.6661298,
+    "seen": 1789400991.2900388,
     "ast_hash": "9344e094dce6b739fe663edc8533c117",
     "semantic_hash": "9344e094dce6b739fe663edc8533c117"
   },
   "docs/mockups/tokyo-preparation-mobile.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.66713,
+    "seen": 1789400991.2900388,
     "ast_hash": "db8510f8d0bfab7b1120e5e769989527",
     "semantic_hash": "db8510f8d0bfab7b1120e5e769989527"
   },
   "docs/screenshots/2026-09-14/01-places-search.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.66813,
+    "seen": 1789400991.2900388,
     "ast_hash": "1a6e3343a8f32432368c663b6a790016",
     "semantic_hash": "1a6e3343a8f32432368c663b6a790016"
   },
   "docs/screenshots/2026-09-14/02-place-edit.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.66913,
+    "seen": 1789400991.2900388,
     "ast_hash": "8d717953f085f2f8c5ac6bbe3ce713fb",
     "semantic_hash": "8d717953f085f2f8c5ac6bbe3ce713fb"
   },
   "docs/screenshots/2026-09-14/03-preparation.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.66913,
+    "seen": 1789400991.2900388,
     "ast_hash": "cfa45bc40ef256ba22bec665dfa2c03b",
     "semantic_hash": "cfa45bc40ef256ba22bec665dfa2c03b"
   },
   "docs/screenshots/2026-09-14/04-reservation-edit.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "9fab9862de50806abc964940560ee951",
     "semantic_hash": "9fab9862de50806abc964940560ee951"
   },
   "docs/screenshots/2026-09-14/05-participants.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "f80307a37194ce3faf4c68b9635775ef",
     "semantic_hash": "f80307a37194ce3faf4c68b9635775ef"
   },
   "docs/screenshots/2026-09-14/06-trip-settings.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "90ca92e7f77d37a716f16fd1280b9982",
     "semantic_hash": "90ca92e7f77d37a716f16fd1280b9982"
   },
   "docs/screenshots/2026-09-14/07-receipt-image.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "8e6cabf88d1d6ab8df0f2af87a673ff6",
     "semantic_hash": "8e6cabf88d1d6ab8df0f2af87a673ff6"
   },
   "docs/screenshots/2026-09-14/08-receipt-review.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "68c915a56e2688c8a2f70ca4d38629c4",
     "semantic_hash": "68c915a56e2688c8a2f70ca4d38629c4"
   },
   "docs/screenshots/2026-09-14/09-receipt-item.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "23b06b22815f6c6220e083cde88f82d7",
     "semantic_hash": "23b06b22815f6c6220e083cde88f82d7"
   },
   "docs/screenshots/2026-09-14/10-receipt-allocations.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "e65167af946e592bac18385a1ebb3690",
     "semantic_hash": "e65167af946e592bac18385a1ebb3690"
   },
   "docs/screenshots/2026-09-14/11-saved-expense.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "987917de8a98efec6d4f5b7a4c7e9a6b",
     "semantic_hash": "987917de8a98efec6d4f5b7a4c7e9a6b"
   },
   "docs/screenshots/2026-09-14/12-personal-settlement.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "269c9107f663f374a54659dc6fde3bd6",
     "semantic_hash": "269c9107f663f374a54659dc6fde3bd6"
   },
   "docs/screenshots/2026-09-14/13-transfers.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "9a864e406fd8f9fdbebbd2d5bfe34bda",
     "semantic_hash": "9a864e406fd8f9fdbebbd2d5bfe34bda"
   },
   "frontend/android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "13e9c72ec37fac220397aa819fa1ef2d",
     "semantic_hash": "13e9c72ec37fac220397aa819fa1ef2d"
   },
   "frontend/android/app/src/main/res/mipmap-mdpi/ic_launcher.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "6270344430679711b81476e29878caa7",
     "semantic_hash": "6270344430679711b81476e29878caa7"
   },
   "frontend/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "a0a8db5985280b3679d99a820ae2db79",
     "semantic_hash": "a0a8db5985280b3679d99a820ae2db79"
   },
   "frontend/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "afe1b655b9f32da22f9a4301bb8e6ba8",
     "semantic_hash": "afe1b655b9f32da22f9a4301bb8e6ba8"
   },
   "frontend/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.67013,
+    "seen": 1789400991.2900388,
     "ast_hash": "57838d52c318faff743130c3fcfae0c6",
     "semantic_hash": "57838d52c318faff743130c3fcfae0c6"
   },
   "frontend/public/icons/trip-split-icon.svg": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.7059572,
+    "seen": 1789400991.2900388,
     "ast_hash": "76351eb369148983ccd03cf7047c7acf",
     "semantic_hash": "76351eb369148983ccd03cf7047c7acf"
   },
   "frontend/public/icons/trip-split-maskable.svg": {
-    "mtime": 0,
-    "seen": 0,
+    "mtime": 1789380538.7059572,
+    "seen": 1789400991.2900388,
     "ast_hash": "ed227b804c74821b57e30c02db915f16",
     "semantic_hash": "ed227b804c74821b57e30c02db915f16"
   },
   "backend/workstreams/itinerary-map/AGENT.md": {
     "mtime": 1789385074.7711952,
-    "seen": 1789388465.1430016,
-    "ast_hash": "",
+    "seen": 1789400991.2900388,
+    "ast_hash": "c5ea89c28d8651433af01cff9663cf4b",
     "semantic_hash": "c5ea89c28d8651433af01cff9663cf4b"
   },
   "backend/workstreams/itinerary-map/SPEC.md": {
@@ -1489,15 +1489,15 @@
   },
   "backend/workstreams/itinerary-map/plan.md": {
     "mtime": 1789384837.0997248,
-    "seen": 1789388465.1430016,
-    "ast_hash": "",
+    "seen": 1789400991.2900388,
+    "ast_hash": "7d3bedb986bf3eb025cacb7075bba1ed",
     "semantic_hash": "7d3bedb986bf3eb025cacb7075bba1ed"
   },
   "backend/workstreams/itinerary-map/tasks.md": {
-    "mtime": 1789399174.5581,
-    "seen": 1789399977.6160169,
-    "ast_hash": "13f4d9ab5c216bce247357f846036c61",
-    "semantic_hash": "13f4d9ab5c216bce247357f846036c61"
+    "mtime": 1789400833.9207196,
+    "seen": 1789400991.2900388,
+    "ast_hash": "e562fb748fc31ba164235a615c7c5c5d",
+    "semantic_hash": "e562fb748fc31ba164235a615c7c5c5d"
   },
   "backend/src/shared/references.ts": {
     "mtime": 1789398159.6374342,
@@ -1530,10 +1530,10 @@
     "semantic_hash": "bde849659609a30030d25efb82ffc32d"
   },
   "frontend/integration_test/itinerary_references_test.dart": {
-    "mtime": 1789398563.655787,
-    "seen": 1789399977.6160169,
-    "ast_hash": "9a45f62a4b762e946fbe9e1a530dea68",
-    "semantic_hash": "9a45f62a4b762e946fbe9e1a530dea68"
+    "mtime": 1789400627.0220506,
+    "seen": 1789400991.2900388,
+    "ast_hash": "d627e217dd7c0740635162432ff9b20b",
+    "semantic_hash": "d627e217dd7c0740635162432ff9b20b"
   },
   "frontend/integration_test/screen_catalog_test.dart": {
     "mtime": 1789390965.5489693,

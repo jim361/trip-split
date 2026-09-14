@@ -95,7 +95,13 @@ void main() {
           itemIds: [reservable.id],
         ),
       ),
-      throwsA(isA<AppError>().having((error) => error.code, 'code', AppErrorCode.notFound)),
+      throwsA(
+        isA<AppError>().having(
+          (error) => error.code,
+          'code',
+          AppErrorCode.notFound,
+        ),
+      ),
     );
 
     final racedPlace = await repositories.createPlace(
@@ -149,7 +155,10 @@ ItineraryItemDraft _itinerary(String title, {String? placeId}) =>
       placeId: placeId,
     );
 
-Future<int> _referenceVersion(FirebaseFirestore firestore, String tripId) async {
+Future<int> _referenceVersion(
+  FirebaseFirestore firestore,
+  String tripId,
+) async {
   final trip = await firestore
       .doc('trips/$tripId')
       .get(const GetOptions(source: Source.server));

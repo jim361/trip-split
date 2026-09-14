@@ -113,7 +113,10 @@ void main() {
           draft: draft,
           originalError: original,
           reload: () => Future<List<ItineraryItem?>>.error(
-            FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'),
+            FirebaseException(
+              plugin: 'cloud_firestore',
+              code: 'permission-denied',
+            ),
           ),
         ),
         throwsA(same(original)),

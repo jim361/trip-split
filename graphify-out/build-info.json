@@ -1,7 +1,7 @@
 {
-  "base_commit": "e6e706191c82fc6027331a958a50aff165de9874",
-  "scope": "working tree including IMB-03, not a committed HEAD snapshot",
-  "source_sha256": "16fd4fcc35dcc172631571e04a045ca7cf25909434e94474ba672d71c68723f8",
+  "base_commit": "3d9f7e969fb84c008cf35f1802de4254f25e9a06",
+  "scope": "working tree with Dart formatting follow-up; commit SHA recorded separately",
+  "source_sha256": "f70237bea7bede1c3a39411e52349dfa90ab6f9ea2d6375380fa6b860badf4ab",
   "source_files": {
     ".codex/hooks.json": "82cfd6dbcd4430100a1809475299b38f066fa0d0e8d8eaf32d18e3f531786274",
     ".codex/hooks/block-dangerous-command.ps1": "b07503b1af9a113c56e09d2b59c0bb8299fa4a8006ab76fc718ebad091f45937",
@@ -63,7 +63,7 @@
     "backend/workstreams/itinerary-map/AGENT.md": "047671aeb3d5fc1e11bbc42a0f63374d56c411dd44cdc172b87b852b90f93cc4",
     "backend/workstreams/itinerary-map/SPEC.md": "c3f59dd0e34a51011f9da44d4913f3a00e6ea701dd3ec53920f87496931d0780",
     "backend/workstreams/itinerary-map/plan.md": "d302f4ac5638cb79bd43e89faca26e2f04753ab58f247c7729f7d9f3db3b452e",
-    "backend/workstreams/itinerary-map/tasks.md": "79c44b1e0bdfc83ec6462c08093bd42b0a0dcffd5bf33c1b832dcfdf736fe6d0",
+    "backend/workstreams/itinerary-map/tasks.md": "9a06737744d748f70b06b9ce199da68c267cadc0eb7ddb915cb893de89b9a944",
     "design.md": "31c111e1cf0919837d88b368aeccad0adbe08449731c0a859135c60bc0b9376e",
     "docs/README.md": "8a4ad75ecbee2df3b7302f5730efcc51d6dc060957dd0d9ab59c7bd29dc676f3",
     "docs/android-emulator-qa-results.json": "c028cc33aa38940d9f2a6ec5a05b7d6df05662948a2726b82195feefd074c9c1",
@@ -173,7 +173,7 @@
     "frontend/android/settings.gradle.kts": "016759283e88ade6eba92910583feeef88b962839b957aa414296afd2952d122",
     "frontend/dart_defines.example.json": "fbbd65c9813a60bb772795730503b5a3c5e49b1c41060117943dedd607810400",
     "frontend/index.html": "5d315e0769592154f9d46be1db4bf743b08b1f134a056b26efa2bb8505c8eb51",
-    "frontend/integration_test/itinerary_references_test.dart": "5dc64a82b16157659f764598e4934da1e451ad7d201abac67ed710e32f0f9294",
+    "frontend/integration_test/itinerary_references_test.dart": "3867c608546293914dc2ef59f8d475063a507266f946b7ce02bedc8a8dfee8b0",
     "frontend/integration_test/screen_catalog_test.dart": "281bd9571f2311f301f90efc6a8b014aa677b527bc0fd4fdd7c8ca943ad9c878",
     "frontend/integration_test/two_device_test.dart": "fcc353743079e5aca38f70cf8e6629f18e55621e28484eb33d6ae761f310af76",
     "frontend/lib/app/app.dart": "5314e41f6fe92eff5181e45706feb3842f00161142b66b177e07bae0b0520663",
@@ -183,7 +183,7 @@
     "frontend/lib/app/trip_shell.dart": "2e607ae89c11c85d50e46636d73c0de399e8292d0b8aa81b1155e5a39904d32f",
     "frontend/lib/data/firebase/firebase_client.dart": "cb45d2177ed5eef2cedfd50399d46758fe752b56350ea4e608109f099dda29e9",
     "frontend/lib/data/firebase/firebase_error_mapper.dart": "86dd4d024324ad89b0e508306b3c189a4238a42c6ba899ceb66c06f73044aa74",
-    "frontend/lib/data/firebase/firestore_trip_repositories.dart": "eb4e62529158d97d1f56554b13fa90639a9e2ccb2abc9800552ebd3e10631c45",
+    "frontend/lib/data/firebase/firestore_trip_repositories.dart": "e3505222a3056b84c924f4385ae4401b2aaaf02bbdd6ab037c4b2e97a77ed4ea",
     "frontend/lib/data/mock/in_memory_trip_repositories.dart": "c8f75acb2f1894f7ecfac0540fe635687127d8150f6f0d6b208314c8eac2838c",
     "frontend/lib/data/mock/tokyo_trip_fixture.dart": "81b75a8277bf91bc4144a70dcd57f7ca15c0eb250dfe051ef5deea7ecb6e99cf",
     "frontend/lib/domain/models.dart": "dcc53893b635ac68ef515c3e2e2fa3e0086ab7430f677dfc46d0b4564d11c766",
@@ -305,7 +305,7 @@
     "frontend/test/firebase_auth_service_test.dart": "890c5096cf991c5a0965e65a9ff13fa7060095c4aae2605b43f8c28e4c885cb1",
     "frontend/test/firebase_config_test.dart": "482a99e18b7d64ea0c8d564dbb5dd89ac2a4d061657beaa2c956eb20c55cbcd8",
     "frontend/test/firebase_error_mapper_test.dart": "25ca18a9b08b945231f9357df19cad32f0737299d168cc8a30b603e0a7a20fbd",
-    "frontend/test/firestore_itinerary_mapping_test.dart": "87fdd96a6a2d1b81254332b5e55d5b4f518d658a3630a0b8cdab4b50e293133a",
+    "frontend/test/firestore_itinerary_mapping_test.dart": "bb9058155a6fd2f370e330eac76f6a1d67486900f587b8960cfb348a88369917",
     "frontend/test/google_sheets_service_test.dart": "4ca93807b38e0fe06f2b6676d7c4e2344ee81a0b526e70e3d99931fd4030eba9",
     "frontend/test/itinerary_edit_page_test.dart": "1cdfdf25e6a50019f9fc654b93cb13e9e165e37ab45fc98935860ec38db3d71e",
     "frontend/test/itinerary_editor_test.dart": "01820b518c9e554f662845c16f0a8a335c0487b20766bfb279228ccef9833c7a",
@@ -333,8 +333,9 @@
   },
   "validation": {
     "verify_full": "passed: unit 181; Emulator 61",
-    "flutter": "not run: SDK unavailable"
+    "flutter": "Dart 3.13.2 format passed: 87 files, 0 changes; initial CI Flutter format failed; follow-up analyze/test/APK pending; Android integration not run",
+    "initial_ci_verify": "passed: https://github.com/jim361/trip-split/actions/runs/34863409759"
   },
   "token_usage": "unavailable",
-  "generated_at": "2026-09-14T15:35:36.273769+00:00"
+  "generated_at": "2026-09-14T15:49:51.361530+00:00"
 }
